@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AITAROT // WORKBENCH // SESSION #042</title>
+<!-- Google Fonts: Newsreader (Editorial Serif) & Be Vietnam Pro (Clean Sans/Label) -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined (Literal Requirement) -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            alabaster: "#FAF9F6",
+            surface: "#FFFFFF",
+            slatebg: "#F8FAFC",
+            hairline: "#E2E8F0",
+            ink: "#0F172A",
+            inksoft: "#475569",
+            botanical: "#059669",
+            botanicalsoft: "#ECFDF5",
+            amberlight: "#FEF3C7",
+            ambertext: "#B45309"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Newsreader", "serif"],
+            display: ["Newsreader", "serif"],
+            body: ["Be Vietnam Pro", "sans-serif"],
+            label: ["Be Vietnam Pro", "sans-serif"],
+            mono: ["'JetBrains Mono'", "monospace"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .linen-pattern {
+      background-color: #FAF9F6;
+      background-image: radial-gradient(#E2E8F0 0.75px, transparent 0.75px), radial-gradient(#E2E8F0 0.75px, #FAF9F6 0.75px);
+      background-size: 24px 24px;
+      background-position: 0 0, 12px 12px;
+    }
+    /* Scrollbar minimalism */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F1F5F9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+  </style>
+</head>
+<body class="bg-alabaster text-ink font-body h-screen flex flex-col overflow-hidden antialiased select-none">
+<!-- ========================================================================= -->
+<!-- 1. TOP UTILITY HEADER (Screen ID: SCR-W02 Workbench Standard)             -->
+<!-- ========================================================================= -->
+<header class="h-14 bg-surface border-b border-hairline flex items-center justify-between px-6 z-30 shrink-0">
+<!-- Left Trail -->
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-botanical text-xl" data-icon="auto_awesome">auto_awesome</span>
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs uppercase tracking-tight font-semibold text-ink">AITAROT // WORKBENCH</span>
+<span class="text-hairline">/</span>
+<span class="font-mono text-xs text-inksoft">SESSION #042</span>
+<span class="text-hairline">/</span>
+<span class="text-xs font-mono font-medium text-ink bg-slatebg px-2 py-0.5 rounded border border-hairline flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-botanical animate-pulse"></span>
+          5-CARD CREATIVE DIRECTION
+        </span>
+</div>
+</div>
+<!-- Right Controls & Balance -->
+<div class="flex items-center gap-3">
+<!-- Active Persona Badge -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 bg-botanicalsoft border border-[#A7F3D0] rounded-lg text-xs font-mono font-medium text-botanical">
+<span class="w-1.5 h-1.5 rounded-full bg-botanical"></span>
+        Voice: The Idea Spark
+      </div>
+<!-- Language Switcher -->
+<div class="border border-hairline rounded-lg flex items-center px-1.5 py-0.5 text-[11px] font-mono font-semibold text-inksoft bg-surface">
+<span class="text-ink px-1 cursor-pointer">EN</span>
+<span class="text-hairline">|</span>
+<span class="text-inksoft hover:text-ink px-1 cursor-pointer">VI</span>
+</div>
+<!-- Credit Pill Balance -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 bg-amberlight border border-[#FDE68A] rounded-lg text-xs font-mono font-bold text-ambertext">
+<span class="material-symbols-outlined text-sm" data-icon="toll">toll</span>
+        110 CR
+      </div>
+<div class="h-4 w-px bg-hairline mx-1"></div>
+<!-- Secondary Action Button -->
+<button class="flex items-center gap-1.5 px-3 py-1.5 border border-hairline hover:border-slate-400 bg-surface rounded-lg text-xs font-mono font-medium text-ink transition-colors shadow-none">
+<span class="material-symbols-outlined text-sm" data-icon="share">share</span>
+<span>Export Share Print</span>
+</button>
+<!-- Settings / Fullscreen -->
+<button class="p-1.5 text-inksoft hover:text-ink border border-hairline rounded-lg hover:bg-slatebg transition-colors" title="Settings">
+<span class="material-symbols-outlined text-base" data-icon="settings">settings</span>
+</button>
+</div>
+</header>
+<!-- ========================================================================= -->
+<!-- 2. MAIN 3-PANE SPLIT WORKBENCH (calc(100vh - 56px))                       -->
+<!-- ========================================================================= -->
+<main class="flex-1 flex flex-row h-[calc(100vh-56px)] w-full overflow-hidden">
+<!-- --------------------------------------------------------------------- -->
+<!-- LEFT SIDEBAR: Context, Persona Tuning & Archive (approx 240px)        -->
+<!-- --------------------------------------------------------------------- -->
+<aside class="w-60 bg-slatebg border-r border-hairline p-4 flex flex-col gap-5 overflow-y-auto shrink-0 select-text">
+<!-- Section 1: Active Inquiry -->
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="font-mono text-[11px] uppercase tracking-wider font-semibold text-inksoft">ACTIVE INQUIRY</span>
+<span class="font-mono text-[10px] text-inksoft">#042</span>
+</div>
+<div class="p-3 bg-surface border border-hairline rounded-lg">
+<p class="font-headline text-base italic leading-snug text-ink mb-2">
+            “How should I structure my Q4 product launch?”
+          </p>
+<div class="flex flex-col gap-1 border-t border-hairline pt-2 font-mono text-[10px] text-inksoft">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" data-icon="calendar_today">calendar_today</span>
+              Oct 31, 2026 · 14:28
+            </span>
+<span class="flex items-center gap-1 text-botanical font-medium">
+<span class="material-symbols-outlined text-[12px]" data-icon="category">category</span>
+              Spread: Creative Direction
+            </span>
+</div>
+</div>
+</div>
+<!-- Section 2: Reader Persona Selector -->
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="font-mono text-[11px] uppercase tracking-wider font-semibold text-inksoft">READER PERSONA</span>
+<span class="material-symbols-outlined text-xs text-inksoft" data-icon="tune">tune</span>
+</div>
+<div class="flex flex-col gap-1.5 font-sans">
+<!-- Item 1 -->
+<label class="flex items-start gap-2.5 p-2 rounded-lg border border-hairline bg-surface hover:bg-slate-100 transition-colors cursor-pointer">
+<input class="mt-0.5 text-botanical focus:ring-botanical text-xs" name="persona" type="radio"/>
+<div class="flex flex-col">
+<span class="text-xs font-semibold text-ink">Classic Mystic</span>
+<span class="text-[11px] text-inksoft leading-tight">Hermetic canonical archetypes</span>
+</div>
+</label>
+<!-- Item 2: Selected Active Persona -->
+<label class="flex items-start gap-2.5 p-2 rounded-lg border border-botanical bg-botanicalsoft/60 cursor-pointer">
+<input checked="" class="mt-0.5 text-botanical focus:ring-botanical text-xs" name="persona" type="radio"/>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-ink flex items-center justify-between">
+                The Idea Spark
+                <span class="w-1.5 h-1.5 rounded-full bg-botanical"></span>
+</span>
+<span class="text-[11px] text-botanical font-medium leading-tight">Tactical ideation &amp; direct action</span>
+</div>
+</label>
+<!-- Item 3 -->
+<label class="flex items-start gap-2.5 p-2 rounded-lg border border-hairline bg-surface hover:bg-slate-100 transition-colors cursor-pointer">
+<input class="mt-0.5 text-botanical focus:ring-botanical text-xs" name="persona" type="radio"/>
+<div class="flex flex-col">
+<span class="text-xs font-semibold text-ink">The Gentle Friend</span>
+<span class="text-[11px] text-inksoft leading-tight">Empathetic counseling voice</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Section 3: Session History -->
+<div class="flex-1">
+<div class="flex items-center justify-between mb-2">
+<span class="font-mono text-[11px] uppercase tracking-wider font-semibold text-inksoft">SESSION ARCHIVE</span>
+<span class="font-mono text-[10px] text-botanical hover:underline cursor-pointer">View All</span>
+</div>
+<div class="flex flex-col gap-1.5">
+<div class="p-2 border border-hairline rounded bg-surface hover:border-slate-300 transition-colors cursor-pointer">
+<div class="font-mono text-[10px] text-inksoft mb-0.5">Oct 29 · 3-Card Trajectory</div>
+<div class="text-xs font-medium text-ink truncate">Project Alpha Brand Pivot</div>
+</div>
+<div class="p-2 border border-hairline rounded bg-surface hover:border-slate-300 transition-colors cursor-pointer">
+<div class="font-mono text-[10px] text-inksoft mb-0.5">Oct 24 · 1-Card Focus</div>
+<div class="text-xs font-medium text-ink truncate">Co-founder Alignment Call</div>
+</div>
+<div class="p-2 border border-hairline rounded bg-surface hover:border-slate-300 transition-colors cursor-pointer">
+<div class="font-mono text-[10px] text-inksoft mb-0.5">Oct 18 · Celtic Cross</div>
+<div class="text-xs font-medium text-ink truncate">Annual Roadmap Architecture</div>
+</div>
+</div>
+</div>
+<!-- Sidebar Footnote & Architecture Stamp -->
+<div class="pt-3 border-t border-hairline text-[10px] font-mono text-inksoft leading-relaxed">
+<div class="font-semibold text-ink">CANONICAL PROTOCOL</div>
+<div>Archival 1909 RWS Engravings</div>
+<div class="text-[9px] text-slate-400 mt-1">LATENCY: 420ms · SEED #89421</div>
+</div>
+</aside>
+<!-- --------------------------------------------------------------------- -->
+<!-- CENTER PANE: The Linen Spread Table (approx 530px)                     -->
+<!-- --------------------------------------------------------------------- -->
+<section class="w-[530px] bg-alabaster flex flex-col border-r border-hairline overflow-y-auto shrink-0 relative">
+<!-- Top Spread Toolbar -->
+<div class="bg-surface px-4 py-2.5 border-b border-hairline flex items-center justify-between shrink-0">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-sm bg-botanical"></span>
+<span class="font-mono text-xs font-medium text-ink">Layout: 5-Card Creative Direction</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-2.5 py-1 text-[11px] font-mono border border-hairline rounded bg-surface hover:bg-slatebg text-ink transition-colors">
+            Reset Spread
+          </button>
+<button class="px-2.5 py-1 text-[11px] font-mono font-medium border border-botanical text-botanical bg-botanicalsoft rounded hover:bg-emerald-100 transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]" data-icon="add">add</span>
+            Clarifier (5 CR)
+          </button>
+</div>
+</div>
+<!-- Linen Table Ritual Surface Canvas -->
+<div class="p-6 linen-pattern flex-1 flex flex-col items-center justify-between relative min-h-[660px]">
+<!-- Registration Crosshair Marks (Architectural technical marks) -->
+<span class="absolute top-3 left-3 text-slate-300 font-mono text-xs">+</span>
+<span class="absolute top-3 right-3 text-slate-300 font-mono text-xs">+</span>
+<span class="absolute bottom-3 left-3 text-slate-300 font-mono text-xs">+</span>
+<span class="absolute bottom-3 right-3 text-slate-300 font-mono text-xs">+</span>
+<!-- Spread Layout Grid Architecture (5-Card + Side Clarifier) -->
+<div class="w-full flex flex-col gap-4 my-auto relative">
+<!-- TOP ROW: Position 01 (Core Idea) & Position 03 (Hidden Resource) -->
+<div class="flex justify-between items-center px-4">
+<!-- Card 01: Core Idea (I. The Magician) -->
+<div class="w-36 bg-surface border border-ink p-2.5 rounded shadow-none flex flex-col justify-between h-52 relative group hover:border-botanical transition-colors">
+<div class="flex items-center justify-between border-b border-hairline pb-1">
+<span class="font-mono text-[9px] font-bold text-ink">POS 01</span>
+<span class="font-mono text-[9px] text-inksoft uppercase">UPRIGHT</span>
+</div>
+<div class="text-center my-1">
+<div class="font-mono text-xs font-semibold text-inksoft tracking-widest">I</div>
+<div class="my-1.5 w-14 h-14 mx-auto border border-hairline rounded flex items-center justify-center bg-slatebg">
+<span class="material-symbols-outlined text-2xl text-ink" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<h4 class="font-headline text-xs font-bold text-ink leading-tight">The Magician</h4>
+<p class="font-mono text-[9px] text-inksoft mt-0.5">Core Catalyst</p>
+</div>
+<div class="border-t border-hairline pt-1 text-center">
+<span class="font-mono text-[9px] text-botanical font-semibold">Active Focus</span>
+</div>
+</div>
+<!-- Card 03: Hidden Resource (Queen of Pentacles) -->
+<div class="w-36 bg-surface border border-ink p-2.5 rounded shadow-none flex flex-col justify-between h-52 relative hover:border-botanical transition-colors">
+<div class="flex items-center justify-between border-b border-hairline pb-1">
+<span class="font-mono text-[9px] font-bold text-ink">POS 03</span>
+<span class="font-mono text-[9px] text-inksoft uppercase">UPRIGHT</span>
+</div>
+<div class="text-center my-1">
+<div class="font-mono text-xs font-semibold text-inksoft tracking-widest">Q·PENT</div>
+<div class="my-1.5 w-14 h-14 mx-auto border border-hairline rounded flex items-center justify-center bg-slatebg">
+<span class="material-symbols-outlined text-2xl text-ink" data-icon="spa">spa</span>
+</div>
+<h4 class="font-headline text-xs font-bold text-ink leading-tight">Queen of Pentacles</h4>
+<p class="font-mono text-[9px] text-inksoft mt-0.5">Hidden Asset</p>
+</div>
+<div class="border-t border-hairline pt-1 text-center">
+<span class="font-mono text-[9px] text-inksoft">Pragmatic Ground</span>
+</div>
+</div>
+</div>
+<!-- CENTER ROW: Card 02 (The Obstacle) + Side Clarifier -->
+<div class="flex items-center justify-center gap-6 relative">
+<!-- Card 02: Obstacle (VIII. Eight of Swords Reversed) -->
+<div class="w-36 bg-surface border-2 border-ink p-2.5 rounded shadow-none flex flex-col justify-between h-52 relative group">
+<div class="flex items-center justify-between border-b border-hairline pb-1">
+<span class="font-mono text-[9px] font-bold text-amber-700">POS 02</span>
+<span class="font-mono text-[9px] font-bold text-amber-700 uppercase bg-amber-50 px-1 rounded">REV.</span>
+</div>
+<div class="text-center my-1">
+<div class="font-mono text-xs font-semibold text-inksoft tracking-widest">VIII</div>
+<div class="my-1.5 w-14 h-14 mx-auto border border-hairline rounded flex items-center justify-center bg-slatebg rotate-180">
+<span class="material-symbols-outlined text-2xl text-ink" data-icon="block">block</span>
+</div>
+<h4 class="font-headline text-xs font-bold text-ink leading-tight">8 of Swords</h4>
+<p class="font-mono text-[9px] text-inksoft mt-0.5">Internal Friction</p>
+</div>
+<div class="border-t border-hairline pt-1 text-center">
+<span class="font-mono text-[9px] text-amber-700 font-semibold">Mental Unlocking</span>
+</div>
+</div>
+<!-- Clarifier Card 06 (Drawn beside Card 02) -->
+<div class="w-32 bg-botanicalsoft/40 border-2 border-dashed border-botanical p-2 rounded shadow-none flex flex-col justify-between h-48 relative">
+<div class="flex items-center justify-between border-b border-botanical/20 pb-1">
+<span class="font-mono text-[8px] font-bold text-botanical">+CLARIFIER</span>
+<span class="font-mono text-[8px] text-botanical">REV. FIX</span>
+</div>
+<div class="text-center my-1">
+<div class="font-mono text-[10px] font-semibold text-botanical tracking-widest">PAGE·SW</div>
+<div class="my-1 w-10 h-10 mx-auto border border-botanical/30 rounded flex items-center justify-center bg-surface">
+<span class="material-symbols-outlined text-lg text-botanical" data-icon="explore">explore</span>
+</div>
+<h5 class="font-headline text-[11px] font-bold text-ink leading-tight">Page of Swords</h5>
+<p class="font-mono text-[8px] text-inksoft mt-0.5">Quick Intelligence</p>
+</div>
+<div class="border-t border-botanical/20 pt-1 text-center">
+<span class="font-mono text-[8px] font-semibold text-botanical">Clarifies Pos 02</span>
+</div>
+</div>
+</div>
+<!-- BOTTOM ROW: Position 04 (First Step) & Position 05 (Trajectory) -->
+<div class="flex justify-between items-center px-4">
+<!-- Card 04: First Step (Ace of Wands) -->
+<div class="w-36 bg-surface border border-ink p-2.5 rounded shadow-none flex flex-col justify-between h-52 relative hover:border-botanical transition-colors">
+<div class="flex items-center justify-between border-b border-hairline pb-1">
+<span class="font-mono text-[9px] font-bold text-ink">POS 04</span>
+<span class="font-mono text-[9px] text-inksoft uppercase">UPRIGHT</span>
+</div>
+<div class="text-center my-1">
+<div class="font-mono text-xs font-semibold text-inksoft tracking-widest">ACE·WAND</div>
+<div class="my-1.5 w-14 h-14 mx-auto border border-hairline rounded flex items-center justify-center bg-slatebg">
+<span class="material-symbols-outlined text-2xl text-ink" data-icon="local_fire_department">local_fire_department</span>
+</div>
+<h4 class="font-headline text-xs font-bold text-ink leading-tight">Ace of Wands</h4>
+<p class="font-mono text-[9px] text-inksoft mt-0.5">Kinetic Action</p>
+</div>
+<div class="border-t border-hairline pt-1 text-center">
+<span class="font-mono text-[9px] text-botanical font-semibold">Immediate Strike</span>
+</div>
+</div>
+<!-- Card 05: Trajectory (XIX. The Sun) -->
+<div class="w-36 bg-surface border border-ink p-2.5 rounded shadow-none flex flex-col justify-between h-52 relative hover:border-botanical transition-colors">
+<div class="flex items-center justify-between border-b border-hairline pb-1">
+<span class="font-mono text-[9px] font-bold text-ink">POS 05</span>
+<span class="font-mono text-[9px] text-inksoft uppercase">UPRIGHT</span>
+</div>
+<div class="text-center my-1">
+<div class="font-mono text-xs font-semibold text-inksoft tracking-widest">XIX</div>
+<div class="my-1.5 w-14 h-14 mx-auto border border-hairline rounded flex items-center justify-center bg-slatebg">
+<span class="material-symbols-outlined text-2xl text-amber-600" data-icon="light_mode">light_mode</span>
+</div>
+<h4 class="font-headline text-xs font-bold text-ink leading-tight">The Sun</h4>
+<p class="font-mono text-[9px] text-inksoft mt-0.5">Final Resolution</p>
+</div>
+<div class="border-t border-hairline pt-1 text-center">
+<span class="font-mono text-[9px] text-botanical font-semibold">Direct Visibility</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Table Floor Metadata Banner -->
+<div class="w-full bg-surface border border-hairline rounded p-2 flex items-center justify-between text-[11px] font-mono text-inksoft mt-4">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-xs text-botanical" data-icon="info">info</span>
+            Click any card to isolate analysis
+          </span>
+<span class="font-medium text-ink">Elemental Bias: 50% Fire · 33% Air · 17% Earth</span>
+</div>
+</div>
+</section>
+<!-- --------------------------------------------------------------------- -->
+<!-- RIGHT PANE: Live Editorial Synthesis Stream (flex-1)                 -->
+<!-- --------------------------------------------------------------------- -->
+<section class="flex-1 bg-surface flex flex-col h-full overflow-hidden select-text">
+<!-- Right Sub-header -->
+<div class="px-6 py-3 border-b border-hairline flex items-center justify-between bg-surface shrink-0">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-ink text-lg" data-icon="menu_book">menu_book</span>
+<h2 class="font-headline text-base font-bold text-ink tracking-tight">EDITORIAL SYNTHESIS REPORT</h2>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-0.5 text-xs font-mono font-medium rounded-full bg-botanicalsoft text-botanical border border-[#A7F3D0]">
+            Harmonized Balance
+          </span>
+<button class="p-1 text-inksoft hover:text-ink hover:bg-slatebg rounded" title="Copy Text">
+<span class="material-symbols-outlined text-sm" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+</div>
+<!-- Scrollable Article Stream -->
+<div class="p-6 overflow-y-auto flex flex-col gap-6 flex-1 text-ink text-sm leading-relaxed">
+<!-- SECTION 01: Arcana & Elemental Equilibrium -->
+<div class="border border-hairline rounded-lg p-4 bg-alabaster">
+<div class="flex items-center justify-between mb-2">
+<span class="font-mono text-[11px] uppercase tracking-wider font-semibold text-inksoft">
+              01 // ARCANA &amp; ELEMENTAL EQUILIBRIUM
+            </span>
+<span class="font-mono text-xs font-semibold text-botanical">High Action Ratio</span>
+</div>
+<!-- Segmented Balance Bar -->
+<div class="h-2 w-full bg-slate-200 rounded-full flex overflow-hidden mb-3">
+<div class="h-full bg-amber-500 w-1/2" title="Fire (50%)"></div>
+<div class="h-full bg-slate-400 w-1/3" title="Air (33%)"></div>
+<div class="h-full bg-botanical w-1/6" title="Earth (17%)"></div>
+</div>
+<div class="grid grid-cols-3 gap-2 text-xs font-mono">
+<div class="flex items-center gap-1.5 text-ink">
+<span class="w-2 h-2 rounded-full bg-amber-500"></span>
+<span>FIRE 50% (Catalyst)</span>
+</div>
+<div class="flex items-center gap-1.5 text-ink">
+<span class="w-2 h-2 rounded-full bg-slate-400"></span>
+<span>AIR 33% (Clarity)</span>
+</div>
+<div class="flex items-center gap-1.5 text-ink">
+<span class="w-2 h-2 rounded-full bg-botanical"></span>
+<span>EARTH 17% (Pragmatism)</span>
+</div>
+</div>
+</div>
+<!-- SECTION 02: Position-by-Position Architecture -->
+<div>
+<h3 class="font-mono text-[11px] uppercase tracking-wider font-semibold text-inksoft mb-3">
+            02 // ARCHITECTURAL BREAKDOWN
+          </h3>
+<div class="space-y-3 font-sans">
+<!-- Pos 1 -->
+<div class="border border-hairline p-3.5 rounded-lg bg-surface hover:border-slate-300 transition-colors">
+<div class="flex items-center justify-between mb-1">
+<span class="font-mono text-xs font-bold text-ink">01 · THE MAGICIAN (SITUATION)</span>
+<span class="text-[10px] font-mono text-botanical bg-botanicalsoft px-1.5 py-0.5 rounded">INITIATION</span>
+</div>
+<p class="text-ink text-xs leading-normal">
+                You already possess the complete operational repertoire required to execute. The tools are laid upon the table; there is no prerequisite qualification or external permission missing. The tension in Q4 is not lack of capability, but directional selection.
+              </p>
+</div>
+<!-- Pos 2 -->
+<div class="border border-hairline p-3.5 rounded-lg bg-surface hover:border-slate-300 transition-colors">
+<div class="flex items-center justify-between mb-1">
+<span class="font-mono text-xs font-bold text-amber-700">02 · EIGHT OF SWORDS REV. (OBSTACLE)</span>
+<span class="text-[10px] font-mono text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">BREAKTHROUGH</span>
+</div>
+<p class="text-ink text-xs leading-normal">
+                The perceived paralysis is conceptual rather than real. In the reversed orientation, the blindfold slips. You are realizing that the "perfectionist standards" halting the launch are self-imposed narrative guards rather than structural flaws.
+              </p>
+</div>
+<!-- Pos 3 -->
+<div class="border border-hairline p-3.5 rounded-lg bg-surface hover:border-slate-300 transition-colors">
+<div class="flex items-center justify-between mb-1">
+<span class="font-mono text-xs font-bold text-ink">03 · QUEEN OF PENTACLES (HIDDEN RESOURCE)</span>
+<span class="text-[10px] font-mono text-inksoft bg-slatebg px-1.5 py-0.5 rounded">TACTILE EMBODIMENT</span>
+</div>
+<p class="text-ink text-xs leading-normal">
+                Ground the release in warm, tangible utility. Do not present abstract theories; present the concrete workflow demonstration. Build small, hospitable feedback chambers for early users before the public reveal.
+              </p>
+</div>
+<!-- Pos 4 & 5 Flow -->
+<div class="border border-hairline p-3.5 rounded-lg bg-surface hover:border-slate-300 transition-colors">
+<div class="flex items-center justify-between mb-1">
+<span class="font-mono text-xs font-bold text-ink">04 &amp; 05 · ACE OF WANDS → THE SUN (KINETIC MOMENTUM)</span>
+<span class="text-[10px] font-mono text-botanical bg-botanicalsoft px-1.5 py-0.5 rounded">EXPANSION</span>
+</div>
+<p class="text-ink text-xs leading-normal">
+                A single aggressive creative sprint (<span class="italic font-medium">Ace of Wands</span>) directly resolves the launch into high daylight recognition (<span class="italic font-medium">The Sun</span>). There is zero ambiguity in the reception once momentum breaks the initial seal.
+              </p>
+</div>
+</div>
+</div>
+<!-- SECTION 03: Core Holistic Synthesis -->
+<div>
+<h3 class="font-mono text-[11px] uppercase tracking-wider font-semibold text-inksoft mb-2">
+            03 // CORE SYNTHESIS SUMMARY
+          </h3>
+<div class="p-4 bg-slatebg border-l-2 border-botanical rounded-r-lg">
+<p class="font-headline text-base italic text-ink leading-relaxed">
+              “The Magician initiates, while the reversed Eight of Swords demands you cease over-polishing in isolation. Your greatest lever is rapid physical prototyping: assemble the minimum viable demonstration, invite the first circle, and let the sheer vitality of the Ace of Wands carry the day into open sunlight.”
+            </p>
+<div class="mt-2 text-right">
+<span class="font-mono text-[10px] text-inksoft uppercase tracking-wider">— Synthesis by The Idea Spark</span>
+</div>
+</div>
+</div>
+<!-- SECTION 04: Actionable Experiments & Next Steps -->
+<div>
+<h3 class="font-mono text-[11px] uppercase tracking-wider font-semibold text-inksoft mb-2.5">
+            04 // STRATEGIC EXPERIMENTS
+          </h3>
+<div class="space-y-2 font-mono text-xs">
+<div class="flex items-center gap-2 p-2 border border-hairline rounded bg-surface">
+<input checked="" class="rounded text-botanical focus:ring-botanical" type="checkbox"/>
+<span class="line-through text-inksoft">Draft unpolished MVP thesis sheet (Completed)</span>
+<span class="ml-auto text-[10px] text-botanical font-bold">READY</span>
+</div>
+<div class="flex items-center gap-2 p-2 border border-hairline rounded bg-surface">
+<input class="rounded text-botanical focus:ring-botanical" type="checkbox"/>
+<span class="text-ink">Conduct closed beta demo with 3 trusted colleagues</span>
+<span class="ml-auto text-[10px] text-inksoft">DUE FRI</span>
+</div>
+<div class="flex items-center gap-2 p-2 border border-hairline rounded bg-surface">
+<input class="rounded text-botanical focus:ring-botanical" type="checkbox"/>
+<span class="text-ink">Establish daily 90-minute uninterrupted creative sprint</span>
+<span class="ml-auto text-[10px] text-amber-700">HIGH PRIORITY</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Docked Follow-Up Input & Inquiry Bar -->
+<div class="px-6 py-3 border-t border-hairline bg-surface shrink-0 flex flex-col gap-2">
+<form class="flex items-center gap-2" onsubmit="event.preventDefault();">
+<div class="relative flex-1">
+<input class="w-full bg-slatebg border border-hairline rounded-lg px-3 py-2 text-xs font-mono text-ink placeholder-slate-400 focus:outline-none focus:border-botanical focus:bg-surface transition-colors" placeholder="Ask a tactical follow-up question (2/3 remaining · 3 CR)..." type="text"/>
+</div>
+<button class="bg-botanical hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-mono font-medium flex items-center gap-1.5 transition-colors" type="submit">
+<span>Inquire</span>
+<span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</form>
+<!-- Micro Controls Footer -->
+<div class="flex items-center justify-between text-[11px] font-mono text-inksoft px-1">
+<div class="flex items-center gap-3">
+<button class="hover:text-botanical transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="add_circle">add_circle</span>
+              Draw Clarifier (5 CR)
+            </button>
+<span class="text-hairline">·</span>
+<button class="hover:text-ink transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="print">print</span>
+              Export Specimen PDF
+            </button>
+</div>
+<div>
+<button class="hover:text-botanical transition-colors flex items-center gap-1 font-medium text-ink">
+<span class="material-symbols-outlined text-xs text-botanical" data-icon="bookmark">bookmark</span>
+              Save to Journal
+            </button>
+</div>
+</div>
+</div>
+</section>
+</main>
+</body></html>

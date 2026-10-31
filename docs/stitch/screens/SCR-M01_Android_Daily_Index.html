@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AITAROT // DAILY INDEX</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            surface: "#FFFFFF",
+            "surface-variant": "#F1F5F9",
+            "on-surface": "#0F172A",
+            "on-surface-variant": "#64748B",
+            primary: "#059669",
+            "on-primary": "#FFFFFF",
+            "outline-variant": "#E2E8F0",
+            parchment: "#FAF9F6",
+            slatebg: "#F8FAFC"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Newsreader", "serif"],
+            display: ["Newsreader", "serif"],
+            body: ["Be Vietnam Pro", "sans-serif"],
+            label: ["Be Vietnam Pro", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      font-size: 20px;
+    }
+    .material-symbols-fill {
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    }
+    body {
+      background-color: #FAF9F6;
+      color: #0F172A;
+      font-family: 'Be Vietnam Pro', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    @keyframes subtle-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.92); }
+    }
+    .status-pulse {
+      animation: subtle-pulse 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#FAF9F6] text-[#0F172A] min-h-screen flex flex-col justify-between selection:bg-[#ECFDF5] selection:text-[#059669]">
+<!-- Mobile Wrapper (390px Canonical Frame) -->
+<div class="w-full max-w-[390px] mx-auto min-h-screen bg-[#FAF9F6] border-x border-[#E2E8F0] flex flex-col relative pb-24 shadow-sm">
+<!-- 1. Top Utility Header (Shared Component: TopAppBar Pattern) -->
+<header class="bg-surface sticky top-0 z-40 w-full border-b border-outline-variant px-4 py-3 flex justify-between items-center bg-[#FFFFFF]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#059669] text-[20px]" data-icon="auto_awesome">auto_awesome</span>
+<h1 class="font-headline text-[17px] tracking-tight font-bold text-[#0F172A]">AITAROT // DAILY INDEX</h1>
+</div>
+<!-- Right Controls: Language Switch + Credit Pill -->
+<div class="flex items-center gap-2">
+<div class="flex items-center border border-[#E2E8F0] rounded-md px-1.5 py-0.5 text-[11px] font-mono text-[#475569] bg-[#F8FAFC]">
+<span class="font-semibold text-[#0F172A]">EN</span>
+<span class="mx-1 text-[#CBD5E1]">|</span>
+<span class="text-[#94A3B8]">VI</span>
+</div>
+<div class="flex items-center gap-1 bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A] text-xs font-mono font-semibold px-2.5 py-1 rounded-full cursor-pointer hover:bg-[#FDE68A] transition-colors">
+<span class="material-symbols-outlined text-[14px]" data-icon="toll">toll</span>
+<span>45 CR</span>
+<span class="text-[10px] ml-0.5 font-bold">[+]</span>
+</div>
+</div>
+</header>
+<!-- 2. Astrological & Profile Context Strip -->
+<section class="bg-[#F8FAFC] border-b border-[#E2E8F0] px-4 py-2 flex items-center justify-between text-[11px] font-mono tracking-wider text-[#475569]">
+<div class="flex items-center gap-1.5 truncate">
+<span class="text-[#0F172A] font-semibold">SAT OCT 31</span>
+<span>·</span>
+<span>ARIA</span>
+<span>·</span>
+<span>♈ ARIES</span>
+<span>·</span>
+<span class="text-[#059669]">LP 07</span>
+</div>
+<div class="flex items-center gap-1.5 shrink-0 pl-2">
+<span class="w-1.5 h-1.5 rounded-full bg-[#059669] status-pulse"></span>
+<span class="text-[10px] tracking-normal font-medium text-[#0F172A]">AI MEMORY: ACTIVE</span>
+</div>
+</section>
+<!-- Main Content Container -->
+<main class="flex-1 flex flex-col">
+<!-- 3. Section 01 — Today's Card Specimen -->
+<section class="mx-4 mt-4 bg-[#FFFFFF] border border-[#E2E8F0] rounded-lg shadow-sm overflow-hidden">
+<!-- Specimen Header Strip -->
+<div class="border-b border-[#E2E8F0] px-3.5 py-2 flex justify-between items-center bg-[#FAF9F6]">
+<div class="flex items-center gap-1.5">
+<span class="text-[11px] font-mono uppercase tracking-wider text-[#475569] font-medium">01 / DAILY GUIDANCE SPECIMEN</span>
+</div>
+<span class="bg-[#ECFDF5] text-[#059669] px-2 py-0.5 rounded text-[10px] font-mono font-bold border border-[#A7F3D0] tracking-wide">
+            DRAWN TODAY
+          </span>
+</div>
+<!-- 2-Column Card Inspection Layout -->
+<div class="p-4 flex gap-4 items-start bg-white">
+<!-- Left Tarot Card Specimen Container -->
+<div class="w-[105px] h-[155px] shrink-0 border border-[#E2E8F0] rounded bg-[#FDFCF7] p-2 flex flex-col justify-between items-center relative shadow-[inset_0_0_0_1px_#FAF7EE]">
+<!-- Card Roman Numeral Header -->
+<div class="w-full text-center border-b border-[#E8E5DA] pb-1">
+<span class="text-[9px] font-mono uppercase tracking-widest text-[#64748B] block">ARCHETYPE</span>
+<span class="font-headline font-semibold text-[11px] text-[#0F172A] tracking-wider block">XIX</span>
+</div>
+<!-- Card Botanical & Solar Woodcut Engraving Art -->
+<div class="my-auto flex flex-col items-center justify-center text-center">
+<div class="w-11 h-11 rounded-full border border-[#D5D0C2] flex items-center justify-center bg-[#FFFDF9] mb-1 text-[#059669]">
+<span class="material-symbols-outlined text-[26px]" data-icon="wb_sunny">wb_sunny</span>
+</div>
+<div class="flex items-center gap-1 text-[8px] font-mono text-[#78716C] tracking-tighter uppercase">
+<span>✦ SOL ✦</span>
+</div>
+</div>
+<!-- Card Bottom Nameplate -->
+<div class="w-full text-center border-t border-[#E8E5DA] pt-1">
+<span class="font-headline font-semibold text-[10px] uppercase tracking-wide text-[#0F172A] block leading-none">THE SUN</span>
+</div>
+</div>
+<!-- Right Analysis Details -->
+<div class="flex-1 flex flex-col justify-between self-stretch">
+<div>
+<div class="flex items-center justify-between">
+<h2 class="font-headline text-[22px] font-bold text-[#0F172A] leading-tight">XIX. The Sun</h2>
+</div>
+<div class="text-[11px] font-mono text-[#059669] font-semibold tracking-widest mt-0.5 flex items-center gap-1">
+<span>UPRIGHT</span>
+<span class="text-[9px] text-[#94A3B8]">●</span>
+<span class="text-[10px] text-[#64748B] font-normal tracking-tight">SOLAR ENERGY</span>
+</div>
+<!-- Tags / Descriptors -->
+<div class="flex flex-wrap gap-1 mt-2.5">
+<span class="bg-[#F1F5F9] border border-[#E2E8F0] text-[10px] font-mono text-[#334155] px-2 py-0.5 rounded">CLARITY</span>
+<span class="bg-[#F1F5F9] border border-[#E2E8F0] text-[10px] font-mono text-[#334155] px-2 py-0.5 rounded">CREATIVE SPARK</span>
+<span class="bg-[#F1F5F9] border border-[#E2E8F0] text-[10px] font-mono text-[#334155] px-2 py-0.5 rounded">MOMENTUM</span>
+</div>
+</div>
+<p class="text-xs text-[#475569] font-body mt-2 leading-relaxed italic border-l-2 border-[#059669] pl-2">
+              "A dawn of unclouded perspective and vitality."
+            </p>
+</div>
+</div>
+<!-- Bottom Synthesis Row -->
+<div class="border-t border-[#E2E8F0] bg-[#FAF9F6] p-3 text-xs text-[#334155]">
+<p class="leading-relaxed">
+            Focus on consolidating your core idea in daylight. Share your draft early today before self-doubt clouds the horizon.
+          </p>
+<a class="text-[#059669] font-medium hover:underline inline-flex items-center gap-1 mt-1.5 text-xs" href="#full-synthesis">
+<span>Read Full Synthesis</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</section>
+<!-- 4. Section 02 — Start Reading Modes -->
+<section class="mx-4 mt-5 bg-[#FFFFFF] rounded-lg border border-[#E2E8F0] shadow-sm overflow-hidden">
+<!-- Section Header -->
+<div class="px-4 py-2.5 bg-[#FAF9F6] border-b border-[#E2E8F0] flex justify-between items-center">
+<span class="text-[11px] font-mono uppercase tracking-wider text-[#475569] font-medium">02 / CONSULT THE ORACLE</span>
+<span class="text-[10px] font-mono text-[#64748B] bg-white border border-[#E2E8F0] px-1.5 py-0.5 rounded">78 CARDS READY</span>
+</div>
+<!-- Row 1: Virtual Deck Ritual -->
+<div class="p-3.5 border-b border-[#E2E8F0] flex items-center justify-between gap-3 hover:bg-[#F8FAFC] transition-colors">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded border border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-center text-[#059669] shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]" data-icon="style">style</span>
+</div>
+<div>
+<h3 class="text-sm font-semibold text-[#0F172A] tracking-tight">01 · Virtual Deck Ritual</h3>
+<p class="text-xs text-[#64748B] mt-0.5 leading-snug">Interactive shuffle &amp; draw from 78-card index</p>
+</div>
+</div>
+<button class="bg-[#059669] text-white font-medium text-xs px-3.5 py-2 rounded shadow-sm hover:bg-[#047857] active:scale-95 transition-all shrink-0 flex items-center gap-1">
+<span>Begin Draw</span>
+<span class="material-symbols-outlined text-[13px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<!-- Row 2: Physical Deck Manual Input -->
+<div class="p-3.5 flex items-center justify-between gap-3 hover:bg-[#F8FAFC] transition-colors">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded border border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-center text-[#475569] shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]" data-icon="edit_note">edit_note</span>
+</div>
+<div>
+<h3 class="text-sm font-semibold text-[#0F172A] tracking-tight">02 · Physical Deck Manual Input</h3>
+<p class="text-xs text-[#64748B] mt-0.5 leading-snug">Select real-world cards you drew at your desk</p>
+</div>
+</div>
+<button class="border border-[#E2E8F0] bg-white text-[#0F172A] text-xs font-medium px-3.5 py-2 rounded hover:bg-[#F1F5F9] active:scale-95 transition-all shrink-0">
+            Log Hand
+          </button>
+</div>
+</section>
+<!-- 5. Section 03 — Recent Journal Log -->
+<section class="mx-4 mt-5 mb-6 bg-[#FFFFFF] rounded-lg border border-[#E2E8F0] shadow-sm overflow-hidden">
+<!-- Section Header -->
+<div class="px-4 py-2.5 bg-[#FAF9F6] border-b border-[#E2E8F0] flex justify-between items-center">
+<span class="text-[11px] font-mono uppercase tracking-wider text-[#475569] font-medium">03 / RECENT SPREAD LOG</span>
+<a class="text-xs text-[#059669] font-medium hover:underline flex items-center gap-0.5" href="#journal">
+<span>View All (18)</span>
+<span class="material-symbols-outlined text-[13px]" data-icon="chevron_right">chevron_right</span>
+</a>
+</div>
+<!-- Tabular List Rows -->
+<div class="divide-y divide-[#E2E8F0]">
+<!-- Entry 1 -->
+<div class="p-3 flex justify-between items-center text-xs hover:bg-[#F8FAFC] cursor-pointer transition-colors group">
+<div class="flex items-center gap-2">
+<span class="font-mono text-[#64748B] w-14 text-[11px]">OCT 29</span>
+<span class="w-1 h-1 rounded-full bg-[#CBD5E1]"></span>
+<span class="font-medium text-[#0F172A] tracking-tight">3-Card Trajectory</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-[#059669] font-headline italic font-medium text-right text-[13px]">The Magician</span>
+<span class="material-symbols-outlined text-[#94A3B8] group-hover:text-[#059669] transition-colors text-[16px]" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- Entry 2 -->
+<div class="p-3 flex justify-between items-center text-xs hover:bg-[#F8FAFC] cursor-pointer transition-colors group">
+<div class="flex items-center gap-2">
+<span class="font-mono text-[#64748B] w-14 text-[11px]">OCT 26</span>
+<span class="w-1 h-1 rounded-full bg-[#CBD5E1]"></span>
+<span class="font-medium text-[#0F172A] tracking-tight">5-Card Ideation</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-[#059669] font-headline italic font-medium text-right text-[13px]">Ace of Wands</span>
+<span class="material-symbols-outlined text-[#94A3B8] group-hover:text-[#059669] transition-colors text-[16px]" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- Entry 3 -->
+<div class="p-3 flex justify-between items-center text-xs hover:bg-[#F8FAFC] cursor-pointer transition-colors group">
+<div class="flex items-center gap-2">
+<span class="font-mono text-[#64748B] w-14 text-[11px]">OCT 21</span>
+<span class="w-1 h-1 rounded-full bg-[#CBD5E1]"></span>
+<span class="font-medium text-[#0F172A] tracking-tight">Celtic Cross Deep Dive</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-[#059669] font-headline italic font-medium text-right text-[13px]">The High Priestess</span>
+<span class="material-symbols-outlined text-[#94A3B8] group-hover:text-[#059669] transition-colors text-[16px]" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- 6. Bottom Navigation Bar (Shared Component: BottomNavBar Pattern) -->
+<!-- Destination 1: Sanctuary (ACTIVE) -->
+<nav class="fixed bottom-0 left-0 right-0 max-w-[390px] mx-auto z-50 bg-[#FFFFFF] border-t border-[#E2E8F0] px-3 py-2 flex justify-around items-center">
+<!-- Sanctuary Tab (Active) -->
+<button class="flex flex-col items-center justify-center text-[#059669] font-semibold transition-all">
+<span class="material-symbols-outlined material-symbols-fill text-[20px]" data-icon="spa" data-weight="fill">spa</span>
+<span class="font-label text-[11px] uppercase tracking-wider mt-0.5">Sanctuary</span>
+</button>
+<!-- Oracle Tab -->
+<button class="flex flex-col items-center justify-center text-[#64748B] hover:text-[#0F172A] font-normal transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="style">style</span>
+<span class="font-label text-[11px] uppercase tracking-wider mt-0.5">Oracle</span>
+</button>
+<!-- Journal Tab -->
+<button class="flex flex-col items-center justify-center text-[#64748B] hover:text-[#0F172A] font-normal transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="menu_book">menu_book</span>
+<span class="font-label text-[11px] uppercase tracking-wider mt-0.5">Journal</span>
+</button>
+<!-- Profile Tab -->
+<button class="flex flex-col items-center justify-center text-[#64748B] hover:text-[#0F172A] font-normal transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="person">person</span>
+<span class="font-label text-[11px] uppercase tracking-wider mt-0.5">Profile</span>
+</button>
+</nav>
+</div>
+</body></html>

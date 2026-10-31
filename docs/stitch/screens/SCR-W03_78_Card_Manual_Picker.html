@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AITAROT // 78-Card Reference &amp; Physical Spread Builder (SCR-W03)</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            surface: "#FFFFFF",
+            "surface-subtle": "#FAF9F6",
+            "surface-muted": "#F1F5F9",
+            outline: "#E2E8F0",
+            "outline-strong": "#CBD5E1",
+            "ink-primary": "#0F172A",
+            "ink-secondary": "#475569",
+            "ink-muted": "#64748B",
+            emerald: {
+              50: "#ECFDF5",
+              100: "#D1FAE5",
+              600: "#059669",
+              700: "#047857",
+              800: "#065F46"
+            },
+            amber: {
+              50: "#FEF3C7",
+              700: "#B45309"
+            }
+          },
+          fontFamily: {
+            headline: ["Newsreader", "serif"],
+            display: ["Newsreader", "serif"],
+            body: ["Be Vietnam Pro", "sans-serif"],
+            label: ["Be Vietnam Pro", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            full: "9999px"
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #FAF9F6;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+  </style>
+</head>
+<body class="bg-surface-subtle text-ink-primary font-body antialiased min-h-screen flex flex-col selection:bg-emerald-100 selection:text-emerald-800">
+<!-- 1. TOP DOCKED HEADER & SPREAD ASSIGNMENT TRAY (Sticky/Pinned) -->
+<header class="bg-surface border-b border-outline sticky top-0 z-30 shadow-none">
+<!-- Top System Row -->
+<div class="px-6 py-2.5 border-b border-outline flex items-center justify-between text-xs">
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-600 text-base" data-icon="auto_awesome">auto_awesome</span>
+<span class="font-mono font-bold tracking-tight text-ink-primary uppercase">AITAROT // 78-CARD INDEX &amp; PHYSICAL SPREAD BUILDER</span>
+</div>
+<span class="text-outline-strong">|</span>
+<span class="px-2 py-0.5 rounded bg-surface-muted text-ink-secondary font-mono text-[11px] font-medium border border-outline">SESSION #043</span>
+<span class="text-outline-strong">|</span>
+<span class="text-ink-secondary">Active Spread: <strong class="text-ink-primary font-semibold">3-Card Trajectory</strong> <span class="text-ink-muted">(Cost: 10 CR)</span></span>
+</div>
+<div class="flex items-center gap-4">
+<!-- Language Switcher -->
+<div class="flex items-center border border-outline rounded p-0.5 bg-surface-muted font-mono text-[11px]">
+<button class="px-2 py-0.5 bg-surface rounded text-ink-primary font-semibold shadow-2xs">EN</button>
+<button class="px-2 py-0.5 text-ink-muted hover:text-ink-primary transition-colors">VI</button>
+</div>
+<!-- Token Balance -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-amber-50 border border-amber-200 text-amber-700 font-mono font-medium text-xs">
+<span class="material-symbols-outlined text-sm" data-icon="toll">toll</span>
+<span>110 CR</span>
+</div>
+<!-- Manual Docs Icon -->
+<button class="text-ink-muted hover:text-ink-primary transition-colors p-1" title="Physical Manual Calibration Protocol">
+<span class="material-symbols-outlined text-lg" data-icon="help_outline">help_outline</span>
+</button>
+</div>
+</div>
+<!-- Pinned Spread Assignment Tray -->
+<div class="px-6 py-3 bg-surface flex flex-wrap lg:flex-nowrap items-center justify-between gap-4">
+<!-- Spread Slots Container -->
+<div class="flex items-center gap-3.5 flex-1 min-w-0">
+<!-- Slot 01: LOCKED -->
+<div class="flex-1 min-w-[210px] bg-surface-muted border border-outline rounded-lg p-2.5 flex items-center justify-between relative group">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-12 bg-surface border border-outline rounded flex flex-col items-center justify-center font-headline text-ink-primary shrink-0 shadow-2xs">
+<span class="text-xs font-bold leading-none">I</span>
+<span class="text-[9px] font-mono text-ink-muted leading-tight mt-0.5">MAJ</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-mono text-[10px] uppercase tracking-wider text-ink-muted">01 · SITUATION</span>
+<span class="text-[9px] bg-ink-primary text-white font-mono px-1 py-0.2 rounded uppercase">LOCKED</span>
+</div>
+<p class="font-headline font-semibold text-sm text-ink-primary truncate mt-0.5">I. The Magician</p>
+<p class="text-[11px] text-emerald-600 flex items-center gap-0.5 font-medium leading-none mt-0.5">
+<span>↑ Upright</span>
+<span class="text-ink-muted text-[10px]">(Đạo Sĩ)</span>
+</p>
+</div>
+</div>
+<button class="w-6 h-6 rounded flex items-center justify-center text-ink-muted hover:bg-surface hover:text-ink-primary transition-colors text-xs ml-1" title="Unlock and Clear Slot">
+<span class="material-symbols-outlined text-sm" data-icon="close">close</span>
+</button>
+</div>
+<!-- Slot 02: ACTIVE TARGET (Focused) -->
+<div class="flex-1 min-w-[230px] bg-emerald-50 border-2 border-emerald-600 rounded-lg p-2.5 flex items-center justify-between relative shadow-xs">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-12 border-2 border-dashed border-emerald-600 bg-white rounded flex flex-col items-center justify-center text-emerald-600 shrink-0">
+<span class="font-headline text-xs font-bold leading-none">IX</span>
+<span class="text-[9px] font-mono text-emerald-600 mt-0.5 leading-none">SEL</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="inline-block w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+<span class="font-mono text-[10px] uppercase tracking-wider text-emerald-800 font-semibold">02 · ACTION (TARGET)</span>
+</div>
+<p class="font-headline font-bold text-sm text-ink-primary truncate mt-0.5">IX. The Hermit <span class="text-xs font-normal text-ink-secondary">(Pending)</span></p>
+<p class="text-[11px] text-emerald-700 font-medium leading-none mt-0.5">Focus active: Ready to assign below</p>
+</div>
+</div>
+<div class="px-2 py-1 bg-emerald-600 text-white font-mono text-[10px] uppercase font-bold rounded">
+            TARGET
+          </div>
+</div>
+<!-- Slot 03: EMPTY -->
+<div class="flex-1 min-w-[210px] bg-surface-subtle border border-dashed border-outline-strong rounded-lg p-2.5 flex items-center justify-between">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-12 border border-dashed border-outline-strong bg-surface rounded flex items-center justify-center text-ink-muted shrink-0">
+<span class="font-mono text-xs">03</span>
+</div>
+<div class="min-w-0">
+<span class="font-mono text-[10px] uppercase tracking-wider text-ink-muted">03 · OUTCOME</span>
+<p class="font-headline text-sm text-ink-secondary truncate mt-0.5 italic">Empty Slot</p>
+<p class="text-[11px] text-ink-muted leading-none mt-0.5">Awaiting assignment</p>
+</div>
+</div>
+<button class="px-2 py-1 text-[11px] font-medium border border-outline rounded bg-surface hover:bg-surface-muted text-ink-secondary transition-colors" title="Set as target">
+            Focus
+          </button>
+</div>
+</div>
+<!-- Synthesize CTA -->
+<div class="shrink-0 flex items-center gap-3 pl-2">
+<button class="bg-emerald-600 hover:bg-emerald-700 text-white font-label font-medium text-xs px-5 py-3 rounded-lg shadow-sm flex items-center gap-2 transition-all active:scale-[0.99] cursor-pointer">
+<span>Synthesize Physical Spread (10 CR)</span>
+<span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</header>
+<!-- 2. FILTER & SEARCH TOOLBAR -->
+<section class="bg-[#F8FAFC] border-b border-outline px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+<!-- Search and Arcana Tabs -->
+<div class="flex flex-wrap items-center gap-3 flex-1">
+<!-- Search Input -->
+<div class="relative w-72">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-muted text-base" data-icon="search">search</span>
+<input class="w-full bg-surface border border-outline-strong rounded-md pl-8 pr-3 py-1.5 text-xs text-ink-primary placeholder:text-ink-muted focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition-colors" placeholder="Filter card name, number, keyword (EN / VI)..." type="text" value=""/>
+</div>
+<div class="h-5 w-px bg-outline hidden sm:block"></div>
+<!-- Suit Filter Segmented Tabs -->
+<div class="flex items-center gap-1 overflow-x-auto py-0.5">
+<button class="px-2.5 py-1 rounded-md text-ink-secondary hover:text-ink-primary hover:bg-surface transition-colors font-medium">All 78</button>
+<button class="px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-600 font-semibold flex items-center gap-1 shadow-2xs">
+<span>Major Arcana (22)</span>
+<span class="material-symbols-outlined text-xs font-bold" data-icon="check">check</span>
+</button>
+<button class="px-2.5 py-1 rounded-md text-ink-secondary hover:text-ink-primary hover:bg-surface transition-colors font-medium">Wands (14)</button>
+<button class="px-2.5 py-1 rounded-md text-ink-secondary hover:text-ink-primary hover:bg-surface transition-colors font-medium">Cups (14)</button>
+<button class="px-2.5 py-1 rounded-md text-ink-secondary hover:text-ink-primary hover:bg-surface transition-colors font-medium">Swords (14)</button>
+<button class="px-2.5 py-1 rounded-md text-ink-secondary hover:text-ink-primary hover:bg-surface transition-colors font-medium">Pentacles (14)</button>
+</div>
+</div>
+<!-- Orientation & Count Status -->
+<div class="flex items-center gap-4 text-ink-secondary">
+<div class="flex items-center border border-outline rounded bg-surface p-0.5 text-[11px] font-medium">
+<button class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded font-semibold border border-emerald-200">↑ Upright Default</button>
+<button class="px-2 py-0.5 text-ink-muted hover:text-ink-primary transition-colors">↓ Reversed</button>
+</div>
+<div class="h-4 w-px bg-outline"></div>
+<span class="font-mono text-[11px] text-ink-muted">Showing 22 Major Arcana Specimens</span>
+</div>
+</section>
+<!-- 3. SPLIT MAIN AREA (Horizontal Layout) -->
+<main class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+<!-- Left/Center: Catalog Grid -->
+<section class="flex-1 p-6 bg-surface-subtle overflow-y-auto custom-scrollbar">
+<!-- Catalog Section Header -->
+<div class="flex items-center justify-between mb-4 pb-2 border-b border-outline">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs text-ink-muted uppercase font-semibold">CANONICAL TAROT SPECIMENS</span>
+<span class="text-xs text-ink-muted">• Rider-Waite-Smith (RWS) 1909 Editorial Reference</span>
+</div>
+<div class="flex items-center gap-2 text-xs font-mono text-ink-muted">
+<span>SORT: ARCANUM NUMERICAL (0-XXI)</span>
+</div>
+</div>
+<!-- 5-Column Grid -->
+<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3.5">
+<!-- CARD 0: The Fool -->
+<article class="bg-surface border border-outline rounded-lg p-3 text-center transition-all hover:border-emerald-600 hover:shadow-sm flex flex-col justify-between group">
+<div class="flex items-center justify-between font-mono text-[10px] text-ink-muted mb-2">
+<span>00 // MAJ</span>
+<span class="text-ink-secondary">AIR 🜁</span>
+</div>
+<div class="w-full aspect-[2/3] max-h-36 bg-surface-subtle border border-outline rounded mb-2.5 flex flex-col items-center justify-center p-2 relative">
+<span class="material-symbols-outlined text-3xl text-ink-secondary mb-1" data-icon="explore">explore</span>
+<span class="font-headline font-bold text-lg text-ink-primary">0</span>
+<span class="text-[10px] font-mono text-ink-muted mt-0.5">THE FOOL</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-sm text-ink-primary leading-snug">0 · The Fool</h3>
+<p class="text-[11px] text-ink-muted mb-1">Chàng Ngốc</p>
+<p class="text-[10px] text-ink-secondary truncate">Innocence, Spontaneity, Risk</p>
+</div>
+<div class="mt-3 pt-2 border-t border-outline flex items-center justify-between gap-1 text-[11px]">
+<button class="flex-1 py-1 rounded bg-surface hover:bg-emerald-50 hover:text-emerald-700 border border-outline text-ink-secondary transition-colors font-medium">Assign ↑</button>
+<button class="py-1 px-1.5 rounded bg-surface hover:bg-surface-muted border border-outline text-ink-muted transition-colors font-mono" title="Reversed">↓</button>
+</div>
+</article>
+<!-- CARD I: The Magician (Assigned) -->
+<article class="bg-surface border border-outline rounded-lg p-3 text-center transition-all hover:border-emerald-600 hover:shadow-sm flex flex-col justify-between group relative">
+<div class="flex items-center justify-between font-mono text-[10px] text-ink-muted mb-1">
+<span>01 // MAJ</span>
+<span class="text-ink-secondary">MERCURY ☿</span>
+</div>
+<div class="mb-1">
+<span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-mono uppercase bg-surface-muted text-ink-primary border border-outline font-semibold">Assigned: Slot 01</span>
+</div>
+<div class="w-full aspect-[2/3] max-h-36 bg-surface-subtle border border-outline rounded mb-2.5 flex flex-col items-center justify-center p-2">
+<span class="material-symbols-outlined text-3xl text-ink-secondary mb-1" data-icon="magic_button">magic_button</span>
+<span class="font-headline font-bold text-lg text-ink-primary">I</span>
+<span class="text-[10px] font-mono text-ink-muted mt-0.5">THE MAGICIAN</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-sm text-ink-primary leading-snug">I · The Magician</h3>
+<p class="text-[11px] text-ink-muted mb-1">Đạo Sĩ</p>
+<p class="text-[10px] text-ink-secondary truncate">Willpower, Mastery, Manifest</p>
+</div>
+<div class="mt-3 pt-2 border-t border-outline flex items-center justify-between gap-1 text-[11px]">
+<span class="w-full py-1 text-[10px] font-mono text-ink-muted text-center">Currently in Slot 01</span>
+</div>
+</article>
+<!-- CARD II: The High Priestess -->
+<article class="bg-surface border border-outline rounded-lg p-3 text-center transition-all hover:border-emerald-600 hover:shadow-sm flex flex-col justify-between group">
+<div class="flex items-center justify-between font-mono text-[10px] text-ink-muted mb-2">
+<span>02 // MAJ</span>
+<span class="text-ink-secondary">MOON ☽</span>
+</div>
+<div class="w-full aspect-[2/3] max-h-36 bg-surface-subtle border border-outline rounded mb-2.5 flex flex-col items-center justify-center p-2">
+<span class="material-symbols-outlined text-3xl text-ink-secondary mb-1" data-icon="menu_book">menu_book</span>
+<span class="font-headline font-bold text-lg text-ink-primary">II</span>
+<span class="text-[10px] font-mono text-ink-muted mt-0.5">HIGH PRIESTESS</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-sm text-ink-primary leading-snug">II · The High Priestess</h3>
+<p class="text-[11px] text-ink-muted mb-1">Nữ Giáo Hoàng</p>
+<p class="text-[10px] text-ink-secondary truncate">Intuition, Hidden Veil, Mystery</p>
+</div>
+<div class="mt-3 pt-2 border-t border-outline flex items-center justify-between gap-1 text-[11px]">
+<button class="flex-1 py-1 rounded bg-surface hover:bg-emerald-50 hover:text-emerald-700 border border-outline text-ink-secondary transition-colors font-medium">Assign ↑</button>
+<button class="py-1 px-1.5 rounded bg-surface hover:bg-surface-muted border border-outline text-ink-muted transition-colors font-mono" title="Reversed">↓</button>
+</div>
+</article>
+<!-- CARD III: The Empress -->
+<article class="bg-surface border border-outline rounded-lg p-3 text-center transition-all hover:border-emerald-600 hover:shadow-sm flex flex-col justify-between group">
+<div class="flex items-center justify-between font-mono text-[10px] text-ink-muted mb-2">
+<span>03 // MAJ</span>
+<span class="text-ink-secondary">VENUS ♀</span>
+</div>
+<div class="w-full aspect-[2/3] max-h-36 bg-surface-subtle border border-outline rounded mb-2.5 flex flex-col items-center justify-center p-2">
+<span class="material-symbols-outlined text-3xl text-ink-secondary mb-1" data-icon="spa">spa</span>
+<span class="font-headline font-bold text-lg text-ink-primary">III</span>
+<span class="text-[10px] font-mono text-ink-muted mt-0.5">THE EMPRESS</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-sm text-ink-primary leading-snug">III · The Empress</h3>
+<p class="text-[11px] text-ink-muted mb-1">Hoàng Hậu</p>
+<p class="text-[10px] text-ink-secondary truncate">Abundance, Fertility, Nature</p>
+</div>
+<div class="mt-3 pt-2 border-t border-outline flex items-center justify-between gap-1 text-[11px]">
+<button class="flex-1 py-1 rounded bg-surface hover:bg-emerald-50 hover:text-emerald-700 border border-outline text-ink-secondary transition-colors font-medium">Assign ↑</button>
+<button class="py-1 px-1.5 rounded bg-surface hover:bg-surface-muted border border-outline text-ink-muted transition-colors font-mono" title="Reversed">↓</button>
+</div>
+</article>
+<!-- CARD IV: The Emperor -->
+<article class="bg-surface border border-outline rounded-lg p-3 text-center transition-all hover:border-emerald-600 hover:shadow-sm flex flex-col justify-between group">
+<div class="flex items-center justify-between font-mono text-[10px] text-ink-muted mb-2">
+<span>04 // MAJ</span>
+<span class="text-ink-secondary">ARIES ♈</span>
+</div>
+<div class="w-full aspect-[2/3] max-h-36 bg-surface-subtle border border-outline rounded mb-2.5 flex flex-col items-center justify-center p-2">
+<span class="material-symbols-outlined text-3xl text-ink-secondary mb-1" data-icon="account_balance">account_balance</span>
+<span class="font-headline font-bold text-lg text-ink-primary">IV</span>
+<span class="text-[10px] font-mono text-ink-muted mt-0.5">THE EMPEROR</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-sm text-ink-primary leading-snug">IV · The Emperor</h3>
+<p class="text-[11px] text-ink-muted mb-1">Hoàng Đế</p>
+<p class="text-[10px] text-ink-secondary truncate">Authority, Structure, Solidity</p>
+</div>
+<div class="mt-3 pt-2 border-t border-outline flex items-center justify-between gap-1 text-[11px]">
+<button class="flex-1 py-1 rounded bg-surface hover:bg-emerald-50 hover:text-emerald-700 border border-outline text-ink-secondary transition-colors font-medium">Assign ↑</button>
+<button class="py-1 px-1.5 rounded bg-surface hover:bg-surface-muted border border-outline text-ink-muted transition-colors font-mono" title="Reversed">↓</button>
+</div>
+</article>
+<!-- CARD V: The Hierophant -->
+<article class="bg-surface border border-outline rounded-lg p-3 text-center transition-all hover:border-emerald-600 hover:shadow-sm flex flex-col justify-between group">
+<div class="flex items-center justify-between font-mono text-[10px] text-ink-muted mb-2">
+<span>05 // MAJ</span>
+<span class="text-ink-secondary">TAURUS ♉</span>
+</div>
+<div class="w-full aspect-[2/3] max-h-36 bg-surface-subtle border border-outline rounded mb-2.5 flex flex-col items-center justify-center p-2">
+<span class="material-symbols-outlined text-3xl text-ink-secondary mb-1" data-icon="temple_buddhist">temple_buddhist</span>
+<span class="font-headline font-bold text-lg text-ink-primary">V</span>
+<span class="text-[10px] font-mono text-ink-muted mt-0.5">THE HIEROPHANT</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-sm text-ink-primary leading-snug">V · The Hierophant</h3>
+<p class="text-[11px] text-ink-muted mb-1">Giáo Hoàng</p>
+<p class="text-[10px] text-ink-secondary truncate">Tradition, Canon, Spiritual Law</p>
+</div>
+<div class="mt-3 pt-2 border-t border-outline flex items-center justify-between gap-1 text-[11px]">
+<button class="flex-1 py-1 rounded bg-surface hover:bg-emerald-50 hover:text-emerald-700 border border-outline text-ink-secondary transition-colors font-medium">Assign ↑</button>
+<button class="py-1 px-1.5 rounded bg-surface hover:bg-surface-muted border border-outline text-ink-muted transition-colors font-mono" title="Reversed">↓</button>
+</div>
+</article>
+<!-- CARD VI: The Lovers -->
+<article class="bg-surface border border-outline rounded-lg p-3 text-center transition-all hover:border-emerald-600 hover:shadow-sm flex flex-col justify-between group">
+<div class="flex items-center justify-between font-mono text-[10px] text-ink-muted mb-2">
+<span>06 // MAJ</span>
+<span class="text-ink-secondary">GEMINI ♊</span>
+</div>
+<div class="w-full aspect-[2/3] max-h-36 bg-surface-subtle border border-outline rounded mb-2.5 flex flex-col items-center justify-center p-2">
+<span class="material-symbols-outlined text-3xl text-ink-secondary mb-1" data-icon="favorite">favorite</span>
+<span class="font-headline font-bold text-lg text-ink-primary">VI</span>
+<span class="text-[10px] font-mono text-ink-muted mt-0.5">THE LOVERS</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-sm text-ink-primary leading-snug">VI · The Lovers</h3>
+<p class="text-[11px] text-ink-muted mb-1">Người Tình</p>
+<p class="text-[10px] text-ink-secondary truncate">Alliance, Value Choice, Union</p>
+</div>
+<div class="mt-3 pt-2 border-t border-outline flex items-center justify-between gap-1 text-[11px]">
+<button class="flex-1 py-1 rounded bg-surface hover:bg-emerald-50 hover:text-emerald-700 border border-outline text-ink-secondary transition-colors font-medium">Assign ↑</button>
+<button class="py-1 px-1.5 rounded bg-surface hover:bg-surface-muted border border-outline text-ink-muted transition-colors font-mono" title="Reversed">↓</button>
+</div>
+</article>
+<!-- CARD VII: The Chariot -->
+<article class="bg-surface border border-outline rounded-lg p-3 text-center transition-all hover:border-emerald-600 hover:shadow-sm flex flex-col justify-between group">
+<div class="flex items-center justify-between font-mono text-[10px] text-ink-muted mb-2">
+<span>07 // MAJ</span>
+<span class="text-ink-secondary">CANCER ♋</span>
+</div>
+<div class="w-full aspect-[2/3] max-h-36 bg-surface-subtle border border-outline rounded mb-2.5 flex flex-col items-center justify-center p-2">
+<span class="material-symbols-outlined text-3xl text-ink-secondary mb-1" data-icon="shield">shield</span>
+<span class="font-headline font-bold text-lg text-ink-primary">VII</span>
+<span class="text-[10px] font-mono text-ink-muted mt-0.5">THE CHARIOT</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-sm text-ink-primary leading-snug">VII · The Chariot</h3>
+<p class="text-[11px] text-ink-muted mb-1">Chiến Xa</p>
+<p class="text-[10px] text-ink-secondary truncate">Determination, Focused Drive</p>
+</div>
+<div class="mt-3 pt-2 border-t border-outline flex items-center justify-between gap-1 text-[11px]">
+<button class="flex-1 py-1 rounded bg-surface hover:bg-emerald-50 hover:text-emerald-700 border border-outline text-ink-secondary transition-colors font-medium">Assign ↑</button>
+<button class="py-1 px-1.5 rounded bg-surface hover:bg-surface-muted border border-outline text-ink-muted transition-colors font-mono" title="Reversed">↓</button>
+</div>
+</article>
+<!-- CARD VIII: Strength -->
+<article class="bg-surface border border-outline rounded-lg p-3 text-center transition-all hover:border-emerald-600 hover:shadow-sm flex flex-col justify-between group">
+<div class="flex items-center justify-between font-mono text-[10px] text-ink-muted mb-2">
+<span>08 // MAJ</span>
+<span class="text-ink-secondary">LEO ♌</span>
+</div>
+<div class="w-full aspect-[2/3] max-h-36 bg-surface-subtle border border-outline rounded mb-2.5 flex flex-col items-center justify-center p-2">
+<span class="material-symbols-outlined text-3xl text-ink-secondary mb-1" data-icon="all_inclusive">all_inclusive</span>
+<span class="font-headline font-bold text-lg text-ink-primary">VIII</span>
+<span class="text-[10px] font-mono text-ink-muted mt-0.5">STRENGTH</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-sm text-ink-primary leading-snug">VIII · Strength</h3>
+<p class="text-[11px] text-ink-muted mb-1">Sức Mạnh</p>
+<p class="text-[10px] text-ink-secondary truncate">Compassion, Courage, Patience</p>
+</div>
+<div class="mt-3 pt-2 border-t border-outline flex items-center justify-between gap-1 text-[11px]">
+<button class="flex-1 py-1 rounded bg-surface hover:bg-emerald-50 hover:text-emerald-700 border border-outline text-ink-secondary transition-colors font-medium">Assign ↑</button>
+<button class="py-1 px-1.5 rounded bg-surface hover:bg-surface-muted border border-outline text-ink-muted transition-colors font-mono" title="Reversed">↓</button>
+</div>
+</article>
+<!-- CARD IX: The Hermit (ACTIVE/HIGHLIGHTED SPECIMEN) -->
+<article class="bg-emerald-50 border-2 border-emerald-600 rounded-lg p-3 text-center transition-all shadow-sm flex flex-col justify-between relative ring-2 ring-emerald-600/20">
+<div class="flex items-center justify-between font-mono text-[10px] text-emerald-800 mb-1">
+<span class="font-bold">09 // MAJ</span>
+<span>VIRGO ♍</span>
+</div>
+<div class="mb-1">
+<span class="inline-block px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-emerald-600 text-white font-bold tracking-wider">SELECTED SPECIMEN</span>
+</div>
+<div class="w-full aspect-[2/3] max-h-36 bg-surface border border-emerald-600 rounded mb-2.5 flex flex-col items-center justify-center p-2 shadow-2xs">
+<span class="material-symbols-outlined text-3xl text-emerald-600 mb-1" data-icon="light">light</span>
+<span class="font-headline font-bold text-lg text-ink-primary">IX</span>
+<span class="text-[10px] font-mono text-emerald-800 font-medium mt-0.5">THE HERMIT</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-sm text-ink-primary leading-snug">IX · The Hermit</h3>
+<p class="text-[11px] text-emerald-800 font-medium mb-1">Ẩn Sĩ</p>
+<p class="text-[10px] text-ink-secondary truncate">Introspection, Inner Light, Solitude</p>
+</div>
+<div class="mt-3 pt-2 border-t border-emerald-200 flex items-center justify-between gap-1 text-[11px]">
+<button class="flex-1 py-1 rounded bg-emerald-600 text-white hover:bg-emerald-700 transition-colors font-medium text-xs font-label">Assigned to Slot 02 ✓</button>
+</div>
+</article>
+<!-- CARD X: Wheel of Fortune -->
+<article class="bg-surface border border-outline rounded-lg p-3 text-center transition-all hover:border-emerald-600 hover:shadow-sm flex flex-col justify-between group">
+<div class="flex items-center justify-between font-mono text-[10px] text-ink-muted mb-2">
+<span>10 // MAJ</span>
+<span class="text-ink-secondary">JUPITER ♃</span>
+</div>
+<div class="w-full aspect-[2/3] max-h-36 bg-surface-subtle border border-outline rounded mb-2.5 flex flex-col items-center justify-center p-2">
+<span class="material-symbols-outlined text-3xl text-ink-secondary mb-1" data-icon="change_circle">change_circle</span>
+<span class="font-headline font-bold text-lg text-ink-primary">X</span>
+<span class="text-[10px] font-mono text-ink-muted mt-0.5">WHEEL OF FORTUNE</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-sm text-ink-primary leading-snug">X · Wheel of Fortune</h3>
+<p class="text-[11px] text-ink-muted mb-1">Bánh Xe Số Phận</p>
+<p class="text-[10px] text-ink-secondary truncate">Cycles, Fate, Turning Point</p>
+</div>
+<div class="mt-3 pt-2 border-t border-outline flex items-center justify-between gap-1 text-[11px]">
+<button class="flex-1 py-1 rounded bg-surface hover:bg-emerald-50 hover:text-emerald-700 border border-outline text-ink-secondary transition-colors font-medium">Assign ↑</button>
+<button class="py-1 px-1.5 rounded bg-surface hover:bg-surface-muted border border-outline text-ink-muted transition-colors font-mono" title="Reversed">↓</button>
+</div>
+</article>
+<!-- CARD XI: Justice -->
+<article class="bg-surface border border-outline rounded-lg p-3 text-center transition-all hover:border-emerald-600 hover:shadow-sm flex flex-col justify-between group">
+<div class="flex items-center justify-between font-mono text-[10px] text-ink-muted mb-2">
+<span>11 // MAJ</span>
+<span class="text-ink-secondary">LIBRA ♎</span>
+</div>
+<div class="w-full aspect-[2/3] max-h-36 bg-surface-subtle border border-outline rounded mb-2.5 flex flex-col items-center justify-center p-2">
+<span class="material-symbols-outlined text-3xl text-ink-secondary mb-1" data-icon="balance">balance</span>
+<span class="font-headline font-bold text-lg text-ink-primary">XI</span>
+<span class="text-[10px] font-mono text-ink-muted mt-0.5">JUSTICE</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-sm text-ink-primary leading-snug">XI · Justice</h3>
+<p class="text-[11px] text-ink-muted mb-1">Công Lý</p>
+<p class="text-[10px] text-ink-secondary truncate">Truth, Cause &amp; Effect, Clarity</p>
+</div>
+<div class="mt-3 pt-2 border-t border-outline flex items-center justify-between gap-1 text-[11px]">
+<button class="flex-1 py-1 rounded bg-surface hover:bg-emerald-50 hover:text-emerald-700 border border-outline text-ink-secondary transition-colors font-medium">Assign ↑</button>
+<button class="py-1 px-1.5 rounded bg-surface hover:bg-surface-muted border border-outline text-ink-muted transition-colors font-mono" title="Reversed">↓</button>
+</div>
+</article>
+<!-- CARD XII: The Hanged Man -->
+<article class="bg-surface border border-outline rounded-lg p-3 text-center transition-all hover:border-emerald-600 hover:shadow-sm flex flex-col justify-between group">
+<div class="flex items-center justify-between font-mono text-[10px] text-ink-muted mb-2">
+<span>12 // MAJ</span>
+<span class="text-ink-secondary">WATER 🜄</span>
+</div>
+<div class="w-full aspect-[2/3] max-h-36 bg-surface-subtle border border-outline rounded mb-2.5 flex flex-col items-center justify-center p-2">
+<span class="material-symbols-outlined text-3xl text-ink-secondary mb-1" data-icon="hourglass_top">hourglass_top</span>
+<span class="font-headline font-bold text-lg text-ink-primary">XII</span>
+<span class="text-[10px] font-mono text-ink-muted mt-0.5">THE HANGED MAN</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-sm text-ink-primary leading-snug">XII · The Hanged Man</h3>
+<p class="text-[11px] text-ink-muted mb-1">Kẻ Treo Ngược</p>
+<p class="text-[10px] text-ink-secondary truncate">Surrender, Pause, Metanoia</p>
+</div>
+<div class="mt-3 pt-2 border-t border-outline flex items-center justify-between gap-1 text-[11px]">
+<button class="flex-1 py-1 rounded bg-surface hover:bg-emerald-50 hover:text-emerald-700 border border-outline text-ink-secondary transition-colors font-medium">Assign ↑</button>
+<button class="py-1 px-1.5 rounded bg-surface hover:bg-surface-muted border border-outline text-ink-muted transition-colors font-mono" title="Reversed">↓</button>
+</div>
+</article>
+<!-- CARD XIII: Death -->
+<article class="bg-surface border border-outline rounded-lg p-3 text-center transition-all hover:border-emerald-600 hover:shadow-sm flex flex-col justify-between group">
+<div class="flex items-center justify-between font-mono text-[10px] text-ink-muted mb-2">
+<span>13 // MAJ</span>
+<span class="text-ink-secondary">SCORPIO ♏</span>
+</div>
+<div class="w-full aspect-[2/3] max-h-36 bg-surface-subtle border border-outline rounded mb-2.5 flex flex-col items-center justify-center p-2">
+<span class="material-symbols-outlined text-3xl text-ink-secondary mb-1" data-icon="filter_vintage">filter_vintage</span>
+<span class="font-headline font-bold text-lg text-ink-primary">XIII</span>
+<span class="text-[10px] font-mono text-ink-muted mt-0.5">DEATH</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-sm text-ink-primary leading-snug">XIII · Death</h3>
+<p class="text-[11px] text-ink-muted mb-1">Tử Thần</p>
+<p class="text-[10px] text-ink-secondary truncate">Metamorphosis, Finality, Purge</p>
+</div>
+<div class="mt-3 pt-2 border-t border-outline flex items-center justify-between gap-1 text-[11px]">
+<button class="flex-1 py-1 rounded bg-surface hover:bg-emerald-50 hover:text-emerald-700 border border-outline text-ink-secondary transition-colors font-medium">Assign ↑</button>
+<button class="py-1 px-1.5 rounded bg-surface hover:bg-surface-muted border border-outline text-ink-muted transition-colors font-mono" title="Reversed">↓</button>
+</div>
+</article>
+<!-- CARD XIV: Temperance -->
+<article class="bg-surface border border-outline rounded-lg p-3 text-center transition-all hover:border-emerald-600 hover:shadow-sm flex flex-col justify-between group">
+<div class="flex items-center justify-between font-mono text-[10px] text-ink-muted mb-2">
+<span>14 // MAJ</span>
+<span class="text-ink-secondary">SAGITTARIUS ♐</span>
+</div>
+<div class="w-full aspect-[2/3] max-h-36 bg-surface-subtle border border-outline rounded mb-2.5 flex flex-col items-center justify-center p-2">
+<span class="material-symbols-outlined text-3xl text-ink-secondary mb-1" data-icon="waves">waves</span>
+<span class="font-headline font-bold text-lg text-ink-primary">XIV</span>
+<span class="text-[10px] font-mono text-ink-muted mt-0.5">TEMPERANCE</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-sm text-ink-primary leading-snug">XIV · Temperance</h3>
+<p class="text-[11px] text-ink-muted mb-1">Tiết Chế</p>
+<p class="text-[10px] text-ink-secondary truncate">Equilibrium, Synthesis, Flow</p>
+</div>
+<div class="mt-3 pt-2 border-t border-outline flex items-center justify-between gap-1 text-[11px]">
+<button class="flex-1 py-1 rounded bg-surface hover:bg-emerald-50 hover:text-emerald-700 border border-outline text-ink-secondary transition-colors font-medium">Assign ↑</button>
+<button class="py-1 px-1.5 rounded bg-surface hover:bg-surface-muted border border-outline text-ink-muted transition-colors font-mono" title="Reversed">↓</button>
+</div>
+</article>
+</div>
+</section>
+<!-- Right: Specification Drawer (380px fixed width, pure white background) -->
+<aside class="w-full lg:w-[380px] bg-surface border-t lg:border-t-0 lg:border-l border-outline flex flex-col justify-between shrink-0 overflow-y-auto custom-scrollbar">
+<!-- Top Content Container -->
+<div class="p-6">
+<!-- Header row -->
+<div class="flex items-center justify-between pb-3 border-b border-outline mb-4">
+<div>
+<span class="font-mono text-[10px] uppercase tracking-wider text-ink-muted">ARCHIVAL ENTRY</span>
+<h2 class="font-mono text-xs font-bold text-ink-primary tracking-tight">SPECIMEN SPECIFICATION // NO. IX</h2>
+</div>
+<span class="px-2 py-0.5 bg-surface-muted text-ink-primary border border-outline text-[10px] font-mono font-medium rounded">EARTH 🜃 · VIRGO ♍</span>
+</div>
+<!-- Center Card Specimen Preview Plate -->
+<div class="bg-surface-subtle border border-outline rounded-lg p-4 flex flex-col items-center text-center mb-5 relative">
+<div class="w-28 aspect-[2/3] bg-surface border-2 border-emerald-600 rounded-md p-3 flex flex-col items-center justify-between shadow-xs mb-3">
+<div class="w-full flex justify-between font-mono text-[9px] text-emerald-800">
+<span>IX</span>
+<span>🜃</span>
+</div>
+<div class="my-auto flex flex-col items-center">
+<span class="material-symbols-outlined text-4xl text-emerald-600" data-icon="light">light</span>
+<span class="font-headline font-bold text-xl text-ink-primary mt-1">IX</span>
+<span class="font-mono text-[9px] uppercase tracking-wider text-ink-secondary mt-0.5">THE HERMIT</span>
+</div>
+<div class="w-full text-center border-t border-outline pt-1 text-[8px] font-mono text-ink-muted">
+              RWS 1909
+            </div>
+</div>
+<h3 class="font-headline font-bold text-lg text-ink-primary">IX. The Hermit (Ẩn Sĩ)</h3>
+<p class="text-xs text-ink-secondary font-mono mt-0.5">RWS 1909 ARCHIVAL CANON</p>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium mt-2">
+<span class="material-symbols-outlined text-sm" data-icon="verified">verified</span>
+<span>Canonical Ryder-Waite-Smith Specimen</span>
+</div>
+</div>
+<!-- Archival Data Table (High-Density Key-Value Specs) -->
+<div class="space-y-3 text-xs">
+<div class="border-b border-outline pb-2">
+<span class="font-mono text-[10px] uppercase tracking-wider text-ink-muted block mb-0.5">Archetype</span>
+<p class="font-medium text-ink-primary">The Way-Shower &amp; Introspective Seeker</p>
+</div>
+<div class="border-b border-outline pb-2">
+<span class="font-mono text-[10px] uppercase tracking-wider text-ink-muted block mb-0.5">Astrological &amp; Elemental Attribution</span>
+<p class="font-medium text-ink-primary">Earth 🜃 (Virgo / Mutable Prudence &amp; Harvest)</p>
+</div>
+<div class="border-b border-outline pb-2">
+<span class="font-mono text-[10px] uppercase tracking-wider text-emerald-700 font-semibold block mb-0.5">Upright Resonances (↑)</span>
+<p class="text-ink-primary leading-relaxed">Introspection, Solitude, Inner Guidance, Quiet Incubation, Tactical Stillness.</p>
+</div>
+<div class="border-b border-outline pb-2">
+<span class="font-mono text-[10px] uppercase tracking-wider text-ink-muted block mb-0.5">Reversed Resonances (↓)</span>
+<p class="text-ink-secondary leading-relaxed">Isolation, Paranoia, Loneliness, Withdrawing excessively from reciprocal reality.</p>
+</div>
+<div class="bg-surface-subtle p-2.5 rounded border border-outline">
+<span class="font-mono text-[10px] uppercase tracking-wider text-ink-secondary block font-semibold mb-1">Physical Reading Field Note</span>
+<p class="text-ink-secondary text-[11px] leading-relaxed">
+              Drawn from physical table reading. Will calibrate elemental balance (Earth + Fire dialectic against Slot 01 Magician).
+            </p>
+</div>
+</div>
+</div>
+<!-- Bottom Pinned Action Tray for Drawer -->
+<div class="p-6 bg-surface border-t border-outline">
+<!-- Orientation & Target Controls -->
+<div class="mb-4 space-y-2">
+<div class="flex items-center justify-between text-xs">
+<span class="font-mono text-ink-muted text-[11px]">ASSIGNMENT TARGET:</span>
+<span class="font-mono font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Slot 02 · ACTION</span>
+</div>
+<div class="flex items-center gap-2">
+<label class="flex-1 border-2 border-emerald-600 bg-emerald-50 rounded-md p-2 flex items-center justify-center gap-1.5 cursor-pointer text-xs font-semibold text-emerald-800">
+<input checked="" class="hidden" name="orientation" type="radio"/>
+<span class="material-symbols-outlined text-sm" data-icon="north">north</span>
+<span>↑ Upright</span>
+</label>
+<label class="flex-1 border border-outline hover:bg-surface-muted rounded-md p-2 flex items-center justify-center gap-1.5 cursor-pointer text-xs font-medium text-ink-secondary transition-colors">
+<input class="hidden" name="orientation" type="radio"/>
+<span class="material-symbols-outlined text-sm" data-icon="south">south</span>
+<span>↓ Reversed</span>
+</label>
+</div>
+</div>
+<!-- Primary CTA -->
+<button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-label font-semibold text-xs py-3 px-4 rounded-lg shadow-sm flex items-center justify-center gap-2 transition-all active:scale-[0.99] cursor-pointer mb-2">
+<span>Assign IX. The Hermit to Slot 02</span>
+<span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<!-- Secondary Utility Action -->
+<div class="flex items-center justify-between text-[11px] text-ink-muted pt-1">
+<button class="hover:text-ink-primary transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="auto_stories">auto_stories</span>
+<span>View Full Archival Entry</span>
+</button>
+<button class="hover:text-ink-primary transition-colors">
+            Reset Target
+          </button>
+</div>
+</div>
+</aside>
+</main>
+<!-- Bottom Navigation Shell for Responsive Screens (Shared Component implementation) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface border-t border-outline max-w-screen-md mx-auto">
+<button class="flex flex-col items-center justify-center text-ink-muted font-normal hover:text-emerald-600 transition-colors">
+<span class="material-symbols-outlined text-xl" data-icon="spa">spa</span>
+<span class="font-label text-[10px] uppercase tracking-wider mt-0.5">Sanctuary</span>
+</button>
+<button class="flex flex-col items-center justify-center text-emerald-600 font-semibold">
+<span class="material-symbols-outlined text-xl" data-icon="style">style</span>
+<span class="font-label text-[10px] uppercase tracking-wider mt-0.5">Oracle</span>
+</button>
+<button class="flex flex-col items-center justify-center text-ink-muted font-normal hover:text-emerald-600 transition-colors">
+<span class="material-symbols-outlined text-xl" data-icon="menu_book">menu_book</span>
+<span class="font-label text-[10px] uppercase tracking-wider mt-0.5">Journal</span>
+</button>
+<button class="flex flex-col items-center justify-center text-ink-muted font-normal hover:text-emerald-600 transition-colors">
+<span class="material-symbols-outlined text-xl" data-icon="person">person</span>
+<span class="font-label text-[10px] uppercase tracking-wider mt-0.5">Profile</span>
+</button>
+</nav>
+<!-- Interactive script for demo card selection -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Basic state interaction: allow clicking card tiles to update Drawer heading
+      const cards = document.querySelectorAll('article');
+      cards.forEach(card => {
+        card.addEventListener('click', (e) => {
+          if (e.target.closest('button')) return; // let buttons act independently
+          cards.forEach(c => {
+            c.classList.remove('ring-2', 'ring-emerald-600/20', 'border-emerald-600', 'bg-emerald-50');
+            c.classList.add('border-outline', 'bg-surface');
+          });
+          card.classList.add('ring-2', 'ring-emerald-600/20', 'border-emerald-600', 'bg-emerald-50');
+          card.classList.remove('border-outline', 'bg-surface');
+        });
+      });
+    });
+  </script>
+</body></html>
