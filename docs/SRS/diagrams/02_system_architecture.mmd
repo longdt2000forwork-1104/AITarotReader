@@ -1,0 +1,32 @@
+flowchart TB
+    subgraph Clients ["Client Layer (Single Codebase)"]
+        Web["🌐 Next.js 15 Web App\n(App Router, TailwindCSS, Framer Motion)"]
+        Android["📱 Android Native App (.apk / .aab)\n(Capacitor 6 + Native Haptics / Push / Billing)"]
+    end
+
+    subgraph Gateway ["Spring Boot 3.x REST API Server (Java 21)"]
+        Auth["🔐 Security & Auth Filter\n(Google OAuth2 + Stateless JWT)"]
+        Controllers["⚙️ REST Controllers & SSE Endpoints\n(/api/v1/readings, /profile, /wallet)"]
+        Orchestrator["🔮 AI Reading Orchestrator\n(Prompt Builder, Context Injector, Guardrails)"]
+        WalletSvc["💎 Crystal Ledger & Billing Service\n(ACID Transactions, Webhook Verifier)"]
+        CardGen["🖼️ Shareable Card Service\n(Dynamic OG / Canvas Template Engine)"]
+    end
+
+    subgraph DataAndInfra ["Data & External Services Layer"]
+        PG[("🐘 PostgreSQL 16\n(Users, Profiles, Sessions, Journal, Ledger)")]
+        Redis[("⚡ Redis 7 Cache\n(78-Card i18n Catalog, Rate Limiter)")]
+        LLM["🤖 LLM Provider API\n(Gemini 2.5 Flash / Spring AI SSE)"]
+        Pay["💳 Payment Gateways\n(Google Play Billing, Stripe, VNPay/PayOS)"]
+    end
+
+    Web -->|HTTPS REST / SSE| Auth
+    Android -->|HTTPS REST / SSE| Auth
+    Auth --> Controllers
+    Controllers --> Orchestrator
+    Controllers --> WalletSvc
+    Controllers --> CardGen
+    Controllers --> Redis
+    Orchestrator -->|Stream Tokens| LLM
+    Orchestrator --> PG
+    WalletSvc --> PG
+    WalletSvc <-->|Webhooks / Verify| Pay

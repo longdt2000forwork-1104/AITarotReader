@@ -1,0 +1,27 @@
+stateDiagram-v2
+    [*] --> SpreadSelected : User selects Spread & Persona
+    SpreadSelected --> CardSelection : Enter Question (<= 500 chars)
+
+    state CardSelection {
+        [*] --> VirtualRitual : Mode A (Shuffle & Draw)
+        [*] --> ManualPicker : Mode B (Pick Physical Cards)
+        VirtualRitual --> CardsLocked : N cards drawn (Upright/Reversed)
+        ManualPicker --> CardsLocked : N cards assigned
+    }
+
+    CardsLocked --> QuotaVerification : Submit Session Request
+    QuotaVerification --> InsufficientBalance : Free Quota Exceeded & Crystals < Cost
+    InsufficientBalance --> QuotaVerification : Top-up Crystals / Upgrade Pro
+    QuotaVerification --> AIStreaming : Crystals Deducted / Free Tier Valid
+
+    AIStreaming --> SynthesisCompleted : 4-Part SSE Stream Finished
+    SynthesisCompleted --> FollowUpActive : Ask Follow-up (Count <= 3)
+    FollowUpActive --> SynthesisCompleted : AI Answer Streamed
+
+    SynthesisCompleted --> ClarifierDrawn : Draw Clarifier Card (Count <= 2)
+    ClarifierDrawn --> SynthesisCompleted : Clarifier Synthesis Streamed
+
+    SynthesisCompleted --> JournalSaved : Auto-save to Timeline + User Reflection
+    JournalSaved --> ShareCardExported : Render 9:16 or 1:1 Social Card
+    ShareCardExported --> [*]
+    JournalSaved --> [*]

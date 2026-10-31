@@ -1,0 +1,37 @@
+sequenceDiagram
+    autonumber
+    actor User as 👤 User (Web / Android)
+    participant UI as 🖥️ Next.js + Capacitor UI
+    participant API as ⚙️ Spring Boot API
+    participant DB as 🐘 PostgreSQL + Redis
+    participant AI as 🤖 AI Engine (Gemini 2.5)
+
+    User->>UI: Select Spread (e.g., 3-Card / 5-Card) & Reader Persona
+    alt Mode A: Virtual Deck Ritual
+        User->>UI: Shuffle, Cut & Tap Cards on Screen
+        UI->>UI: Generate SecureRandom + Haptic Feedback
+    else Mode B: Manual Physical Deck Input
+        User->>UI: Search & Pick Physical Cards Drawn + Upright/Reversed
+    end
+
+    UI->>API: POST /api/v1/readings/sessions (Spread, Cards, Question, Locale)
+    API->>DB: Verify Quota / Deduct Crystals (ACID Transaction)
+    API->>DB: Load Mystic Profile (Zodiac, Life Path) & Recent Journal Context
+    API->>AI: Send Structured Prompt + Guardrails (Stream Request)
+    AI-->>API: Stream Synthesis Chunks (SSE)
+    API-->>UI: Forward SSE Stream (Energy -> Positions -> Synthesis -> Action)
+    UI-->>User: Render Real-time Mystical Reading
+
+    opt Follow-up Q&A (Max 3) or Clarifier Card (Max 2)
+        User->>UI: Draw Clarifier Card OR Ask Follow-up Question
+        UI->>API: POST /api/v1/readings/sessions/{id}/clarifier (or /chat)
+        API->>DB: Deduct Clarifier/Chat Crystals & Append Session Record
+        API->>AI: Stream Contextual Clarification
+        AI-->>UI: SSE Clarifier Interpretation
+    end
+
+    opt Save Journal & Export Shareable Card
+        User->>UI: Add Reflection Note & Click "Generate Share Card"
+        UI->>API: PUT /journal & POST /share-card (9:16 or 1:1)
+        API-->>UI: Return High-Res Shareable Card Image URL
+    end

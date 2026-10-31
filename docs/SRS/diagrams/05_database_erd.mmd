@@ -1,0 +1,84 @@
+erDiagram
+    USERS ||--o| MYSTIC_PROFILES : has
+    USERS ||--o{ CRYSTAL_TRANSACTIONS : owns
+    USERS ||--o{ SUBSCRIPTIONS : subscribes
+    USERS ||--o{ READING_SESSIONS : performs
+    SPREAD_TEMPLATES ||--o{ READING_SESSIONS : defines
+    READING_SESSIONS ||--|{ DRAWN_CARDS : contains
+    TAROT_CARDS ||--o{ DRAWN_CARDS : references
+    READING_SESSIONS ||--o{ SESSION_MESSAGES : has_chat
+    READING_SESSIONS ||--o| JOURNAL_ENTRIES : saved_as
+
+    USERS {
+        uuid id PK
+        string email
+        string locale
+        int crystal_balance
+        string tier
+        timestamp created_at
+    }
+    MYSTIC_PROFILES {
+        uuid user_id PK
+        date birth_date
+        string zodiac_sign
+        int life_path_number
+        jsonb focus_areas
+        boolean allow_ai_context
+    }
+    TAROT_CARDS {
+        int id PK
+        string code
+        string arcana
+        string suit
+        jsonb name_i18n
+        jsonb keywords_upright_i18n
+        jsonb keywords_reversed_i18n
+        string image_url
+    }
+    SPREAD_TEMPLATES {
+        int id PK
+        string code
+        int card_count
+        int crystal_cost
+        jsonb positions_i18n
+    }
+    READING_SESSIONS {
+        uuid id PK
+        uuid user_id FK
+        int spread_id FK
+        string input_mode
+        string persona_code
+        text user_question
+        text ai_synthesis_result
+        int follow_up_count
+        timestamp created_at
+    }
+    DRAWN_CARDS {
+        uuid id PK
+        uuid session_id FK
+        int card_id FK
+        int position_index
+        boolean is_reversed
+        boolean is_clarifier
+    }
+    SESSION_MESSAGES {
+        uuid id PK
+        uuid session_id FK
+        string role
+        text content
+        timestamp created_at
+    }
+    JOURNAL_ENTRIES {
+        uuid session_id PK
+        text reflection_note
+        jsonb mood_tags
+        timestamp updated_at
+    }
+    CRYSTAL_TRANSACTIONS {
+        uuid id PK
+        uuid user_id FK
+        int amount
+        string reason_code
+        string reference_id
+        timestamp created_at
+    }

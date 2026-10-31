@@ -1,0 +1,59 @@
+flowchart LR
+    subgraph Actors ["User Classes & Actors"]
+        G["👤 Guest"]
+        FM["🌟 Free Member"]
+        CB["💎 Crystal Buyer"]
+        PRO["👑 Pro Subscriber"]
+        ADM["🛠️ System Admin"]
+    end
+
+    subgraph UC_Public ["Public & Onboarding"]
+        UC1("Browse 78-Card Library (EN/VI)")
+        UC2("Try 1x Daily Card Draw")
+        UC3("View Shared Social Card Link")
+        UC4("Sign Up / Google OAuth2 & Mystic Profile")
+    end
+
+    subgraph UC_Core ["Core Tarot Reading & AI Master"]
+        UC5("Virtual Deck Ritual (Shuffle & Draw)")
+        UC6("Manual Physical Deck Picker")
+        UC7("Receive AI Holistic Synthesis (SSE)")
+        UC8("Ask Follow-up Questions (1-3x)")
+        UC9("Draw Clarifier Card (1-2x)")
+        UC10("Export Shareable Card (9:16 / 1:1)")
+    end
+
+    subgraph UC_Retention ["Journal & Monetization"]
+        UC11("Save & Reflect in Tarot Journal")
+        UC12("View 30-Day Elemental & Stalker Card Analytics")
+        UC13("Top-up Crystal Wallet / Subscribe Pro")
+    end
+
+    subgraph UC_Admin ["Administration"]
+        UC14("Manage 78 Cards, Spreads & AI Prompts")
+    end
+
+    G --> UC1
+    G --> UC2
+    G --> UC3
+    G --> UC4
+
+    FM --> UC1
+    FM --> UC2
+    FM --> UC5
+    FM --> UC6
+    FM --> UC7
+    FM --> UC10
+    FM --> UC11
+    FM --> UC13
+
+    CB --> UC8
+    CB --> UC9
+    CB --> UC13
+
+    PRO --> UC8
+    PRO --> UC9
+    PRO --> UC11
+    PRO --> UC12
+
+    ADM --> UC14
