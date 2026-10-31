@@ -95,13 +95,23 @@ export default function DecksArchivePage() {
                     <span>{deck.id}</span>
                     <span className="text-primary font-semibold">{deck.badge}</span>
                   </div>
-                  <div className="w-full aspect-[2/3] bg-white border border-slate-200 rounded flex flex-col items-center justify-center p-3 relative group-hover:shadow-sm">
-                    <span className="material-symbols-outlined text-4xl text-slate-400 group-hover:text-primary transition-colors">
-                      star
-                    </span>
-                    <span className="text-[10px] font-headline font-bold text-on-surface mt-2 text-center">
-                      XVII THE STAR
-                    </span>
+                  <div className="w-full aspect-[2/3] bg-white border border-slate-200 rounded overflow-hidden flex flex-col items-center justify-center relative group-hover:shadow-sm">
+                    {deck.id === "ED-01" ? (
+                      <img
+                        src="/decks/rider-waite-1909/cards/17_the_star.webp"
+                        alt="XVII The Star - Rider-Waite-Smith 1909"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                      />
+                    ) : (
+                      <div className="p-3 text-center flex flex-col items-center">
+                        <span className="material-symbols-outlined text-4xl text-slate-400 group-hover:text-primary transition-colors">
+                          star
+                        </span>
+                        <span className="text-[10px] font-headline font-bold text-on-surface mt-2 text-center">
+                          XVII THE STAR
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="pt-2 border-t border-slate-200 mt-2">

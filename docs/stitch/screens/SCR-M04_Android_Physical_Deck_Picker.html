@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AITarot // Physical Deck Manual Input</title>
+<!-- Google Fonts: Newsreader (Editorial Serif) & Be Vietnam Pro (Engineered Sans) -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            surface: "#FAF9F6",
+            "surface-container": "#FFFFFF",
+            "surface-subtle": "#F8FAFC",
+            outline: "#CBD5E1",
+            "outline-variant": "#E2E8F0",
+            primary: "#059669",
+            "primary-container": "#ECFDF5",
+            "on-surface": "#0F172A",
+            "on-surface-variant": "#64748B"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Newsreader", "serif"],
+            display: ["Newsreader", "serif"],
+            body: ["Be Vietnam Pro", "sans-serif"],
+            label: ["Be Vietnam Pro", "sans-serif"],
+            mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"]
+          },
+          boxShadow: {
+            '2xs': '0 1px 2px 0 rgba(15, 23, 42, 0.04)',
+            'xs': '0 1px 3px 0 rgba(15, 23, 42, 0.06)'
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 1.15rem;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .material-symbols-outlined.fill-icon {
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Editorial woodcut emblem borders & subtle tactile texture */
+    .woodcut-frame {
+      border: 1px solid #E2E8F0;
+      background-image: radial-gradient(#F1F5F9 0.75px, transparent 0.75px);
+      background-size: 8px 8px;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#FAF9F6] text-[#0F172A] font-body antialiased selection:bg-[#ECFDF5] selection:text-[#059669]">
+<!-- Mobile Wrapper (390px spec viewport, max-w-md, clean editorial line-work) -->
+<div class="max-w-md mx-auto min-h-screen bg-[#FAF9F6] flex flex-col relative border-x border-[#E2E8F0] shadow-sm">
+<!-- 1. Header Bar: Editorial Top Anchor -->
+<header class="sticky top-0 z-40 bg-[#FFFFFF] border-b border-[#E2E8F0] px-4 py-3 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<a class="text-xs uppercase font-mono tracking-wider text-slate-500 font-semibold hover:text-[#0F172A] transition-colors flex items-center gap-1" href="#back">
+<span class="material-symbols-outlined text-[14px]">arrow_back</span>
+<span>Back</span>
+</a>
+</div>
+<div class="text-center px-1">
+<h1 class="font-headline font-bold text-sm tracking-tight text-[#0F172A]">Physical Deck // Manual Input</h1>
+</div>
+<div>
+<span class="font-mono text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 font-medium">78 Cards</span>
+</div>
+</header>
+<!-- 2. Pinned 3-Slot Assignment Matrix -->
+<section class="sticky top-[49px] z-30 bg-[#F8FAFC] border-b border-[#E2E8F0] p-3 grid grid-cols-3 gap-2">
+<!-- Slot 1: Situation (Filled) -->
+<div class="bg-[#FFFFFF] border border-[#CBD5E1] rounded-lg p-2 flex flex-col justify-between shadow-xs min-h-[74px]">
+<div class="flex items-center justify-between">
+<span class="font-mono text-[9px] uppercase tracking-wider text-slate-400 font-bold">01 · SITUATION</span>
+<span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+</div>
+<p class="font-headline font-bold text-xs text-[#0F172A] truncate mt-1">I. The Magician</p>
+<span class="text-[10px] text-emerald-700 font-mono font-medium flex items-center gap-0.5 mt-0.5">
+<span>(Upright)</span>
+<span class="material-symbols-outlined fill-icon text-[11px] text-emerald-700">check</span>
+</span>
+</div>
+<!-- Slot 2: Action (Active Target) -->
+<div class="bg-[#ECFDF5] border-[1.5px] border-[#059669] rounded-lg p-2 flex flex-col justify-between shadow-xs relative min-h-[74px]">
+<div class="flex items-center justify-between">
+<span class="font-mono text-[9px] uppercase tracking-wider text-[#059669] font-bold">02 · ACTION</span>
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-[#059669]"></span>
+</span>
+</div>
+<p class="font-headline font-bold text-xs text-[#059669] truncate mt-1">Selecting Card...</p>
+<div class="mt-0.5">
+<span class="text-[8px] bg-[#059669] text-white px-1 py-0.5 rounded font-mono font-bold tracking-tight inline-block leading-tight uppercase">ACTIVE TARGET</span>
+</div>
+</div>
+<!-- Slot 3: Outcome (Empty/Waiting) -->
+<div class="bg-[#FFFFFF]/60 border border-dashed border-[#CBD5E1] rounded-lg p-2 flex flex-col justify-between opacity-80 min-h-[74px]">
+<div class="flex items-center justify-between">
+<span class="font-mono text-[9px] uppercase tracking-wider text-slate-400 font-bold">03 · OUTCOME</span>
+<span class="w-1.5 h-1.5 rounded-full bg-slate-200"></span>
+</div>
+<p class="font-headline text-xs text-[#94A3B8] italic mt-1">Empty</p>
+<span class="text-[9px] text-slate-400 font-mono mt-0.5">Waiting...</span>
+</div>
+</section>
+<!-- 3. Search & Suit Filter Bar -->
+<section class="sticky top-[135px] z-20 bg-[#FFFFFF] border-b border-[#E2E8F0] p-3 space-y-2">
+<!-- Search Input -->
+<div class="relative flex items-center border border-[#CBD5E1] rounded-md px-2.5 py-1.5 text-xs text-slate-700 shadow-2xs bg-[#FFFFFF] focus-within:border-[#059669] transition-colors">
+<span class="material-symbols-outlined text-slate-400 mr-2 text-[18px]">search</span>
+<input class="w-full bg-transparent border-0 p-0 text-xs placeholder:text-slate-400 text-[#0F172A] focus:ring-0 focus:outline-none font-body" placeholder="Search 78 cards (e.g., The Hermit, Three of Cups)..." type="text"/>
+<button aria-label="Clear filter" class="text-slate-300 hover:text-slate-500" type="button">
+<span class="material-symbols-outlined text-[15px]">cancel</span>
+</button>
+</div>
+<!-- Horizontal Suit Filter Pills -->
+<div class="overflow-x-auto no-scrollbar flex items-center gap-1.5 pt-0.5">
+<button class="bg-[#ECFDF5] text-[#059669] border border-[#059669] font-mono text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap shadow-2xs flex items-center gap-1">
+<span>Major (22)</span>
+<span class="material-symbols-outlined fill-icon text-[11px]">check</span>
+</button>
+<button class="bg-[#F8FAFC] text-slate-600 border border-[#E2E8F0] font-mono text-[10px] px-2.5 py-1 rounded-full whitespace-nowrap hover:bg-slate-100 hover:text-slate-900 transition-colors">
+          Wands (14)
+        </button>
+<button class="bg-[#F8FAFC] text-slate-600 border border-[#E2E8F0] font-mono text-[10px] px-2.5 py-1 rounded-full whitespace-nowrap hover:bg-slate-100 hover:text-slate-900 transition-colors">
+          Cups (14)
+        </button>
+<button class="bg-[#F8FAFC] text-slate-600 border border-[#E2E8F0] font-mono text-[10px] px-2.5 py-1 rounded-full whitespace-nowrap hover:bg-slate-100 hover:text-slate-900 transition-colors">
+          Swords (14)
+        </button>
+<button class="bg-[#F8FAFC] text-slate-600 border border-[#E2E8F0] font-mono text-[10px] px-2.5 py-1 rounded-full whitespace-nowrap hover:bg-slate-100 hover:text-slate-900 transition-colors">
+          Pentacles (14)
+        </button>
+</div>
+</section>
+<!-- 4. Main 3-Column Botanical Card Index Grid -->
+<main class="px-3 py-3 flex-1 bg-[#FAF9F6]">
+<div class="flex items-center justify-between pb-2 mb-1 border-b border-slate-200/70">
+<span class="font-mono text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Specimen Index · Major Arcana</span>
+<span class="font-mono text-[10px] text-slate-400">Order: Traditional I–XXII</span>
+</div>
+<div class="grid grid-cols-3 gap-2.5 pb-44 pt-1">
+<!-- Card 0: The Fool -->
+<article class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-md p-2 flex flex-col items-center justify-between text-center aspect-[2/3] hover:border-slate-400 transition-all cursor-pointer relative shadow-2xs group">
+<div class="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 font-medium border-b border-slate-100 pb-1">
+<span>0</span>
+<span class="text-[9px] uppercase tracking-widest text-slate-400">MAJ</span>
+</div>
+<div class="my-auto py-1 flex flex-col items-center">
+<div class="w-10 h-10 rounded border border-slate-200 flex items-center justify-center bg-slate-50 text-slate-700 group-hover:border-[#059669] transition-colors">
+<span class="material-symbols-outlined text-[22px]">explore</span>
+</div>
+</div>
+<div class="w-full pt-1 border-t border-slate-100">
+<h2 class="font-headline font-semibold text-[11px] leading-tight text-[#0F172A] truncate">0 · The Fool</h2>
+<p class="font-mono text-[8px] text-slate-400 uppercase tracking-tight mt-0.5">Beginning</p>
+</div>
+</article>
+<!-- Card 1: The Magician (Assigned to 01) -->
+<article class="bg-[#FFFFFF] border border-[#CBD5E1] rounded-md p-2 flex flex-col items-center justify-between text-center aspect-[2/3] transition-all cursor-pointer relative shadow-2xs opacity-90 ring-1 ring-slate-200">
+<span class="absolute -top-1.5 -right-1 bg-slate-800 text-white font-mono text-[7px] uppercase font-bold px-1 py-0.2 rounded tracking-tighter z-10">Assigned 01</span>
+<div class="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 font-medium border-b border-slate-100 pb-1">
+<span>I</span>
+<span class="text-[9px] uppercase tracking-widest text-slate-400">MAJ</span>
+</div>
+<div class="my-auto py-1 flex flex-col items-center">
+<div class="w-10 h-10 rounded border border-slate-300 flex items-center justify-center bg-slate-50 text-slate-700">
+<span class="material-symbols-outlined text-[22px]">auto_fix_high</span>
+</div>
+</div>
+<div class="w-full pt-1 border-t border-slate-100">
+<h2 class="font-headline font-semibold text-[11px] leading-tight text-[#0F172A] truncate">I · The Magician</h2>
+<p class="font-mono text-[8px] text-emerald-700 font-semibold uppercase tracking-tight mt-0.5">Slot 01 ✓</p>
+</div>
+</article>
+<!-- Card 2: High Priestess -->
+<article class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-md p-2 flex flex-col items-center justify-between text-center aspect-[2/3] hover:border-slate-400 transition-all cursor-pointer relative shadow-2xs group">
+<div class="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 font-medium border-b border-slate-100 pb-1">
+<span>II</span>
+<span class="text-[9px] uppercase tracking-widest text-slate-400">MAJ</span>
+</div>
+<div class="my-auto py-1 flex flex-col items-center">
+<div class="w-10 h-10 rounded border border-slate-200 flex items-center justify-center bg-slate-50 text-slate-700 group-hover:border-[#059669] transition-colors">
+<span class="material-symbols-outlined text-[22px]">nights_stay</span>
+</div>
+</div>
+<div class="w-full pt-1 border-t border-slate-100">
+<h2 class="font-headline font-semibold text-[11px] leading-tight text-[#0F172A] truncate">II · High Priestess</h2>
+<p class="font-mono text-[8px] text-slate-400 uppercase tracking-tight mt-0.5">Intuition</p>
+</div>
+</article>
+<!-- Card 3: The Empress -->
+<article class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-md p-2 flex flex-col items-center justify-between text-center aspect-[2/3] hover:border-slate-400 transition-all cursor-pointer relative shadow-2xs group">
+<div class="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 font-medium border-b border-slate-100 pb-1">
+<span>III</span>
+<span class="text-[9px] uppercase tracking-widest text-slate-400">MAJ</span>
+</div>
+<div class="my-auto py-1 flex flex-col items-center">
+<div class="w-10 h-10 rounded border border-slate-200 flex items-center justify-center bg-slate-50 text-slate-700 group-hover:border-[#059669] transition-colors">
+<span class="material-symbols-outlined text-[22px]">nest_eco_leaf</span>
+</div>
+</div>
+<div class="w-full pt-1 border-t border-slate-100">
+<h2 class="font-headline font-semibold text-[11px] leading-tight text-[#0F172A] truncate">III · The Empress</h2>
+<p class="font-mono text-[8px] text-slate-400 uppercase tracking-tight mt-0.5">Fertility</p>
+</div>
+</article>
+<!-- Card 4: The Emperor -->
+<article class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-md p-2 flex flex-col items-center justify-between text-center aspect-[2/3] hover:border-slate-400 transition-all cursor-pointer relative shadow-2xs group">
+<div class="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 font-medium border-b border-slate-100 pb-1">
+<span>IV</span>
+<span class="text-[9px] uppercase tracking-widest text-slate-400">MAJ</span>
+</div>
+<div class="my-auto py-1 flex flex-col items-center">
+<div class="w-10 h-10 rounded border border-slate-200 flex items-center justify-center bg-slate-50 text-slate-700 group-hover:border-[#059669] transition-colors">
+<span class="material-symbols-outlined text-[22px]">shield</span>
+</div>
+</div>
+<div class="w-full pt-1 border-t border-slate-100">
+<h2 class="font-headline font-semibold text-[11px] leading-tight text-[#0F172A] truncate">IV · The Emperor</h2>
+<p class="font-mono text-[8px] text-slate-400 uppercase tracking-tight mt-0.5">Structure</p>
+</div>
+</article>
+<!-- Card 5: The Hierophant -->
+<article class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-md p-2 flex flex-col items-center justify-between text-center aspect-[2/3] hover:border-slate-400 transition-all cursor-pointer relative shadow-2xs group">
+<div class="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 font-medium border-b border-slate-100 pb-1">
+<span>V</span>
+<span class="text-[9px] uppercase tracking-widest text-slate-400">MAJ</span>
+</div>
+<div class="my-auto py-1 flex flex-col items-center">
+<div class="w-10 h-10 rounded border border-slate-200 flex items-center justify-center bg-slate-50 text-slate-700 group-hover:border-[#059669] transition-colors">
+<span class="material-symbols-outlined text-[22px]">temple_buddhist</span>
+</div>
+</div>
+<div class="w-full pt-1 border-t border-slate-100">
+<h2 class="font-headline font-semibold text-[11px] leading-tight text-[#0F172A] truncate">V · Hierophant</h2>
+<p class="font-mono text-[8px] text-slate-400 uppercase tracking-tight mt-0.5">Tradition</p>
+</div>
+</article>
+<!-- Card 6: The Lovers -->
+<article class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-md p-2 flex flex-col items-center justify-between text-center aspect-[2/3] hover:border-slate-400 transition-all cursor-pointer relative shadow-2xs group">
+<div class="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 font-medium border-b border-slate-100 pb-1">
+<span>VI</span>
+<span class="text-[9px] uppercase tracking-widest text-slate-400">MAJ</span>
+</div>
+<div class="my-auto py-1 flex flex-col items-center">
+<div class="w-10 h-10 rounded border border-slate-200 flex items-center justify-center bg-slate-50 text-slate-700 group-hover:border-[#059669] transition-colors">
+<span class="material-symbols-outlined text-[22px]">favorite_border</span>
+</div>
+</div>
+<div class="w-full pt-1 border-t border-slate-100">
+<h2 class="font-headline font-semibold text-[11px] leading-tight text-[#0F172A] truncate">VI · The Lovers</h2>
+<p class="font-mono text-[8px] text-slate-400 uppercase tracking-tight mt-0.5">Alignment</p>
+</div>
+</article>
+<!-- Card 7: The Chariot -->
+<article class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-md p-2 flex flex-col items-center justify-between text-center aspect-[2/3] hover:border-slate-400 transition-all cursor-pointer relative shadow-2xs group">
+<div class="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 font-medium border-b border-slate-100 pb-1">
+<span>VII</span>
+<span class="text-[9px] uppercase tracking-widest text-slate-400">MAJ</span>
+</div>
+<div class="my-auto py-1 flex flex-col items-center">
+<div class="w-10 h-10 rounded border border-slate-200 flex items-center justify-center bg-slate-50 text-slate-700 group-hover:border-[#059669] transition-colors">
+<span class="material-symbols-outlined text-[22px]">two_wheeler</span>
+</div>
+</div>
+<div class="w-full pt-1 border-t border-slate-100">
+<h2 class="font-headline font-semibold text-[11px] leading-tight text-[#0F172A] truncate">VII · The Chariot</h2>
+<p class="font-mono text-[8px] text-slate-400 uppercase tracking-tight mt-0.5">Triumph</p>
+</div>
+</article>
+<!-- Card 8: Strength -->
+<article class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-md p-2 flex flex-col items-center justify-between text-center aspect-[2/3] hover:border-slate-400 transition-all cursor-pointer relative shadow-2xs group">
+<div class="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 font-medium border-b border-slate-100 pb-1">
+<span>VIII</span>
+<span class="text-[9px] uppercase tracking-widest text-slate-400">MAJ</span>
+</div>
+<div class="my-auto py-1 flex flex-col items-center">
+<div class="w-10 h-10 rounded border border-slate-200 flex items-center justify-center bg-slate-50 text-slate-700 group-hover:border-[#059669] transition-colors">
+<span class="material-symbols-outlined text-[22px]">vital_signs</span>
+</div>
+</div>
+<div class="w-full pt-1 border-t border-slate-100">
+<h2 class="font-headline font-semibold text-[11px] leading-tight text-[#0F172A] truncate">VIII · Strength</h2>
+<p class="font-mono text-[8px] text-slate-400 uppercase tracking-tight mt-0.5">Patience</p>
+</div>
+</article>
+<!-- Card 9: The Hermit (SELECTED CARD - EXACT SPEC) -->
+<article class="bg-[#F0FDF4] border-2 border-[#059669] ring-2 ring-[#059669]/20 rounded-md p-2 flex flex-col items-center justify-between text-center aspect-[2/3] transition-all cursor-pointer relative shadow-xs">
+<!-- Selection indicator check badge -->
+<span class="absolute -top-1.5 -right-1.5 bg-[#059669] text-white w-5 h-5 rounded-full flex items-center justify-center shadow-xs">
+<span class="material-symbols-outlined fill-icon text-[13px] text-white">check</span>
+</span>
+<div class="w-full flex items-center justify-between text-[10px] font-mono text-[#059669] font-bold border-b border-emerald-100 pb-1">
+<span>IX</span>
+<span class="text-[8px] uppercase tracking-widest bg-emerald-100/70 text-[#059669] px-1 rounded">ACTIVE</span>
+</div>
+<!-- Woodcut Lantern & Staff Emblem -->
+<div class="my-auto py-1 flex flex-col items-center">
+<div class="w-11 h-11 rounded border border-[#059669]/30 flex items-center justify-center bg-emerald-50 text-[#059669] shadow-2xs">
+<!-- Lantern symbol representing woodcut engraving -->
+<span class="material-symbols-outlined text-[24px]">wb_incandescent</span>
+</div>
+<div class="mt-1 flex items-center gap-1 text-[8px] font-mono text-[#059669]/80">
+<span class="material-symbols-outlined text-[10px]">flare</span>
+<span>Guide Lamp</span>
+</div>
+</div>
+<div class="w-full pt-1 border-t border-emerald-100">
+<h2 class="font-headline font-bold text-[11px] leading-tight text-[#0F172A] truncate">IX · The Hermit</h2>
+<p class="font-mono text-[8px] text-[#059669] font-bold uppercase tracking-tight mt-0.5">Solitude &amp; Light</p>
+</div>
+</article>
+<!-- Card 10: Wheel of Fortune -->
+<article class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-md p-2 flex flex-col items-center justify-between text-center aspect-[2/3] hover:border-slate-400 transition-all cursor-pointer relative shadow-2xs group">
+<div class="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 font-medium border-b border-slate-100 pb-1">
+<span>X</span>
+<span class="text-[9px] uppercase tracking-widest text-slate-400">MAJ</span>
+</div>
+<div class="my-auto py-1 flex flex-col items-center">
+<div class="w-10 h-10 rounded border border-slate-200 flex items-center justify-center bg-slate-50 text-slate-700 group-hover:border-[#059669] transition-colors">
+<span class="material-symbols-outlined text-[22px]">all_inclusive</span>
+</div>
+</div>
+<div class="w-full pt-1 border-t border-slate-100">
+<h2 class="font-headline font-semibold text-[11px] leading-tight text-[#0F172A] truncate">X · Wheel of Fort.</h2>
+<p class="font-mono text-[8px] text-slate-400 uppercase tracking-tight mt-0.5">Cycles</p>
+</div>
+</article>
+<!-- Card 11: Justice -->
+<article class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-md p-2 flex flex-col items-center justify-between text-center aspect-[2/3] hover:border-slate-400 transition-all cursor-pointer relative shadow-2xs group">
+<div class="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 font-medium border-b border-slate-100 pb-1">
+<span>XI</span>
+<span class="text-[9px] uppercase tracking-widest text-slate-400">MAJ</span>
+</div>
+<div class="my-auto py-1 flex flex-col items-center">
+<div class="w-10 h-10 rounded border border-slate-200 flex items-center justify-center bg-slate-50 text-slate-700 group-hover:border-[#059669] transition-colors">
+<span class="material-symbols-outlined text-[22px]">balance</span>
+</div>
+</div>
+<div class="w-full pt-1 border-t border-slate-100">
+<h2 class="font-headline font-semibold text-[11px] leading-tight text-[#0F172A] truncate">XI · Justice</h2>
+<p class="font-mono text-[8px] text-slate-400 uppercase tracking-tight mt-0.5">Karma</p>
+</div>
+</article>
+<!-- Card 12: The Hanged Man -->
+<article class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-md p-2 flex flex-col items-center justify-between text-center aspect-[2/3] hover:border-slate-400 transition-all cursor-pointer relative shadow-2xs group">
+<div class="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 font-medium border-b border-slate-100 pb-1">
+<span>XII</span>
+<span class="text-[9px] uppercase tracking-widest text-slate-400">MAJ</span>
+</div>
+<div class="my-auto py-1 flex flex-col items-center">
+<div class="w-10 h-10 rounded border border-slate-200 flex items-center justify-center bg-slate-50 text-slate-700 group-hover:border-[#059669] transition-colors">
+<span class="material-symbols-outlined text-[22px]">hourglass_empty</span>
+</div>
+</div>
+<div class="w-full pt-1 border-t border-slate-100">
+<h2 class="font-headline font-semibold text-[11px] leading-tight text-[#0F172A] truncate">XII · Hanged Man</h2>
+<p class="font-mono text-[8px] text-slate-400 uppercase tracking-tight mt-0.5">Surrender</p>
+</div>
+</article>
+<!-- Card 13: Death -->
+<article class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-md p-2 flex flex-col items-center justify-between text-center aspect-[2/3] hover:border-slate-400 transition-all cursor-pointer relative shadow-2xs group">
+<div class="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 font-medium border-b border-slate-100 pb-1">
+<span>XIII</span>
+<span class="text-[9px] uppercase tracking-widest text-slate-400">MAJ</span>
+</div>
+<div class="my-auto py-1 flex flex-col items-center">
+<div class="w-10 h-10 rounded border border-slate-200 flex items-center justify-center bg-slate-50 text-slate-700 group-hover:border-[#059669] transition-colors">
+<span class="material-symbols-outlined text-[22px]">grain</span>
+</div>
+</div>
+<div class="w-full pt-1 border-t border-slate-100">
+<h2 class="font-headline font-semibold text-[11px] leading-tight text-[#0F172A] truncate">XIII · Death</h2>
+<p class="font-mono text-[8px] text-slate-400 uppercase tracking-tight mt-0.5">Transition</p>
+</div>
+</article>
+<!-- Card 14: Temperance -->
+<article class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-md p-2 flex flex-col items-center justify-between text-center aspect-[2/3] hover:border-slate-400 transition-all cursor-pointer relative shadow-2xs group">
+<div class="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 font-medium border-b border-slate-100 pb-1">
+<span>XIV</span>
+<span class="text-[9px] uppercase tracking-widest text-slate-400">MAJ</span>
+</div>
+<div class="my-auto py-1 flex flex-col items-center">
+<div class="w-10 h-10 rounded border border-slate-200 flex items-center justify-center bg-slate-50 text-slate-700 group-hover:border-[#059669] transition-colors">
+<span class="material-symbols-outlined text-[22px]">water_drop</span>
+</div>
+</div>
+<div class="w-full pt-1 border-t border-slate-100">
+<h2 class="font-headline font-semibold text-[11px] leading-tight text-[#0F172A] truncate">XIV · Temperance</h2>
+<p class="font-mono text-[8px] text-slate-400 uppercase tracking-tight mt-0.5">Harmony</p>
+</div>
+</article>
+</div>
+</main>
+<!-- 5. Docked Bottom Orientation & Assign Bar (Strict Spec) -->
+<footer class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#FFFFFF] border-t border-[#E2E8F0] p-3 shadow-lg z-50 space-y-2.5">
+<!-- Top row of bar -->
+<div class="flex items-center justify-between gap-2">
+<div class="min-w-0 flex-1">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#059669]"></span>
+<h3 class="font-headline font-bold text-sm text-[#0F172A] truncate">Selected: IX. The Hermit</h3>
+</div>
+<p class="font-body text-[11px] text-[#64748B] truncate mt-0.5 pl-3.5">Arcana Major · Wisdom &amp; Solitude</p>
+</div>
+<!-- Segmented Orientation Switch -->
+<div class="bg-slate-100 p-0.5 rounded-md border border-slate-200 flex text-[11px] font-mono flex-shrink-0">
+<button class="bg-[#FFFFFF] text-[#059669] font-bold shadow-2xs px-2.5 py-1 rounded flex items-center gap-0.5 transition-all">
+<span>↑ Upright</span>
+<span class="material-symbols-outlined fill-icon text-[11px]">check</span>
+</button>
+<button class="text-slate-500 px-2 py-1 rounded hover:text-slate-800 transition-colors flex items-center gap-0.5">
+<span>↓ Reversed</span>
+</button>
+</div>
+</div>
+<!-- Bottom row CTA Button -->
+<button class="w-full bg-[#059669] hover:bg-[#047857] text-white py-2.5 px-4 rounded-md font-medium text-xs tracking-wide flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99] cursor-pointer">
+<span class="font-mono font-semibold uppercase text-xs tracking-wider">Assign to Slot 02 (Action) →</span>
+</button>
+</footer>
+</div>
+</body></html>

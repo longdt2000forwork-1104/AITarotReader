@@ -110,17 +110,26 @@ export default function MobileDecksGalleryPage() {
             .map((deck) => (
               <div
                 key={deck.id}
-                className="p-4 bg-white border border-outline-variant rounded-lg flex items-center justify-between hover:border-slate-300 transition-colors"
+                className="p-4 bg-white border border-outline-variant rounded-lg flex items-center justify-between hover:border-slate-300 transition-colors gap-3"
               >
-                <div className="space-y-1 max-w-[240px]">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[10px] text-primary font-semibold">{deck.id}</span>
-                    <h3 className="font-headline font-bold text-sm text-on-surface">{deck.name}</h3>
+                <div className="flex items-center gap-3">
+                  {deck.id === "ED-01" ? (
+                    <img
+                      src="/decks/rider-waite-1909/cards/00_the_fool.webp"
+                      alt="RWS 1909"
+                      className="w-10 h-16 object-cover rounded border border-slate-200 shrink-0 shadow-2xs"
+                    />
+                  ) : null}
+                  <div className="space-y-1 max-w-[210px]">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[10px] text-primary font-semibold">{deck.id}</span>
+                      <h3 className="font-headline font-bold text-sm text-on-surface">{deck.name}</h3>
+                    </div>
+                    <p className="text-[11px] text-[#475569]">{deck.desc}</p>
+                    <span className="text-[10px] font-mono text-slate-400 block">{deck.status}</span>
                   </div>
-                  <p className="text-[11px] text-[#475569]">{deck.desc}</p>
-                  <span className="text-[10px] font-mono text-slate-400 block">{deck.status}</span>
                 </div>
-                <button className="px-3 py-1.5 text-xs font-medium border border-outline-variant rounded-lg hover:bg-slate-50 text-on-surface">
+                <button className="px-3 py-1.5 text-xs font-medium border border-outline-variant rounded-lg hover:bg-slate-50 text-on-surface shrink-0">
                   Switch
                 </button>
               </div>

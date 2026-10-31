@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 
 interface MobileBottomNavProps {
-  activeTab?: "home" | "oracle" | "journal" | "profile";
+  activeTab?: "home" | "oracle" | "journal" | "decks" | "billing" | "profile";
 }
 
 export default function MobileBottomNav({
@@ -13,11 +13,11 @@ export default function MobileBottomNav({
   const { t } = useLanguage();
 
   return (
-    <nav className="md:hidden fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface border-t border-outline-variant max-w-screen-md mx-auto shadow-sm">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-4 py-2 bg-surface/95 backdrop-blur-md border-t border-outline-variant max-w-screen-md mx-auto shadow-sm">
       <Link
         href="/app/home"
-        className={`flex flex-col items-center justify-center py-1 ${
-          activeTab === "home" ? "text-primary font-semibold" : "text-on-surface-variant font-normal"
+        className={`flex flex-col items-center justify-center py-1 transition-colors ${
+          activeTab === "home" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
         }`}
       >
         <span className="material-symbols-outlined text-xl">spa</span>
@@ -25,8 +25,8 @@ export default function MobileBottomNav({
       </Link>
       <Link
         href="/app/readings/new"
-        className={`flex flex-col items-center justify-center py-1 ${
-          activeTab === "oracle" ? "text-primary font-semibold" : "text-on-surface-variant font-normal"
+        className={`flex flex-col items-center justify-center py-1 transition-colors ${
+          activeTab === "oracle" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
         }`}
       >
         <span className="material-symbols-outlined text-xl">style</span>
@@ -34,17 +34,17 @@ export default function MobileBottomNav({
       </Link>
       <Link
         href="/app/decks"
-        className={`flex flex-col items-center justify-center py-1 ${
-          activeTab === "journal" ? "text-primary font-semibold" : "text-on-surface-variant font-normal"
+        className={`flex flex-col items-center justify-center py-1 transition-colors ${
+          activeTab === "decks" || activeTab === "journal" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
         }`}
       >
         <span className="material-symbols-outlined text-xl">menu_book</span>
         <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">{t.mobileNav.decks}</span>
       </Link>
       <Link
-        href="/app/billing"
-        className={`flex flex-col items-center justify-center py-1 ${
-          activeTab === "profile" ? "text-primary font-semibold" : "text-on-surface-variant font-normal"
+        href="/app/profile"
+        className={`flex flex-col items-center justify-center py-1 transition-colors ${
+          activeTab === "profile" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
         }`}
       >
         <span className="material-symbols-outlined text-xl">person</span>

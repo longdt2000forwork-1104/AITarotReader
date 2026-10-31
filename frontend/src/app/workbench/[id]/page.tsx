@@ -121,14 +121,16 @@ export default function ReadingWorkbenchPage({
               {/* Card Grid in Linen table */}
               <div className="grid grid-cols-3 gap-3">
                 {/* Position 1 */}
-                <div className="bg-white border border-outline-variant rounded-lg p-3 text-center flex flex-col justify-between shadow-sm min-h-[260px]">
+                <div className="bg-white border border-outline-variant rounded-lg p-3 text-center flex flex-col justify-between shadow-sm min-h-[300px] hover:border-primary transition-all">
                   <div className="text-[10px] font-mono text-slate-400 border-b border-slate-100 pb-1">
                     01 SITUATION
                   </div>
                   <div className="my-auto py-2">
-                    <div className="w-16 h-22 mx-auto rounded border border-amber-200 bg-amber-50/40 flex items-center justify-center p-2">
-                      <span className="material-symbols-outlined text-3xl text-amber-700">bolt</span>
-                    </div>
+                    <img
+                      src="/decks/rider-waite-1909/cards/16_the_tower.webp"
+                      alt="XVI The Tower"
+                      className="w-20 h-32 mx-auto rounded object-cover border border-slate-200 shadow-sm"
+                    />
                   </div>
                   <div className="border-t border-slate-100 pt-1.5">
                     <div className="font-mono text-[9px] text-slate-400">XVI</div>
@@ -138,17 +140,19 @@ export default function ReadingWorkbenchPage({
                 </div>
 
                 {/* Position 2 (Active Focus) */}
-                <div className="bg-white border-2 border-primary rounded-lg p-3 text-center flex flex-col justify-between shadow-sm min-h-[260px] relative -translate-y-1">
-                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-white text-[8px] font-mono px-2 py-0.5 rounded-full uppercase">
+                <div className="bg-white border-2 border-primary rounded-lg p-3 text-center flex flex-col justify-between shadow-md min-h-[300px] relative -translate-y-1">
+                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-white text-[8px] font-mono px-2 py-0.5 rounded-full uppercase shadow-xs">
                     Core Action
                   </div>
                   <div className="text-[10px] font-mono text-primary font-semibold border-b border-emerald-100 pb-1 mt-1">
                     02 ACTION
                   </div>
                   <div className="my-auto py-2">
-                    <div className="w-16 h-22 mx-auto rounded border border-emerald-200 bg-emerald-50/40 flex items-center justify-center p-2">
-                      <span className="material-symbols-outlined text-3xl text-primary">psychology</span>
-                    </div>
+                    <img
+                      src="/decks/rider-waite-1909/cards/01_the_magician.webp"
+                      alt="I The Magician"
+                      className="w-20 h-32 mx-auto rounded object-cover border border-emerald-200 shadow-md ring-1 ring-emerald-100"
+                    />
                   </div>
                   <div className="border-t border-emerald-100 pt-1.5">
                     <div className="font-mono text-[9px] text-slate-400">I</div>
@@ -158,14 +162,16 @@ export default function ReadingWorkbenchPage({
                 </div>
 
                 {/* Position 3 */}
-                <div className="bg-white border border-outline-variant rounded-lg p-3 text-center flex flex-col justify-between shadow-sm min-h-[260px]">
+                <div className="bg-white border border-outline-variant rounded-lg p-3 text-center flex flex-col justify-between shadow-sm min-h-[300px] hover:border-primary transition-all">
                   <div className="text-[10px] font-mono text-slate-400 border-b border-slate-100 pb-1">
                     03 OUTCOME
                   </div>
                   <div className="my-auto py-2">
-                    <div className="w-16 h-22 mx-auto rounded border border-blue-200 bg-blue-50/40 flex items-center justify-center p-2">
-                      <span className="material-symbols-outlined text-3xl text-blue-600">star</span>
-                    </div>
+                    <img
+                      src="/decks/rider-waite-1909/cards/17_the_star.webp"
+                      alt="XVII The Star"
+                      className="w-20 h-32 mx-auto rounded object-cover border border-slate-200 shadow-sm"
+                    />
                   </div>
                   <div className="border-t border-slate-100 pt-1.5">
                     <div className="font-mono text-[9px] text-slate-400">XVII</div>

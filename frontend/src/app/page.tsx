@@ -104,10 +104,13 @@ export default function EditorialPortalPage() {
                     <span>RWS // 19</span>
                     <span>MAJOR</span>
                   </div>
-                  {/* Clean Linework Sun Emblem */}
-                  <div className="my-4 w-24 h-24 rounded-full border border-amber-300 bg-amber-50/50 flex flex-col items-center justify-center relative">
-                    <span className="material-symbols-outlined text-4xl text-amber-600">light_mode</span>
-                    <div className="absolute -top-1 font-mono text-[9px] text-amber-700 font-semibold">SOL</div>
+                  {/* Real Tarot Card Artwork */}
+                  <div className="my-2 relative group cursor-pointer">
+                    <img
+                      src="/decks/rider-waite-1909/cards/19_the_sun.webp"
+                      alt="XIX The Sun (Rider-Waite 1909)"
+                      className="w-28 h-48 object-cover rounded border border-slate-200 shadow-md group-hover:scale-105 transition-transform duration-200"
+                    />
                   </div>
                   <div className="w-full pt-2 border-t border-slate-200">
                     <div className="font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-widest">

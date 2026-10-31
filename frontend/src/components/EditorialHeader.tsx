@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 
 interface EditorialHeaderProps {
-  activeTab?: "daily" | "workbench" | "catalog" | "journal" | "ledger" | "decks";
+  activeTab?: "daily" | "workbench" | "catalog" | "decks" | "journal" | "ledger" | "pricing" | "auth" | "settings";
   credits?: number;
 }
 
@@ -35,7 +35,7 @@ export default function EditorialHeader({
         <nav className="hidden md:flex items-center space-x-1 lg:space-x-2 text-xs font-label tracking-wider uppercase">
           <Link
             href="/"
-            className={`px-3.5 py-2 font-semibold transition-colors flex items-center gap-1.5 ${
+            className={`px-3 py-2 font-semibold transition-colors flex items-center gap-1.5 ${
               activeTab === "daily"
                 ? "text-primary border-b-2 border-primary"
                 : "text-on-surface-variant hover:text-on-surface font-medium"
@@ -46,7 +46,7 @@ export default function EditorialHeader({
           </Link>
           <Link
             href="/workbench/demo-session"
-            className={`px-3.5 py-2 font-semibold transition-colors flex items-center gap-1.5 ${
+            className={`px-3 py-2 font-semibold transition-colors flex items-center gap-1.5 ${
               activeTab === "workbench"
                 ? "text-primary border-b-2 border-primary"
                 : "text-on-surface-variant hover:text-on-surface font-medium"
@@ -57,7 +57,7 @@ export default function EditorialHeader({
           </Link>
           <Link
             href="/catalog-picker"
-            className={`px-3.5 py-2 font-semibold transition-colors flex items-center gap-1.5 ${
+            className={`px-3 py-2 font-semibold transition-colors flex items-center gap-1.5 ${
               activeTab === "catalog"
                 ? "text-primary border-b-2 border-primary"
                 : "text-on-surface-variant hover:text-on-surface font-medium"
@@ -68,7 +68,7 @@ export default function EditorialHeader({
           </Link>
           <Link
             href="/decks-archive"
-            className={`px-3.5 py-2 font-semibold transition-colors flex items-center gap-1.5 ${
+            className={`px-3 py-2 font-semibold transition-colors flex items-center gap-1.5 ${
               activeTab === "decks"
                 ? "text-primary border-b-2 border-primary"
                 : "text-on-surface-variant hover:text-on-surface font-medium"
@@ -79,7 +79,7 @@ export default function EditorialHeader({
           </Link>
           <Link
             href="/journal"
-            className={`px-3.5 py-2 font-semibold transition-colors flex items-center gap-1.5 ${
+            className={`px-3 py-2 font-semibold transition-colors flex items-center gap-1.5 ${
               activeTab === "journal"
                 ? "text-primary border-b-2 border-primary"
                 : "text-on-surface-variant hover:text-on-surface font-medium"
@@ -90,7 +90,7 @@ export default function EditorialHeader({
           </Link>
           <Link
             href="/studio-billing"
-            className={`px-3.5 py-2 font-semibold transition-colors flex items-center gap-1.5 ${
+            className={`px-3 py-2 font-semibold transition-colors flex items-center gap-1.5 ${
               activeTab === "ledger"
                 ? "text-primary border-b-2 border-primary"
                 : "text-on-surface-variant hover:text-on-surface font-medium"
@@ -98,6 +98,17 @@ export default function EditorialHeader({
           >
             <span className="font-mono text-[10px] opacity-75">06</span>
             <span>{t.nav.billing}</span>
+          </Link>
+          <Link
+            href="/pricing"
+            className={`px-3 py-2 font-semibold transition-colors flex items-center gap-1.5 ${
+              activeTab === "pricing"
+                ? "text-primary border-b-2 border-primary"
+                : "text-on-surface-variant hover:text-on-surface font-medium"
+            }`}
+          >
+            <span className="font-mono text-[10px] opacity-75">07</span>
+            <span>Pricing</span>
           </Link>
         </nav>
 
@@ -129,9 +140,9 @@ export default function EditorialHeader({
             </button>
           </div>
 
-          {/* Amber Credit Badge */}
+          {/* Amber Credit Badge linking to /pricing */}
           <Link
-            href="/studio-billing"
+            href="/pricing"
             className="flex items-center gap-1.5 px-3 py-1 bg-[#FEF3C7] text-[#B45309] border border-amber-200/80 rounded-lg text-xs font-mono font-semibold hover:bg-amber-100 transition-colors"
           >
             <span className="material-symbols-outlined text-[15px]">toll</span>
@@ -141,8 +152,12 @@ export default function EditorialHeader({
             </span>
           </Link>
 
-          {/* Astrological Profile Pill */}
-          <div className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-outline-variant">
+          {/* Astrological Profile Pill linking to /settings/profile */}
+          <Link
+            href="/settings/profile"
+            className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-outline-variant hover:opacity-85 transition-opacity"
+            title="Seeker Profile & Settings"
+          >
             <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 font-serif font-bold text-xs">
               ♈
             </div>
@@ -150,7 +165,15 @@ export default function EditorialHeader({
               <span className="text-xs font-medium text-on-surface leading-tight">Aria</span>
               <span className="text-[10px] font-mono text-slate-500">Aries · LP 7</span>
             </div>
-          </div>
+          </Link>
+
+          {/* Auth Button */}
+          <Link
+            href="/auth"
+            className="hidden sm:inline-flex items-center justify-center px-2.5 py-1 text-[11px] font-mono uppercase tracking-wider text-primary border border-primary/30 rounded-lg hover:bg-emerald-50 transition-colors"
+          >
+            Auth
+          </Link>
         </div>
       </div>
     </header>

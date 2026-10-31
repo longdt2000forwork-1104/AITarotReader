@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Android — Sign In, Register &amp; Mystic Onboarding (SCR-M09)</title>
+<!-- Typography & Icons -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-surface-variant": "#3d4a42",
+            "on-tertiary": "#ffffff",
+            "primary-fixed": "#85f8c4",
+            "error-container": "#ffdad6",
+            "tertiary-fixed": "#ffdcc3",
+            "on-secondary-fixed-variant": "#3f465c",
+            "outline-variant": "#bccac0",
+            "inverse-primary": "#68dba9",
+            "on-tertiary-fixed-variant": "#6e3900",
+            "surface-container-highest": "#e3e2e0",
+            "surface-container-high": "#e9e8e5",
+            "on-secondary-fixed": "#131b2e",
+            "on-background": "#1a1c1a",
+            "outline": "#6d7a72",
+            "tertiary-container": "#b15f00",
+            "on-secondary": "#ffffff",
+            "on-primary-container": "#f5fff7",
+            "on-error": "#ffffff",
+            "surface-variant": "#e3e2e0",
+            "error": "#ba1a1a",
+            "on-tertiary-container": "#fffbff",
+            "surface-tint": "#006c4a",
+            "background": "#faf9f6",
+            "inverse-on-surface": "#f2f1ee",
+            "primary": "#006948",
+            "tertiary-fixed-dim": "#ffb77d",
+            "surface-container-lowest": "#ffffff",
+            "tertiary": "#8d4b00",
+            "surface-dim": "#dbdad7",
+            "inverse-surface": "#2f312f",
+            "secondary-container": "#dae2fd",
+            "secondary": "#565e74",
+            "on-primary-fixed": "#002114",
+            "surface-bright": "#faf9f6",
+            "surface-container": "#efeeeb",
+            "secondary-fixed": "#dae2fd",
+            "surface-container-low": "#f4f3f1",
+            "on-tertiary-fixed": "#2f1500",
+            "on-primary": "#ffffff",
+            "secondary-fixed-dim": "#bec6e0",
+            "on-surface": "#1a1c1a",
+            "primary-fixed-dim": "#68dba9",
+            "primary-container": "#00855d",
+            "on-secondary-container": "#5c647a",
+            "on-error-container": "#93000a",
+            "on-primary-fixed-variant": "#005137",
+            "surface": "#faf9f6"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-md": "1rem",
+            "space-sm": "0.5rem",
+            "space-lg": "1.5rem",
+            "margin": "1.5rem",
+            "space-xs": "0.25rem",
+            "gutter": "1.25rem",
+            "space-xl": "2.5rem"
+          },
+          "fontFamily": {
+            "label-sm": ["Be Vietnam Pro"],
+            "headline-sm": ["Newsreader"],
+            "body-lg": ["Be Vietnam Pro"],
+            "headline-md": ["Newsreader"],
+            "body-sm": ["Be Vietnam Pro"],
+            "body-md": ["Be Vietnam Pro"],
+            "headline-xl": ["Newsreader"],
+            "headline-lg": ["Newsreader"],
+            "label-md": ["Be Vietnam Pro"]
+          },
+          "fontSize": {
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "26px", "fontWeight": "400" }],
+            "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "body-md": ["14px", { "lineHeight": "22px", "fontWeight": "400" }],
+            "headline-xl": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.025em", "fontWeight": "600" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 20px;
+      line-height: 1;
+    }
+    /* Subtle paper texture subtle grain */
+    body {
+      background-color: #FAF9F6;
+      color: #1A1C1A;
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background min-h-screen flex justify-center selection:bg-primary selection:text-white">
+<!-- Android Canvas Shell (Width: ~390px Mobile Viewport) -->
+<main class="w-full max-w-[412px] bg-background min-h-screen flex flex-col relative pb-32">
+<!-- 1. Android Status Bar (Canonical System Chrome) -->
+<header class="w-full pt-3 px-6 pb-2 flex justify-between items-center text-on-surface select-none">
+<span class="font-label-sm text-label-sm font-semibold tracking-tight text-on-surface">09:41</span>
+<div class="flex items-center gap-1.5 text-on-surface">
+<span class="material-symbols-outlined text-[16px]">signal_cellular_4_bar</span>
+<span class="material-symbols-outlined text-[16px]">wifi</span>
+<span class="material-symbols-outlined text-[18px]">battery_full</span>
+</div>
+</header>
+<!-- Top Editorial Brand Header -->
+<div class="w-full px-4 py-2.5 flex justify-between items-center border-b border-outline-variant/40">
+<!-- Left: Botanical compass / 8-pointed sunlit emblem SVG -->
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center border border-outline-variant/60 text-primary">
+<svg class="w-4 h-4 fill-current text-primary" viewbox="0 0 24 24">
+<path d="M12 2L13.8 8.2L20 10L13.8 11.8L12 18L10.2 11.8L4 10L10.2 8.2L12 2Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
+<circle cx="12" cy="10" fill="currentColor" r="1.5"></circle>
+</svg>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface tracking-wider font-bold">AITAROT // ARCHIVE</span>
+</div>
+<!-- Right: Bilingual pill switch -->
+<div class="flex items-center bg-surface-container-high p-0.5 rounded-full border border-outline-variant/40">
+<button class="bg-surface-container-lowest text-primary shadow-sm font-label-sm text-label-sm px-2.5 py-0.5 rounded-full flex items-center gap-1" type="button">
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+          EN
+        </button>
+<button class="text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full hover:text-on-surface transition-colors" type="button">
+          VI
+        </button>
+</div>
+</div>
+<!-- Editorial Kicker & Header Content -->
+<section class="px-5 pt-5 pb-3">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-sm text-label-sm text-outline font-semibold tracking-wider uppercase">ARCHIVAL ENROLLMENT PROTOCOL // SCR-M09</span>
+<span class="font-label-sm text-label-sm bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded border border-outline-variant/40">OCT 31, 2026</span>
+</div>
+<h1 class="font-headline-md text-headline-md text-on-surface font-semibold tracking-tight">Join the Hermetic Sanctuary</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1.5 leading-relaxed">
+        Calibrate your personal seeker profile for synthesized tarot readings, natal archetypes, and private journal encryption.
+      </p>
+</section>
+<!-- 2. Segmented Auth Mode Switcher -->
+<nav class="px-5 my-2">
+<div class="bg-surface-container p-1 rounded-xl border border-outline-variant/50 flex">
+<button class="text-on-surface-variant font-label-md text-label-md py-2 px-3 flex-1 text-center rounded-lg hover:text-on-surface transition-colors" type="button">
+          01 · Sign In (Đăng Nhập)
+        </button>
+<button class="bg-surface-container-lowest text-on-surface font-label-md text-label-md py-2 px-3 flex-1 text-center rounded-lg shadow-sm border border-outline-variant/40 flex items-center justify-center gap-1.5 font-bold" type="button">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+          02 · Create Account (Đăng Ký)
+        </button>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<div class="px-5 space-y-4 pt-2">
+<!-- 3. Primary Authentication Card -->
+<section class="bg-surface-container-lowest rounded-2xl p-4 border border-outline-variant/40 shadow-sm space-y-4">
+<!-- OAuth Quick Action -->
+<button class="w-full bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low transition-colors rounded-xl py-2.5 px-4 flex items-center justify-center gap-3 text-on-surface font-label-md text-label-md shadow-xs active:scale-[0.99]" type="button">
+<!-- Google 4-color SVG -->
+<svg class="w-4 h-4 shrink-0" viewbox="0 0 24 24">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"></path>
+</svg>
+<span>Continue with Google</span>
+</button>
+<!-- Hairline Divider -->
+<div class="relative flex items-center justify-center">
+<div class="w-full border-t border-outline-variant/40"></div>
+<span class="absolute bg-surface-container-lowest px-3 font-label-sm text-[10px] text-outline tracking-widest uppercase">
+            OR REGISTER WITH EMAIL &amp; OTP
+          </span>
+</div>
+<!-- Form Fields -->
+<div class="space-y-3 pt-1">
+<!-- Field 1: Display Name -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant font-semibold tracking-wider uppercase mb-1.5" for="display-name">
+              DISPLAY NAME / TÊN GỌI
+            </label>
+<div class="relative">
+<input class="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2.5 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" id="display-name" type="text" value="Aria Nguyen"/>
+<span class="material-symbols-outlined absolute right-3 top-3 text-outline text-[18px]">person</span>
+</div>
+</div>
+<!-- Field 2: Email -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant font-semibold tracking-wider uppercase mb-1.5" for="email-address">
+              EMAIL ADDRESS
+            </label>
+<div class="relative">
+<input class="w-full bg-surface border border-primary/60 rounded-lg px-3 py-2.5 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all pr-10" id="email-address" type="email" value="aria.nguyen@studio.vn"/>
+<span class="material-symbols-outlined absolute right-3 top-3 text-primary text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Field 3: Password + OTP Row -->
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant font-semibold tracking-wider uppercase mb-1.5" for="password-input">
+                PASSWORD / MẬT KHẨ
+              </label>
+<div class="relative">
+<input class="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2.5 font-body-md text-body-md text-on-surface tracking-widest focus:outline-none focus:border-primary transition-all pr-8" id="password-input" type="password" value="secretpassword123"/>
+<button aria-label="Toggle password visibility" class="absolute right-2.5 top-3 text-outline hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+</div>
+</div>
+<div>
+<div class="flex items-center justify-between mb-1.5">
+<label class="font-label-sm text-label-sm text-on-surface-variant font-semibold tracking-wider uppercase" for="otp-code">
+                  6-DIGIT OTP
+                </label>
+<span class="text-[10px] font-semibold text-primary">Sent (58s)</span>
+</div>
+<div class="relative">
+<input class="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2.5 font-label-md text-label-md text-on-surface tracking-wider font-semibold focus:outline-none focus:border-primary transition-all" id="otp-code" type="text" value="842-190"/>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. Step 2 — Mystic Profile Onboarding Block (FR-1.2) -->
+<section class="bg-surface-container-lowest rounded-2xl p-4 border border-primary/40 bg-gradient-to-b from-primary-fixed/15 to-transparent relative shadow-xs space-y-3.5">
+<!-- Step 2 Tag & Title -->
+<div>
+<span class="font-label-sm text-[10px] text-primary font-bold uppercase tracking-wider bg-primary-fixed/40 px-2 py-0.5 rounded border border-primary/20 inline-block mb-1.5">
+            STEP 02 // MYSTIC BLUEPRINT CALIBRATION
+          </span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Personal Natal &amp; Inquiry Tuning</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed">
+            Optional — Used by the AI Synthesis Engine to harmonize card archetypes with your celestial rhythm.
+          </p>
+</div>
+<!-- Date of Birth Picker -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant font-semibold tracking-wider uppercase mb-1.5">
+            DATE OF BIRTH (DD / MM / YYYY)
+          </label>
+<div class="grid grid-cols-3 gap-2">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-center">
+<span class="block text-[10px] font-label-sm text-outline">DAY</span>
+<span class="font-label-md text-label-md font-bold text-on-surface">12</span>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-center">
+<span class="block text-[10px] font-label-sm text-outline">MONTH</span>
+<span class="font-label-md text-label-md font-bold text-on-surface">04</span>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-center flex items-center justify-between">
+<div>
+<span class="block text-[10px] font-label-sm text-outline">YEAR</span>
+<span class="font-label-md text-label-md font-bold text-on-surface">1998</span>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px]">calendar_today</span>
+</div>
+</div>
+</div>
+<!-- Live Auto-Computed Result Strip -->
+<div class="bg-surface-container-low border border-primary/30 rounded-xl p-3 space-y-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-serif font-bold">♈</span>
+<span class="font-label-md text-label-md font-bold text-on-surface">Sun Sign: Aries <span class="font-normal text-on-surface-variant">(Bạch Dương — Fire)</span></span>
+</div>
+<span class="font-label-sm text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-semibold">Initiator Archetype</span>
+</div>
+<div class="h-px bg-outline-variant/30"></div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-tertiary-fixed text-tertiary flex items-center justify-center text-xs font-serif font-bold">✦</span>
+<span class="font-label-md text-label-md font-bold text-on-surface">Life Path: 7 <span class="font-normal text-on-surface-variant">(Con Số Chủ Đạo 7 — The Seeker)</span></span>
+</div>
+<span class="font-label-sm text-[10px] bg-surface-container-highest text-on-surface-variant px-2 py-0.5 rounded-full font-semibold">Introspection</span>
+</div>
+</div>
+<!-- Primary Focus Multi-select Chips -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant font-semibold tracking-wider uppercase mb-2">
+            PRIMARY READING FOCUS (SELECT 1–2 INQUIRY DOMAINS):
+          </label>
+<div class="flex flex-wrap gap-2">
+<!-- Selected 1 -->
+<button class="bg-primary text-on-primary font-label-sm text-label-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xs transition-transform active:scale-95" type="button">
+<span>Creative Ideas</span>
+<span class="material-symbols-outlined text-[14px]">check</span>
+</button>
+<!-- Selected 2 -->
+<button class="bg-primary text-on-primary font-label-sm text-label-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xs transition-transform active:scale-95" type="button">
+<span>Career Path</span>
+<span class="material-symbols-outlined text-[14px]">check</span>
+</button>
+<!-- Unselected chips -->
+<button class="bg-surface-container-lowest text-on-surface border border-outline-variant font-label-sm text-label-sm px-3 py-1.5 rounded-full hover:border-primary transition-colors" type="button">
+              Relationships
+            </button>
+<button class="bg-surface-container-lowest text-on-surface border border-outline-variant font-label-sm text-label-sm px-3 py-1.5 rounded-full hover:border-primary transition-colors" type="button">
+              Self-Discovery
+            </button>
+<button class="bg-surface-container-lowest text-on-surface border border-outline-variant font-label-sm text-label-sm px-3 py-1.5 rounded-full hover:border-primary transition-colors" type="button">
+              Financial Well-being
+            </button>
+</div>
+</div>
+<!-- AI Context Personalization Toggle (FR-1.3) -->
+<div class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-3 flex items-center justify-between gap-3 shadow-xs">
+<p class="font-body-sm text-body-sm text-on-surface font-medium leading-snug">
+            Allow AI Tarot Master to personalize readings using my Zodiac &amp; Life Path calibration
+          </p>
+<!-- Active Switch Toggle -->
+<div class="w-11 h-6 bg-primary rounded-full relative flex items-center p-0.5 cursor-pointer shrink-0">
+<div class="w-5 h-5 bg-white rounded-full shadow-sm ml-auto"></div>
+</div>
+</div>
+</section>
+</div>
+<!-- 5. Bottom Sticky Action Footer (Suppresses standard BottomNavBar as per Destination Rule: Linear Transactional Page) -->
+<footer class="fixed bottom-0 left-0 right-0 max-w-[412px] mx-auto bg-surface-container-lowest/95 backdrop-blur-md border-t border-outline-variant/40 p-4 pb-6 space-y-3 z-40">
+<!-- Primary Action CTA -->
+<button class="w-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md py-3.5 px-4 rounded-xl shadow-sm flex items-center justify-center gap-2 active:scale-[0.99] transition-all" type="button">
+<span class="tracking-wide">Create Sanctuary Account &amp; Claim +15 Free Credits</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+<!-- Secondary Links -->
+<div class="flex items-center justify-center gap-2 font-label-sm text-label-sm">
+<a class="text-primary font-semibold underline underline-offset-2 hover:opacity-80" href="#signin">
+          Already have an account? Sign In
+        </a>
+<span class="text-outline">•</span>
+<a class="text-on-surface-variant hover:text-on-surface" href="#guest">
+          Continue as Guest (1 Free Daily Draw)
+        </a>
+</div>
+<!-- Archival Privacy & Trust Footnote -->
+<p class="font-label-sm text-[10px] text-center text-outline tracking-tight flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[12px]">lock</span>
+<span>End-to-end local encrypted readings. Zero ad tracking. RWS 1909 canonical alignment.</span>
+</p>
+</footer>
+</main>
+</body></html>

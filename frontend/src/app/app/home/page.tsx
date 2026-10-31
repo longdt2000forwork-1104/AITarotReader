@@ -71,10 +71,13 @@ export default function MobileDailyHomePage() {
             </span>
           </div>
 
-          {/* Card Icon Art Preview */}
-          <div className="w-28 h-40 mx-auto rounded border border-amber-200 bg-[#FAF9F6] flex flex-col items-center justify-center p-3 relative shadow-inner">
-            <span className="material-symbols-outlined text-5xl text-amber-600">light_mode</span>
-            <span className="text-[9px] font-mono text-amber-700 font-bold mt-2">SOLAR FIRE</span>
+          {/* Card Real Art Preview */}
+          <div className="w-32 h-52 mx-auto rounded-lg overflow-hidden border border-slate-200 shadow-md relative group">
+            <img
+              src="/decks/rider-waite-1909/cards/19_the_sun.webp"
+              alt="XIX The Sun"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+            />
           </div>
 
           <div>

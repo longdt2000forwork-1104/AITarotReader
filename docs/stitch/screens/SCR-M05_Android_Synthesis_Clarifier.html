@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AITAROT // Synthesis Report &amp; Clarifier</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            surface: "#FFFFFF",
+            "surface-variant": "#F1F5F9",
+            canvas: "#FAF9F6",
+            "outline-variant": "#E2E8F0",
+            primary: "#059669",
+            "primary-container": "#ECFDF5",
+            "on-surface": "#0F172A",
+            "on-surface-variant": "#64748B"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Newsreader", "serif"],
+            display: ["Newsreader", "serif"],
+            body: ["Be Vietnam Pro", "sans-serif"],
+            label: ["Be Vietnam Pro", "sans-serif"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    body {
+      background-color: #FAF9F6;
+      color: #0F172A;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    /* Hide scrollbars for clean aesthetic horizontal rail */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen font-body bg-canvas text-on-surface antialiased flex justify-center selection:bg-emerald-100 selection:text-emerald-900">
+<!-- Device Frame Container (Mobile Portrait Viewport 390px centered) -->
+<div class="w-full max-w-[420px] bg-canvas min-h-screen flex flex-col relative pb-48 border-x border-[#E2E8F0] shadow-sm">
+<!-- 1. Top Navigation Bar (Shared Component Anchor Protocol + Screen Task Specifics) -->
+<header class="sticky top-0 z-40 bg-surface border-b border-[#E2E8F0] px-4 py-3 flex items-center justify-between transition-colors">
+<div class="flex items-center gap-2">
+<button aria-label="Go back" class="flex items-center gap-1 text-[#0F172A] hover:text-primary transition-colors text-sm font-label font-medium pr-1 py-1" type="button">
+<span class="material-symbols-outlined text-lg" data-icon="arrow_back">arrow_back</span>
+<span class="font-headline font-semibold italic text-base">Back</span>
+</button>
+</div>
+<div class="flex flex-col items-center text-center px-1">
+<h1 class="font-headline font-bold text-sm tracking-tight text-[#0F172A] leading-tight">
+          Synthesis Report // 3-Card Trajectory
+        </h1>
+<span class="font-label text-[10px] text-[#64748B] tracking-normal font-normal truncate max-w-[190px]">
+          Query: Creative Direction for Project Launch
+        </span>
+</div>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center gap-1 bg-[#FEF3C7] text-[#B45309] text-[11px] font-label font-semibold px-2 py-0.5 rounded border border-[#FDE68A]">
+<span class="material-symbols-outlined text-xs" data-icon="toll">toll</span>
+          45 CR
+        </span>
+<button aria-label="Share Reading" class="text-[#475569] hover:text-[#0F172A] transition-colors p-1 rounded hover:bg-[#F1F5F9]" type="button">
+<span class="material-symbols-outlined text-xl" data-icon="share">share</span>
+</button>
+</div>
+</header>
+<!-- 2. Pinned Drawn Cards Summary Strip -->
+<div class="bg-[#F8FAFC] border-b border-[#E2E8F0] px-3 py-2.5">
+<div class="flex items-center justify-between gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+<!-- Card 01 -->
+<div class="flex-shrink-0 bg-surface border border-[#E2E8F0] rounded px-2 py-1.5 flex items-center gap-1.5 min-w-[78px]">
+<span class="material-symbols-outlined text-[#0F172A] text-xs" data-icon="flare">flare</span>
+<div class="flex flex-col">
+<span class="font-label text-[9px] uppercase tracking-wider text-[#64748B] leading-none">01 · SIT</span>
+<span class="font-headline font-semibold text-xs text-[#0F172A] leading-tight">I. Magician <span class="text-primary text-[10px]">↑</span></span>
+</div>
+</div>
+<!-- Card 02 -->
+<div class="flex-shrink-0 bg-surface border border-[#E2E8F0] rounded px-2 py-1.5 flex items-center gap-1.5 min-w-[78px]">
+<span class="material-symbols-outlined text-[#0F172A] text-xs" data-icon="nightlight">nightlight</span>
+<div class="flex flex-col">
+<span class="font-label text-[9px] uppercase tracking-wider text-[#64748B] leading-none">02 · ACT</span>
+<span class="font-headline font-semibold text-xs text-[#0F172A] leading-tight">IX. Hermit <span class="text-primary text-[10px]">↑</span></span>
+</div>
+</div>
+<!-- Card 03 -->
+<div class="flex-shrink-0 bg-surface border border-[#E2E8F0] rounded px-2 py-1.5 flex items-center gap-1.5 min-w-[78px]">
+<span class="material-symbols-outlined text-[#0F172A] text-xs" data-icon="wb_sunny">wb_sunny</span>
+<div class="flex flex-col">
+<span class="font-label text-[9px] uppercase tracking-wider text-[#64748B] leading-none">03 · OUT</span>
+<span class="font-headline font-semibold text-xs text-[#0F172A] leading-tight">XIX. Sun <span class="text-primary text-[10px]">↑</span></span>
+</div>
+</div>
+<!-- Card 04 (Clarifier with emerald accent) -->
+<div class="flex-shrink-0 bg-[#ECFDF5] border border-primary/40 rounded px-2 py-1.5 flex items-center gap-1.5 min-w-[88px]">
+<span class="material-symbols-outlined text-primary text-xs" data-icon="add_circle">add_circle</span>
+<div class="flex flex-col">
+<span class="font-label text-[9px] uppercase tracking-wider text-primary font-bold leading-none">+1 CLARIFIER</span>
+<span class="font-headline font-semibold text-xs text-[#065F46] leading-tight">Q. Pentacles <span class="text-primary text-[10px]">↑</span></span>
+</div>
+</div>
+</div>
+</div>
+<!-- 3. Main Editorial Reading Sheet (#FFFFFF Canvas Body) -->
+<main class="bg-surface px-4 py-6 space-y-7 border-b border-[#E2E8F0]">
+<!-- Block 01 — Elemental & Arcana Equilibrium -->
+<section class="space-y-3">
+<div class="flex items-center justify-between border-b border-[#E2E8F0] pb-1.5">
+<h2 class="font-label text-[11px] font-semibold tracking-[0.06em] uppercase text-[#64748B]">
+            01 / Elemental &amp; Arcana Equilibrium
+          </h2>
+<span class="font-label text-[10px] text-primary bg-[#ECFDF5] px-1.5 py-0.5 rounded font-medium">Harmonized</span>
+</div>
+<!-- Stacked Progress Bar -->
+<div class="space-y-2">
+<div class="w-full h-2 rounded-full overflow-hidden bg-[#F1F5F9] flex border border-[#E2E8F0]">
+<div class="h-full bg-[#D97706]" style="width: 50%" title="50% Fire"></div>
+<div class="h-full bg-primary" style="width: 25%" title="25% Earth"></div>
+<div class="h-full bg-[#0284C7]" style="width: 25%" title="25% Air"></div>
+</div>
+<!-- Color Stop Percentages -->
+<div class="grid grid-cols-3 gap-2 pt-0.5">
+<div class="flex items-center gap-1.5 text-xs">
+<span class="w-2 h-2 rounded-full bg-[#D97706] flex-shrink-0"></span>
+<span class="font-label text-[11px] text-[#475569]">Fire: <strong class="text-[#0F172A]">50%</strong> (Spark)</span>
+</div>
+<div class="flex items-center gap-1.5 text-xs">
+<span class="w-2 h-2 rounded-full bg-primary flex-shrink-0"></span>
+<span class="font-label text-[11px] text-[#475569]">Earth: <strong class="text-[#0F172A]">25%</strong> (Form)</span>
+</div>
+<div class="flex items-center gap-1.5 text-xs">
+<span class="w-2 h-2 rounded-full bg-[#0284C7] flex-shrink-0"></span>
+<span class="font-label text-[11px] text-[#475569]">Air: <strong class="text-[#0F172A]">25%</strong> (Clarity)</span>
+</div>
+</div>
+</div>
+<p class="font-headline italic text-[13px] text-[#334155] leading-relaxed bg-[#FAF9F6] p-2.5 rounded border border-[#E2E8F0]">
+          “Strong creative momentum grounded by deliberate introspection and tangible craftsmanship.”
+        </p>
+</section>
+<!-- Block 02 — Position-by-Position Architectural Breakdown -->
+<section class="space-y-4">
+<div class="border-b border-[#E2E8F0] pb-1.5 flex items-center justify-between">
+<h2 class="font-label text-[11px] font-semibold tracking-[0.06em] uppercase text-[#64748B]">
+            02 / Deck Trajectory Breakdown
+          </h2>
+<span class="font-label text-[10px] text-[#64748B]">Spread: 3 + 1 Clarifier</span>
+</div>
+<!-- 01 Situation -->
+<article class="border border-[#E2E8F0] rounded-lg p-3.5 space-y-2 bg-surface hover:border-[#CBD5E1] transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label text-[10px] uppercase tracking-wider text-[#64748B] font-semibold">01 · SITUATION</span>
+<span class="font-label text-[10px] uppercase tracking-widest text-[#D97706] bg-[#FEF3C7] px-2 py-0.5 rounded font-bold">Spark &amp; Will</span>
+</div>
+<h3 class="font-headline font-bold text-lg text-[#0F172A] leading-tight flex items-baseline gap-2">
+            I. The Magician
+            <span class="font-label text-xs font-normal text-[#64748B]">(Upright)</span>
+</h3>
+<p class="text-[13px] text-[#334155] leading-relaxed font-body">
+            You currently possess every essential instrument, channel, and intellectual asset required to commence. The constraint is not access or capability; it is the discipline to channel disparate impulses into a singular, unwavering vector.
+          </p>
+</article>
+<!-- 02 Action -->
+<article class="border border-[#E2E8F0] rounded-lg p-3.5 space-y-2 bg-surface hover:border-[#CBD5E1] transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label text-[10px] uppercase tracking-wider text-[#64748B] font-semibold">02 · ACTION REQUIRED</span>
+<span class="font-label text-[10px] uppercase tracking-widest text-[#475569] bg-[#F1F5F9] px-2 py-0.5 rounded font-bold">Solitude &amp; Focus</span>
+</div>
+<h3 class="font-headline font-bold text-lg text-[#0F172A] leading-tight flex items-baseline gap-2">
+            IX. The Hermit
+            <span class="font-label text-xs font-normal text-[#64748B]">(Upright)</span>
+</h3>
+<p class="text-[13px] text-[#334155] leading-relaxed font-body">
+            Resist the urge to seek external validation or crowdsource design consensus at this delicate juncture. Step back into your lantern-lit workshop. The core narrative thesis must be forged in quiet contemplation prior to public exhibition.
+          </p>
+</article>
+<!-- 03 Outcome -->
+<article class="border border-[#E2E8F0] rounded-lg p-3.5 space-y-2 bg-surface hover:border-[#CBD5E1] transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label text-[10px] uppercase tracking-wider text-[#64748B] font-semibold">03 · MANIFEST TRAJECTORY</span>
+<span class="font-label text-[10px] uppercase tracking-widest text-primary bg-[#ECFDF5] px-2 py-0.5 rounded font-bold">Vitality &amp; Clarity</span>
+</div>
+<h3 class="font-headline font-bold text-lg text-[#0F172A] leading-tight flex items-baseline gap-2">
+            XIX. The Sun
+            <span class="font-label text-xs font-normal text-[#64748B]">(Upright)</span>
+</h3>
+<p class="text-[13px] text-[#334155] leading-relaxed font-body">
+            Unmistakable reception and radiant resonance. When the work is revealed following the Hermit’s distillation, it will require no strenuous marketing defense—its clarity will speak transparently to collaborators and patrons alike.
+          </p>
+</article>
+<!-- Clarifier Insight Box -->
+<article class="border border-emerald-300 bg-emerald-50/40 rounded-lg p-3.5 space-y-2 relative overflow-hidden">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="psychology">psychology</span>
+<span class="font-label text-[10px] uppercase tracking-wider text-primary font-bold">+ CLARIFIER INSIGHT</span>
+</div>
+<span class="font-label text-[10px] text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded font-medium">Applied Pragmatism</span>
+</div>
+<h3 class="font-headline font-bold text-base text-[#065F46] leading-tight">
+            Queen of Pentacles (Upright)
+          </h3>
+<p class="text-[13px] text-[#1E293B] leading-relaxed font-body">
+            Ground the visionary fire in tactile routines. Protect your physiological vitality, establish sensible production cadences, and nurture the operational foundation so that creative expansion remains sustainable.
+          </p>
+</article>
+</section>
+<!-- Block 03 — Core Holistic Synthesis (Editorial Pull-Quote) -->
+<section class="space-y-3">
+<div class="border-b border-[#E2E8F0] pb-1.5 flex items-center justify-between">
+<h2 class="font-label text-[11px] font-semibold tracking-[0.06em] uppercase text-[#64748B]">
+            03 / The Synthesis Architecture
+          </h2>
+<span class="material-symbols-outlined text-[#64748B] text-sm" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<blockquote class="border-l-4 border-primary bg-canvas pl-4 pr-3 py-3 rounded-r-lg space-y-2 border-y border-r border-[#E2E8F0]">
+<p class="font-headline italic text-base text-[#0F172A] leading-snug">
+            “The Magician gives you the spark; The Hermit requires you to withdraw until that spark becomes a blueprint. Only when the architecture is forged in stillness will The Sun illuminate the work without burning it.”
+          </p>
+<cite class="block font-label text-[10px] uppercase tracking-widest text-[#64748B] not-italic">
+            — Arcana Dialectic Synthesis
+          </cite>
+</blockquote>
+<p class="text-[13px] text-[#475569] leading-relaxed font-body pt-1">
+          Your project is entering an incubation phase masquerading as stagnation. Trust the quiet. The Queen of Pentacles reinforces that taking time to build functional prototypes in private directly accelerates your public debut.
+        </p>
+</section>
+<!-- Block 04 — Actionable Takeaways & Next Steps -->
+<section class="space-y-3 pt-1">
+<div class="border-b border-[#E2E8F0] pb-1.5 flex items-center justify-between">
+<h2 class="font-label text-[11px] font-semibold tracking-[0.06em] uppercase text-[#64748B]">
+            04 / Tactical Experiments &amp; Actions
+          </h2>
+<span class="font-label text-[10px] text-[#059669] font-medium">1 of 3 Complete</span>
+</div>
+<div class="space-y-2 text-left">
+<!-- Item 1 (Checked) -->
+<label class="flex items-start gap-3 p-2.5 rounded bg-[#FAF9F6] border border-[#E2E8F0] cursor-pointer hover:bg-slate-50 transition-colors">
+<input checked="" class="mt-0.5 h-4 w-4 rounded border-[#CBD5E1] text-primary focus:ring-0 focus:ring-offset-0" type="checkbox"/>
+<div class="flex-1">
+<span class="font-body text-xs text-[#64748B] line-through leading-relaxed block">
+                Draft the 1-page core concept in quiet focus without external feedback
+              </span>
+<span class="font-label text-[10px] text-[#059669] font-medium">Completed today · Hermit Protocol</span>
+</div>
+</label>
+<!-- Item 2 (Unchecked) -->
+<label class="flex items-start gap-3 p-2.5 rounded bg-surface border border-[#E2E8F0] cursor-pointer hover:bg-[#FAF9F6] transition-colors">
+<input class="mt-0.5 h-4 w-4 rounded border-[#CBD5E1] text-primary focus:ring-0 focus:ring-offset-0" type="checkbox"/>
+<div class="flex-1">
+<span class="font-body text-xs text-[#0F172A] font-medium leading-relaxed block">
+                Conduct a pressure-test review with 2 trusted craft peers
+              </span>
+<span class="font-label text-[10px] text-[#64748B]">Next milestone · Major Arcana Validation</span>
+</div>
+</label>
+<!-- Item 3 (Unchecked) -->
+<label class="flex items-start gap-3 p-2.5 rounded bg-surface border border-[#E2E8F0] cursor-pointer hover:bg-[#FAF9F6] transition-colors">
+<input class="mt-0.5 h-4 w-4 rounded border-[#CBD5E1] text-primary focus:ring-0 focus:ring-offset-0" type="checkbox"/>
+<div class="flex-1">
+<span class="font-body text-xs text-[#0F172A] font-medium leading-relaxed block">
+                Anchor production milestones against physical calendar blocks
+              </span>
+<span class="font-label text-[10px] text-[#64748B]">Grounding action · Pentacles Integration</span>
+</div>
+</label>
+</div>
+</section>
+</main>
+<!-- 4. Docked Interactive Follow-up & Clarifier Bar (Fixed Bottom Console) -->
+<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[420px] bg-surface border-t border-[#E2E8F0] px-4 pt-3 pb-4 shadow-lg z-50">
+<!-- Status Indicator Header -->
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-1.5 text-primary">
+<span class="material-symbols-outlined text-sm" data-icon="auto_awesome">auto_awesome</span>
+<span class="font-label text-[10px] font-bold uppercase tracking-wider text-[#065F46]">
+            Follow-Up Q&amp;A (2 of 3 remaining · 3 CR)
+          </span>
+</div>
+<span class="font-label text-[10px] text-[#64748B] flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span> Oracle Synchronized
+        </span>
+</div>
+<!-- Tactile Input Bar with Botanical Emerald CTA -->
+<form class="flex items-center gap-2 mb-2.5" onsubmit="event.preventDefault();">
+<div class="relative flex-1">
+<input class="w-full bg-[#FAF9F6] text-xs text-[#0F172A] placeholder-[#94A3B8] border border-[#CBD5E1] rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary pr-8 transition-colors font-body" placeholder="Ask a follow-up question about this reading..." type="text"/>
+<span class="absolute right-2.5 top-2.5 material-symbols-outlined text-sm text-[#94A3B8]" data-icon="help_outline">help_outline</span>
+</div>
+<button aria-label="Send Query" class="bg-primary hover:bg-[#047857] text-white p-2.5 rounded-lg flex items-center justify-center transition-transform active:scale-95 shadow-sm flex-shrink-0" type="submit">
+<span class="material-symbols-outlined text-base" data-icon="arrow_upward">arrow_upward</span>
+</button>
+</form>
+<!-- Quick Action Secondary Buttons -->
+<div class="grid grid-cols-2 gap-2">
+<button class="border border-primary text-primary hover:bg-[#ECFDF5] transition-colors font-label text-[11px] font-semibold py-1.5 px-2.5 rounded-lg flex items-center justify-center gap-1 active:scale-98" type="button">
+<span class="material-symbols-outlined text-sm" data-icon="add_circle">add_circle</span>
+<span>+ Draw Clarifier (5 CR)</span>
+</button>
+<button class="border border-[#CBD5E1] text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors font-label text-[11px] font-medium py-1.5 px-2.5 rounded-lg flex items-center justify-center gap-1 active:scale-98" type="button">
+<span class="material-symbols-outlined text-sm" data-icon="file_download">file_download</span>
+<span>Export PDF / Share →</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>
