@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function MobileDailyHomePage() {
+  const { locale, setLocale, t } = useLanguage();
+
   return (
     <div className="max-w-[430px] mx-auto min-h-screen bg-surface flex flex-col border-x border-outline-variant pb-20">
       {/* Top Hairline App Bar */}
@@ -17,9 +22,26 @@ export default function MobileDailyHomePage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center border border-outline-variant rounded text-[10px] font-mono overflow-hidden">
-            <span className="px-1.5 py-0.5 bg-slate-900 text-white font-semibold">EN</span>
-            <span className="px-1.5 py-0.5 text-slate-500">VI</span>
+          {/* Mobile Language Switcher */}
+          <div className="flex items-center border border-outline-variant rounded text-[10px] font-mono overflow-hidden shadow-xs">
+            <button
+              type="button"
+              onClick={() => setLocale("en")}
+              className={`px-2 py-0.5 transition-colors ${
+                locale === "en" ? "bg-slate-900 text-white font-bold" : "text-slate-500 hover:text-on-surface"
+              }`}
+            >
+              EN
+            </button>
+            <button
+              type="button"
+              onClick={() => setLocale("vi")}
+              className={`px-2 py-0.5 transition-colors ${
+                locale === "vi" ? "bg-primary text-white font-bold" : "text-slate-500 hover:text-on-surface"
+              }`}
+            >
+              VI
+            </button>
           </div>
 
           <Link
@@ -36,7 +58,7 @@ export default function MobileDailyHomePage() {
       <main className="p-4 space-y-4">
         {/* Issue & Date Kicker */}
         <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-widest text-slate-400">
-          <span>DAILY SANCTUARY</span>
+          <span>{locale === "vi" ? "THÁNH ĐỊA HÀNG NGÀY" : "DAILY SANCTUARY"}</span>
           <span>SAT OCT 31 · 2026</span>
         </div>
 
@@ -45,7 +67,7 @@ export default function MobileDailyHomePage() {
           <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 border-b border-slate-100 pb-2">
             <span>RWS // 19 · MAJOR</span>
             <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-semibold border border-emerald-200">
-              UPRIGHT
+              {locale === "vi" ? "XUÔI (UPRIGHT)" : "UPRIGHT"}
             </span>
           </div>
 
@@ -57,27 +79,35 @@ export default function MobileDailyHomePage() {
 
           <div>
             <div className="font-mono text-xs font-semibold text-slate-400 uppercase">XIX</div>
-            <h1 className="font-headline font-bold text-xl text-on-surface">THE SUN (MẶT TRỜI)</h1>
+            <h1 className="font-headline font-bold text-xl text-on-surface">
+              {locale === "vi" ? "MẶT TRỜI (THE SUN)" : "THE SUN"}
+            </h1>
             <p className="text-xs text-[#475569] mt-1 italic">
-              “Solar consciousness, unclouded intellect, creative fruition.”
+              {t.portal.cardDesc}
             </p>
           </div>
 
           {/* Tags */}
           <div className="flex justify-center gap-1.5 pt-2">
-            <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] font-mono">CLARITY</span>
-            <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] font-mono">MOMENTUM</span>
-            <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] font-mono">BREAKTHROUGH</span>
+            <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] font-mono">
+              {t.portal.kwClarity.toUpperCase()}
+            </span>
+            <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] font-mono">
+              {t.portal.kwMomentum.toUpperCase()}
+            </span>
+            <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] font-mono">
+              {t.portal.kwBreakthrough.toUpperCase()}
+            </span>
           </div>
         </div>
 
         {/* Daily Synthesis Quote */}
         <div className="p-4 bg-white border border-outline-variant rounded-lg border-l-4 border-l-primary space-y-1">
           <span className="font-mono text-[10px] uppercase text-primary font-semibold block">
-            TODAY'S INTENTION // ADVISORY
+            {t.portal.advisoryKicker}
           </span>
           <p className="font-headline italic text-sm text-on-surface leading-snug">
-            “Consolidate your main project in daylight. Share your draft early before hesitation sets in.”
+            {t.portal.advisoryQuote}
           </p>
         </div>
 
@@ -87,15 +117,14 @@ export default function MobileDailyHomePage() {
             href="/app/readings/new"
             className="w-full py-3 bg-primary text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-primary-hover shadow-sm"
           >
-            <span>Begin New Reading (Virtual Deck)</span>
-            <span className="material-symbols-outlined text-sm">arrow_forward</span>
+            <span>{locale === "vi" ? "Bắt Đầu Trải Bài (Bộ Bài Ảo) →" : "Begin New Reading (Virtual Deck) →"}</span>
           </Link>
           <Link
             href="/catalog-picker"
             className="w-full py-3 bg-white border border-outline-variant text-on-surface text-xs font-medium rounded-lg flex items-center justify-center gap-2 hover:bg-slate-50"
           >
             <span className="material-symbols-outlined text-sm text-slate-500">edit_note</span>
-            <span>Log Physical Deck Draw (No Camera)</span>
+            <span>{t.portal.logPhysical}</span>
           </Link>
         </div>
       </main>
@@ -104,4 +133,3 @@ export default function MobileDailyHomePage() {
     </div>
   );
 }
-

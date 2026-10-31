@@ -1,16 +1,19 @@
+"use client";
+
 import Link from "next/link";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface EditorialHeaderProps {
   activeTab?: "daily" | "workbench" | "catalog" | "journal" | "ledger" | "decks";
   credits?: number;
-  locale?: "EN" | "VI";
 }
 
 export default function EditorialHeader({
   activeTab = "daily",
   credits = 120,
-  locale = "EN",
 }: EditorialHeaderProps) {
+  const { locale, setLocale, t } = useLanguage();
+
   return (
     <header className="w-full bg-white border-b border-outline-variant h-16 sticky top-0 z-50 transition-colors">
       <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between px-6 lg:px-8">
@@ -21,9 +24,9 @@ export default function EditorialHeader({
             href="/"
             className="font-display font-bold text-lg lg:text-xl tracking-tight text-on-surface hover:text-primary transition-colors flex items-center gap-2"
           >
-            <span>AITAROT</span>
+            <span>{t.brand}</span>
             <span className="text-xs font-mono font-normal tracking-widest text-slate-400">
-              // ARCHIVE & ORACLE
+              {t.brandSub}
             </span>
           </Link>
         </div>
@@ -39,7 +42,7 @@ export default function EditorialHeader({
             }`}
           >
             <span className="font-mono text-[10px] opacity-75">01</span>
-            <span>Daily Index</span>
+            <span>{t.nav.daily}</span>
           </Link>
           <Link
             href="/workbench/demo-session"
@@ -50,7 +53,7 @@ export default function EditorialHeader({
             }`}
           >
             <span className="font-mono text-[10px] opacity-75">02</span>
-            <span>Reading Workbench</span>
+            <span>{t.nav.workbench}</span>
           </Link>
           <Link
             href="/catalog-picker"
@@ -61,7 +64,7 @@ export default function EditorialHeader({
             }`}
           >
             <span className="font-mono text-[10px] opacity-75">03</span>
-            <span>78-Card Catalog</span>
+            <span>{t.nav.catalog}</span>
           </Link>
           <Link
             href="/decks-archive"
@@ -72,7 +75,7 @@ export default function EditorialHeader({
             }`}
           >
             <span className="font-mono text-[10px] opacity-75">04</span>
-            <span>5 Decks Archive</span>
+            <span>{t.nav.decks}</span>
           </Link>
           <Link
             href="/journal"
@@ -83,7 +86,7 @@ export default function EditorialHeader({
             }`}
           >
             <span className="font-mono text-[10px] opacity-75">05</span>
-            <span>Tarot Journal</span>
+            <span>{t.nav.journal}</span>
           </Link>
           <Link
             href="/studio-billing"
@@ -94,24 +97,32 @@ export default function EditorialHeader({
             }`}
           >
             <span className="font-mono text-[10px] opacity-75">06</span>
-            <span>Studio & Billing</span>
+            <span>{t.nav.billing}</span>
           </Link>
         </nav>
 
         {/* Right Utility Actions */}
         <div className="flex items-center gap-3">
-          {/* Language Switch */}
-          <div className="hidden sm:flex items-center border border-outline-variant rounded-lg text-[11px] font-mono font-medium overflow-hidden bg-surface-subtle">
+          {/* Interactive Language Switch */}
+          <div className="flex items-center border border-outline-variant rounded-lg text-[11px] font-mono font-medium overflow-hidden bg-surface-subtle shadow-sm">
             <button
-              className={`px-2.5 py-1 ${
-                locale === "EN" ? "bg-white text-on-surface font-semibold border-r border-outline-variant" : "text-on-surface-variant"
+              onClick={() => setLocale("en")}
+              type="button"
+              className={`px-2.5 py-1 transition-all ${
+                locale === "en"
+                  ? "bg-slate-900 text-white font-bold"
+                  : "text-slate-600 hover:text-on-surface hover:bg-slate-100"
               }`}
             >
               EN
             </button>
             <button
-              className={`px-2.5 py-1 ${
-                locale === "VI" ? "bg-white text-on-surface font-semibold" : "text-on-surface-variant hover:text-on-surface"
+              onClick={() => setLocale("vi")}
+              type="button"
+              className={`px-2.5 py-1 transition-all ${
+                locale === "vi"
+                  ? "bg-primary text-white font-bold"
+                  : "text-slate-600 hover:text-on-surface hover:bg-slate-100"
               }`}
             >
               VI
@@ -145,4 +156,3 @@ export default function EditorialHeader({
     </header>
   );
 }
-

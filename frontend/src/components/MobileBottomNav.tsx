@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface MobileBottomNavProps {
   activeTab?: "home" | "oracle" | "journal" | "profile";
@@ -7,6 +10,8 @@ interface MobileBottomNavProps {
 export default function MobileBottomNav({
   activeTab = "home",
 }: MobileBottomNavProps) {
+  const { t } = useLanguage();
+
   return (
     <nav className="md:hidden fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface border-t border-outline-variant max-w-screen-md mx-auto shadow-sm">
       <Link
@@ -16,7 +21,7 @@ export default function MobileBottomNav({
         }`}
       >
         <span className="material-symbols-outlined text-xl">spa</span>
-        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">Sanctuary</span>
+        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">{t.mobileNav.sanctuary}</span>
       </Link>
       <Link
         href="/app/readings/new"
@@ -25,7 +30,7 @@ export default function MobileBottomNav({
         }`}
       >
         <span className="material-symbols-outlined text-xl">style</span>
-        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">Oracle</span>
+        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">{t.mobileNav.oracle}</span>
       </Link>
       <Link
         href="/app/decks"
@@ -34,7 +39,7 @@ export default function MobileBottomNav({
         }`}
       >
         <span className="material-symbols-outlined text-xl">menu_book</span>
-        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">Decks & Journal</span>
+        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">{t.mobileNav.decks}</span>
       </Link>
       <Link
         href="/app/billing"
@@ -43,9 +48,8 @@ export default function MobileBottomNav({
         }`}
       >
         <span className="material-symbols-outlined text-xl">person</span>
-        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">Profile & CR</span>
+        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">{t.mobileNav.profile}</span>
       </Link>
     </nav>
   );
 }
-

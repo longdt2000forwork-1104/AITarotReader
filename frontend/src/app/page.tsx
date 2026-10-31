@@ -1,8 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import EditorialHeader from "@/components/EditorialHeader";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function EditorialPortalPage() {
+  const { t } = useLanguage();
+
   return (
     <>
       <EditorialHeader activeTab="daily" />
@@ -18,19 +23,18 @@ export default function EditorialPortalPage() {
               <div className="flex items-center gap-2.5 mb-6">
                 <span className="inline-block w-2 h-2 rounded-full bg-primary" />
                 <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
-                  ISSUE NO. 31 · BILINGUAL TAROT SYNTHESIS ENGINE
+                  {t.portal.kicker}
                 </span>
               </div>
 
               {/* Editorial Headline */}
               <h1 className="font-headline font-bold text-3xl sm:text-4xl lg:text-[46px] leading-[1.12] tracking-tight text-on-surface max-w-2xl">
-                Structured Tarot Synthesis for Creative Direction & Daily Clarity.
+                {t.portal.heroTitle}
               </h1>
 
               {/* Lead Paragraph */}
               <p className="font-body text-[#475569] text-base lg:text-[17px] leading-relaxed max-w-xl mt-5">
-                Combine the tactile ritual of the 78-card Rider-Waite-Smith tradition with holistic AI synthesis. Draw
-                virtually or log your physical desk spread with elemental balance verification.
+                {t.portal.heroDesc}
               </p>
 
               {/* Action Buttons */}
@@ -39,7 +43,7 @@ export default function EditorialPortalPage() {
                   href="/workbench/demo-session"
                   className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-sm font-medium px-6 py-3.5 rounded-lg transition-all active:scale-[0.98]"
                 >
-                  <span>Open Reading Workbench</span>
+                  <span>{t.portal.openWorkbench}</span>
                   <span className="material-symbols-outlined text-base">arrow_forward</span>
                 </Link>
                 <Link
@@ -47,7 +51,7 @@ export default function EditorialPortalPage() {
                   className="inline-flex items-center gap-2 bg-white border border-[#CBD5E1] hover:bg-slate-50 text-on-surface text-sm font-medium px-5 py-3.5 rounded-lg transition-all active:scale-[0.98]"
                 >
                   <span className="material-symbols-outlined text-slate-500 text-base">edit_note</span>
-                  <span>Log Physical Deck Spread</span>
+                  <span>{t.portal.logPhysical}</span>
                 </Link>
               </div>
             </div>
@@ -55,19 +59,25 @@ export default function EditorialPortalPage() {
             {/* 3-Column Key Metrics Strip */}
             <div className="mt-14 pt-8 border-t border-outline-variant grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div className="space-y-1">
-                <div className="font-mono text-[11px] uppercase tracking-wider text-slate-500">Inventory</div>
-                <div className="font-headline font-bold text-lg text-on-surface">78 Cards (EN/VI)</div>
-                <div className="text-xs text-ink-muted">Full RWS Canonical System</div>
+                <div className="font-mono text-[11px] uppercase tracking-wider text-slate-500">
+                  {t.portal.metric1Label}
+                </div>
+                <div className="font-headline font-bold text-lg text-on-surface">{t.portal.metric1Val}</div>
+                <div className="text-xs text-ink-muted">{t.portal.metric1Sub}</div>
               </div>
               <div className="space-y-1 sm:border-l sm:border-outline-variant sm:pl-6">
-                <div className="font-mono text-[11px] uppercase tracking-wider text-slate-500">Synthesis Tone</div>
-                <div className="font-headline font-bold text-lg text-on-surface">3 Reader Personas</div>
-                <div className="text-xs text-ink-muted">Classic Mystic · Spark · Gentle</div>
+                <div className="font-mono text-[11px] uppercase tracking-wider text-slate-500">
+                  {t.portal.metric2Label}
+                </div>
+                <div className="font-headline font-bold text-lg text-on-surface">{t.portal.metric2Val}</div>
+                <div className="text-xs text-ink-muted">{t.portal.metric2Sub}</div>
               </div>
               <div className="space-y-1 sm:border-l sm:border-outline-variant sm:pl-6">
-                <div className="font-mono text-[11px] uppercase tracking-wider text-slate-500">Methodology</div>
-                <div className="font-headline font-bold text-lg text-on-surface">Clarifier & Journal</div>
-                <div className="text-xs text-ink-muted">Tactical Action Experiments</div>
+                <div className="font-mono text-[11px] uppercase tracking-wider text-slate-500">
+                  {t.portal.metric3Label}
+                </div>
+                <div className="font-headline font-bold text-lg text-on-surface">{t.portal.metric3Val}</div>
+                <div className="text-xs text-ink-muted">{t.portal.metric3Sub}</div>
               </div>
             </div>
           </div>
@@ -79,10 +89,10 @@ export default function EditorialPortalPage() {
               <div className="flex items-center justify-between pb-4 border-b border-outline-variant">
                 <div className="font-mono text-[11px] tracking-widest text-slate-500 uppercase flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                  <span>TODAY'S DRAWN SPECIMEN · DAILY FOCUS</span>
+                  <span>{t.portal.specimenHeader}</span>
                 </div>
                 <span className="inline-flex items-center gap-1 font-mono text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  DRAWN ✓
+                  {t.portal.drawnBadge}
                 </span>
               </div>
 
@@ -112,35 +122,37 @@ export default function EditorialPortalPage() {
                 <div className="sm:col-span-7 flex flex-col justify-between h-full pt-1">
                   <div>
                     <h2 className="font-headline text-lg font-bold text-on-surface leading-snug">
-                      XIX — The Sun (Mặt Trời)
+                      {t.portal.cardTitle}
                     </h2>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Solar consciousness, unclouded intellect, creative fruition.
-                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">{t.portal.cardDesc}</p>
                   </div>
 
                   {/* Metadata Table Matrix */}
                   <div className="mt-4 border border-outline-variant rounded-lg divide-y divide-outline-variant text-xs">
                     <div className="p-2.5 flex items-center justify-between bg-surface-subtle">
-                      <span className="text-slate-500 font-mono text-[11px]">Primary Element</span>
+                      <span className="text-slate-500 font-mono text-[11px]">{t.portal.primaryElement}</span>
                       <span className="font-medium text-on-surface flex items-center gap-1.5">
-                        <span>Fire ☀️</span>
+                        <span>{t.portal.elementFire}</span>
                         <span className="text-emerald-600 font-mono text-[10px] bg-emerald-50 px-1 rounded">
-                          50% Active
+                          {t.portal.elementFireRatio}
                         </span>
                       </span>
                     </div>
                     <div className="p-2.5 flex items-center justify-between">
-                      <span className="text-slate-500 font-mono text-[11px]">Arcana Class</span>
-                      <span className="font-medium text-on-surface">Major Arcana XIX</span>
+                      <span className="text-slate-500 font-mono text-[11px]">{t.portal.arcanaClass}</span>
+                      <span className="font-medium text-on-surface">{t.portal.arcanaMajor}</span>
                     </div>
                     <div className="p-2.5 flex flex-col gap-1 bg-white">
-                      <span className="text-slate-500 font-mono text-[11px]">Core Keywords</span>
+                      <span className="text-slate-500 font-mono text-[11px]">{t.portal.coreKeywords}</span>
                       <div className="flex flex-wrap gap-1 mt-0.5">
-                        <span className="px-1.5 py-0.5 bg-slate-100 rounded text-[11px] text-slate-700">Clarity</span>
-                        <span className="px-1.5 py-0.5 bg-slate-100 rounded text-[11px] text-slate-700">Momentum</span>
                         <span className="px-1.5 py-0.5 bg-slate-100 rounded text-[11px] text-slate-700">
-                          Breakthrough
+                          {t.portal.kwClarity}
+                        </span>
+                        <span className="px-1.5 py-0.5 bg-slate-100 rounded text-[11px] text-slate-700">
+                          {t.portal.kwMomentum}
+                        </span>
+                        <span className="px-1.5 py-0.5 bg-slate-100 rounded text-[11px] text-slate-700">
+                          {t.portal.kwBreakthrough}
                         </span>
                       </div>
                     </div>
@@ -151,10 +163,10 @@ export default function EditorialPortalPage() {
               {/* Daily Synthesis Pullquote Note */}
               <div className="mt-6 p-4 rounded-lg bg-[#FAF9F6] border-l-2 border-primary border-y border-r border-outline-variant">
                 <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1">
-                  Synthesis Advisory // Focus
+                  {t.portal.advisoryKicker}
                 </span>
                 <blockquote className="font-headline italic text-sm md:text-[15px] text-on-surface leading-snug">
-                  “Focus on consolidating your core idea in daylight. Share your draft early today before self-doubt clouds the horizon.”
+                  {t.portal.advisoryQuote}
                 </blockquote>
               </div>
             </div>
@@ -166,13 +178,13 @@ export default function EditorialPortalPage() {
                 className="text-xs font-mono font-medium text-slate-600 hover:text-on-surface flex items-center gap-1.5 transition-colors"
               >
                 <span className="material-symbols-outlined text-sm">file_download</span>
-                <span>Export 9:16 Specimen Print</span>
+                <span>{t.portal.exportPoster}</span>
               </Link>
               <Link
                 href="/workbench/demo-session"
                 className="text-xs font-semibold text-primary hover:text-emerald-700 flex items-center gap-1 group transition-colors"
               >
-                <span>View Full Synthesis Report</span>
+                <span>{t.portal.viewReport}</span>
                 <span className="material-symbols-outlined text-sm transition-transform group-hover:translate-x-0.5">
                   chevron_right
                 </span>
@@ -187,10 +199,10 @@ export default function EditorialPortalPage() {
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-slate-400 text-sm">grid_view</span>
               <span className="font-mono text-xs uppercase tracking-widest text-slate-600 font-medium">
-                SPREAD ARCHITECTURES // CHOOSE PROTOCOL
+                {t.portal.spreadHeader}
               </span>
             </div>
-            <span className="font-mono text-[11px] text-slate-400">4 ACTIVE BLUEPRINTS AVAILABLE</span>
+            <span className="font-mono text-[11px] text-slate-400">{t.portal.spreadSub}</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-outline-variant">
@@ -204,19 +216,19 @@ export default function EditorialPortalPage() {
                   </span>
                 </div>
                 <h3 className="font-headline font-bold text-lg text-on-surface group-hover:text-primary transition-colors">
-                  1-Card Quick Spark
+                  {t.portal.protocol1Title}
                 </h3>
                 <p className="text-xs text-[#475569] leading-relaxed mt-2.5">
-                  Single daily focus & clarity pulse. Ideal for morning alignment, micro-calibration, or quick sanity checks before meetings.
+                  {t.portal.protocol1Desc}
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between">
-                <span className="font-mono text-xs font-semibold text-slate-500">Rate: 0 CR</span>
+                <span className="font-mono text-xs font-semibold text-slate-500">{t.portal.rateFree}</span>
                 <Link
                   href="/app/readings/new?spread=1"
                   className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1 transition-colors"
                 >
-                  <span>Select</span>
+                  <span>{t.portal.select}</span>
                   <span className="material-symbols-outlined text-xs">arrow_outward</span>
                 </Link>
               </div>
@@ -233,19 +245,19 @@ export default function EditorialPortalPage() {
                   </span>
                 </div>
                 <h3 className="font-headline font-bold text-lg text-on-surface group-hover:text-primary transition-colors">
-                  3-Card Trajectory
+                  {t.portal.protocol2Title}
                 </h3>
                 <p className="text-xs text-[#475569] leading-relaxed mt-2.5">
-                  Situation · Action · Outcome dialectic with elemental synthesis and counter-shadow clarifiers for tactical direction.
+                  {t.portal.protocol2Desc}
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-outline-variant/80 flex items-center justify-between">
-                <span className="font-mono text-xs font-semibold text-emerald-700">Rate: 10 CR</span>
+                <span className="font-mono text-xs font-semibold text-emerald-700">{t.portal.rate10}</span>
                 <Link
                   href="/app/readings/new?spread=2"
                   className="text-xs font-semibold text-white bg-primary hover:bg-primary-hover px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all"
                 >
-                  <span>Deploy</span>
+                  <span>{t.portal.deploy}</span>
                   <span className="material-symbols-outlined text-xs">arrow_forward</span>
                 </Link>
               </div>
@@ -261,19 +273,19 @@ export default function EditorialPortalPage() {
                   </span>
                 </div>
                 <h3 className="font-headline font-bold text-lg text-on-surface group-hover:text-primary transition-colors">
-                  5-Card Creative Direction
+                  {t.portal.protocol3Title}
                 </h3>
                 <p className="text-xs text-[#475569] leading-relaxed mt-2.5">
-                  Core · Obstacle · Hidden Resource · Step · Integration blueprint tailored for project roadmaps and artistic blockages.
+                  {t.portal.protocol3Desc}
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between">
-                <span className="font-mono text-xs font-semibold text-slate-500">Rate: 15 CR</span>
+                <span className="font-mono text-xs font-semibold text-slate-500">{t.portal.rate15}</span>
                 <Link
                   href="/app/readings/new?spread=3"
                   className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1 transition-colors"
                 >
-                  <span>Select</span>
+                  <span>{t.portal.select}</span>
                   <span className="material-symbols-outlined text-xs">arrow_outward</span>
                 </Link>
               </div>
@@ -289,19 +301,19 @@ export default function EditorialPortalPage() {
                   </span>
                 </div>
                 <h3 className="font-headline font-bold text-lg text-on-surface group-hover:text-primary transition-colors">
-                  10-Card Celtic Cross
+                  {t.portal.protocol4Title}
                 </h3>
                 <p className="text-xs text-[#475569] leading-relaxed mt-2.5">
-                  Deep holistic blueprint uncovering root forces, unconscious currents, external perceptions, and cumulative outcomes.
+                  {t.portal.protocol4Desc}
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between">
-                <span className="font-mono text-xs font-semibold text-slate-500">Rate: 25 CR</span>
+                <span className="font-mono text-xs font-semibold text-slate-500">{t.portal.rate25}</span>
                 <Link
                   href="/app/readings/new?spread=4"
                   className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1 transition-colors"
                 >
-                  <span>Select</span>
+                  <span>{t.portal.select}</span>
                   <span className="material-symbols-outlined text-xs">arrow_outward</span>
                 </Link>
               </div>
@@ -312,16 +324,16 @@ export default function EditorialPortalPage() {
         {/* ARCHIVE CURATION STRIP */}
         <section className="p-6 lg:px-8 bg-[#FAF9F6] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-slate-500">
           <div className="flex items-center gap-4">
-            <span>ARCHIVE COMPLIANCE: RWS 1909 PUBLIC DOMAIN SPECIFICATION</span>
+            <span>{t.portal.archiveFooter}</span>
             <span className="hidden md:inline">·</span>
-            <span className="hidden md:inline">5 EDITIONS EN/VI CATALOG</span>
+            <span className="hidden md:inline">{t.portal.archiveFooterSub}</span>
           </div>
           <div className="flex items-center gap-6">
             <Link href="/catalog-picker" className="hover:text-on-surface underline transition-colors">
-              Browse 78-Card Manual Catalog
+              {t.portal.browseManual}
             </Link>
             <Link href="/decks-archive" className="hover:text-on-surface underline transition-colors">
-              5 Decks Contact Sheet
+              {t.portal.contactSheet}
             </Link>
           </div>
         </section>
@@ -331,4 +343,3 @@ export default function EditorialPortalPage() {
     </>
   );
 }
-
