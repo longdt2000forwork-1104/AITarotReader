@@ -1,0 +1,704 @@
+{
+ "00_the_fool": {
+  "commons_file": "File:RWS1909 - 00 Fool.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_00_Fool.jpeg",
+  "original_size": [
+   825,
+   1429
+  ],
+  "license": "Public domain"
+ },
+ "01_the_magician": {
+  "commons_file": "File:RWS1909 - 01 Magician.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_01_Magician.jpeg",
+  "original_size": [
+   849,
+   1429
+  ],
+  "license": "Public domain"
+ },
+ "02_the_high_priestess": {
+  "commons_file": "File:RWS1909 - 02 High Priestess.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_02_High_Priestess.jpeg",
+  "original_size": [
+   819,
+   1451
+  ],
+  "license": "Public domain"
+ },
+ "03_the_empress": {
+  "commons_file": "File:RWS1909 - 03 Empress.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_03_Empress.jpeg",
+  "original_size": [
+   860,
+   1455
+  ],
+  "license": "Public domain"
+ },
+ "04_the_emperor": {
+  "commons_file": "File:RWS1909 - 04 Emperor.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_04_Emperor.jpeg",
+  "original_size": [
+   816,
+   1417
+  ],
+  "license": "Public domain"
+ },
+ "05_the_hierophant": {
+  "commons_file": "File:RWS1909 - 05 Hierophant.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_05_Hierophant.jpeg",
+  "original_size": [
+   832,
+   1416
+  ],
+  "license": "Public domain"
+ },
+ "06_the_lovers": {
+  "commons_file": "File:RWS1909 - 06 Lovers.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_06_Lovers.jpeg",
+  "original_size": [
+   814,
+   1430
+  ],
+  "license": "Public domain"
+ },
+ "07_the_chariot": {
+  "commons_file": "File:RWS1909 - 07 Chariot.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_07_Chariot.jpeg",
+  "original_size": [
+   838,
+   1441
+  ],
+  "license": "Public domain"
+ },
+ "08_strength": {
+  "commons_file": "File:RWS1909 - 08 Strength.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_08_Strength.jpeg",
+  "original_size": [
+   817,
+   1413
+  ],
+  "license": "Public domain"
+ },
+ "09_the_hermit": {
+  "commons_file": "File:RWS1909 - 09 Hermit.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_09_Hermit.jpeg",
+  "original_size": [
+   842,
+   1424
+  ],
+  "license": "Public domain"
+ },
+ "10_wheel_of_fortune": {
+  "commons_file": "File:RWS1909 - 10 Wheel of Fortune.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_10_Wheel_of_Fortune.jpeg",
+  "original_size": [
+   814,
+   1437
+  ],
+  "license": "Public domain"
+ },
+ "11_justice": {
+  "commons_file": "File:RWS1909 - 11 Justice.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_11_Justice.jpeg",
+  "original_size": [
+   828,
+   1441
+  ],
+  "license": "Public domain"
+ },
+ "12_the_hanged_man": {
+  "commons_file": "File:RWS1909 - 12 Hanged Man.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_12_Hanged_Man.jpeg",
+  "original_size": [
+   812,
+   1423
+  ],
+  "license": "Public domain"
+ },
+ "13_death": {
+  "commons_file": "File:RWS1909 - 13 Death.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_13_Death.jpeg",
+  "original_size": [
+   831,
+   1424
+  ],
+  "license": "Public domain"
+ },
+ "14_temperance": {
+  "commons_file": "File:RWS1909 - 14 Temperance.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_14_Temperance.jpeg",
+  "original_size": [
+   826,
+   1433
+  ],
+  "license": "Public domain"
+ },
+ "15_the_devil": {
+  "commons_file": "File:RWS1909 - 15 Devil.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_15_Devil.jpeg",
+  "original_size": [
+   849,
+   1453
+  ],
+  "license": "Public domain"
+ },
+ "16_the_tower": {
+  "commons_file": "File:RWS1909 - 16 Tower.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_16_Tower.jpeg",
+  "original_size": [
+   814,
+   1424
+  ],
+  "license": "Public domain"
+ },
+ "17_the_star": {
+  "commons_file": "File:RWS1909 - 17 Star.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_17_Star.jpeg",
+  "original_size": [
+   839,
+   1421
+  ],
+  "license": "Public domain"
+ },
+ "18_the_moon": {
+  "commons_file": "File:RWS1909 - 18 Moon.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_18_Moon.jpeg",
+  "original_size": [
+   814,
+   1441
+  ],
+  "license": "Public domain"
+ },
+ "19_the_sun": {
+  "commons_file": "File:RWS1909 - 19 Sun.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_19_Sun.jpeg",
+  "original_size": [
+   848,
+   1459
+  ],
+  "license": "Public domain"
+ },
+ "20_judgement": {
+  "commons_file": "File:RWS1909 - 20 Judgement.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_20_Judgement.jpeg",
+  "original_size": [
+   832,
+   1421
+  ],
+  "license": "Public domain"
+ },
+ "21_the_world": {
+  "commons_file": "File:RWS1909 - 21 World.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_21_World.jpeg",
+  "original_size": [
+   833,
+   1418
+  ],
+  "license": "Public domain"
+ },
+ "22_ace_of_wands": {
+  "commons_file": "File:RWS1909 - Wands 01.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_01.jpeg",
+  "original_size": [
+   815,
+   1448
+  ],
+  "license": "Public domain"
+ },
+ "23_two_of_wands": {
+  "commons_file": "File:RWS1909 - Wands 02.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_02.jpeg",
+  "original_size": [
+   844,
+   1435
+  ],
+  "license": "Public domain"
+ },
+ "24_three_of_wands": {
+  "commons_file": "File:RWS1909 - Wands 03.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_03.jpeg",
+  "original_size": [
+   816,
+   1414
+  ],
+  "license": "Public domain"
+ },
+ "25_four_of_wands": {
+  "commons_file": "File:RWS1909 - Wands 04.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_04.jpeg",
+  "original_size": [
+   836,
+   1428
+  ],
+  "license": "Public domain"
+ },
+ "26_five_of_wands": {
+  "commons_file": "File:RWS1909 - Wands 05.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_05.jpeg",
+  "original_size": [
+   815,
+   1438
+  ],
+  "license": "Public domain"
+ },
+ "27_six_of_wands": {
+  "commons_file": "File:RWS1909 - Wands 06.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_06.jpeg",
+  "original_size": [
+   843,
+   1445
+  ],
+  "license": "Public domain"
+ },
+ "28_seven_of_wands": {
+  "commons_file": "File:RWS1909 - Wands 07.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_07.jpeg",
+  "original_size": [
+   821,
+   1425
+  ],
+  "license": "Public domain"
+ },
+ "29_eight_of_wands": {
+  "commons_file": "File:RWS1909 - Wands 08.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_08.jpeg",
+  "original_size": [
+   840,
+   1425
+  ],
+  "license": "Public domain"
+ },
+ "30_nine_of_wands": {
+  "commons_file": "File:RWS1909 - Wands 09.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_09.jpeg",
+  "original_size": [
+   819,
+   1434
+  ],
+  "license": "Public domain"
+ },
+ "31_ten_of_wands": {
+  "commons_file": "File:RWS1909 - Wands 10.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_10.jpeg",
+  "original_size": [
+   839,
+   1439
+  ],
+  "license": "Public domain"
+ },
+ "32_page_of_wands": {
+  "commons_file": "File:RWS1909 - Wands 11.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_11.jpeg",
+  "original_size": [
+   820,
+   1423
+  ],
+  "license": "Public domain"
+ },
+ "33_knight_of_wands": {
+  "commons_file": "File:RWS1909 - Wands 12.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_12.jpeg",
+  "original_size": [
+   833,
+   1415
+  ],
+  "license": "Public domain"
+ },
+ "34_queen_of_wands": {
+  "commons_file": "File:RWS1909 - Wands 13.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_13.jpeg",
+  "original_size": [
+   822,
+   1446
+  ],
+  "license": "Public domain"
+ },
+ "35_king_of_wands": {
+  "commons_file": "File:RWS1909 - Wands 14.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_14.jpeg",
+  "original_size": [
+   851,
+   1441
+  ],
+  "license": "Public domain"
+ },
+ "36_ace_of_cups": {
+  "commons_file": "File:RWS1909 - Cups 01.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_01.jpeg",
+  "original_size": [
+   816,
+   1418
+  ],
+  "license": "Public domain"
+ },
+ "37_two_of_cups": {
+  "commons_file": "File:RWS1909 - Cups 02.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_02.jpeg",
+  "original_size": [
+   833,
+   1413
+  ],
+  "license": "Public domain"
+ },
+ "38_three_of_cups": {
+  "commons_file": "File:RWS1909 - Cups 03.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_03.jpeg",
+  "original_size": [
+   818,
+   1448
+  ],
+  "license": "Public domain"
+ },
+ "39_four_of_cups": {
+  "commons_file": "File:RWS1909 - Cups 04.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_04.jpeg",
+  "original_size": [
+   839,
+   1433
+  ],
+  "license": "Public domain"
+ },
+ "40_five_of_cups": {
+  "commons_file": "File:RWS1909 - Cups 05.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_05.jpeg",
+  "original_size": [
+   818,
+   1430
+  ],
+  "license": "Public domain"
+ },
+ "41_six_of_cups": {
+  "commons_file": "File:RWS1909 - Cups 06.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_06.jpeg",
+  "original_size": [
+   834,
+   1424
+  ],
+  "license": "Public domain"
+ },
+ "42_seven_of_cups": {
+  "commons_file": "File:RWS1909 - Cups 07.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_07.jpeg",
+  "original_size": [
+   817,
+   1451
+  ],
+  "license": "Public domain"
+ },
+ "43_eight_of_cups": {
+  "commons_file": "File:RWS1909 - Cups 08.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_08.jpeg",
+  "original_size": [
+   830,
+   1438
+  ],
+  "license": "Public domain"
+ },
+ "44_nine_of_cups": {
+  "commons_file": "File:RWS1909 - Cups 09.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_09.jpeg",
+  "original_size": [
+   818,
+   1421
+  ],
+  "license": "Public domain"
+ },
+ "45_ten_of_cups": {
+  "commons_file": "File:RWS1909 - Cups 10.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_10.jpeg",
+  "original_size": [
+   841,
+   1420
+  ],
+  "license": "Public domain"
+ },
+ "46_page_of_cups": {
+  "commons_file": "File:RWS1909 - Cups 11.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_11.jpeg",
+  "original_size": [
+   817,
+   1436
+  ],
+  "license": "Public domain"
+ },
+ "47_knight_of_cups": {
+  "commons_file": "File:RWS1909 - Cups 12.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_12.jpeg",
+  "original_size": [
+   836,
+   1436
+  ],
+  "license": "Public domain"
+ },
+ "48_queen_of_cups": {
+  "commons_file": "File:RWS1909 - Cups 13.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_13.jpeg",
+  "original_size": [
+   820,
+   1425
+  ],
+  "license": "Public domain"
+ },
+ "49_king_of_cups": {
+  "commons_file": "File:RWS1909 - Cups 14.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_14.jpeg",
+  "original_size": [
+   838,
+   1424
+  ],
+  "license": "Public domain"
+ },
+ "50_ace_of_swords": {
+  "commons_file": "File:RWS1909 - Swords 01.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_01.jpeg",
+  "original_size": [
+   826,
+   1443
+  ],
+  "license": "Public domain"
+ },
+ "51_two_of_swords": {
+  "commons_file": "File:RWS1909 - Swords 02.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_02.jpeg",
+  "original_size": [
+   839,
+   1432
+  ],
+  "license": "Public domain"
+ },
+ "52_three_of_swords": {
+  "commons_file": "File:RWS1909 - Swords 03.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_03.jpeg",
+  "original_size": [
+   818,
+   1418
+  ],
+  "license": "Public domain"
+ },
+ "53_four_of_swords": {
+  "commons_file": "File:RWS1909 - Swords 04.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_04.jpeg",
+  "original_size": [
+   834,
+   1418
+  ],
+  "license": "Public domain"
+ },
+ "54_five_of_swords": {
+  "commons_file": "File:RWS1909 - Swords 05.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_05.jpeg",
+  "original_size": [
+   816,
+   1434
+  ],
+  "license": "Public domain"
+ },
+ "55_six_of_swords": {
+  "commons_file": "File:RWS1909 - Swords 06.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_06.jpeg",
+  "original_size": [
+   842,
+   1440
+  ],
+  "license": "Public domain"
+ },
+ "56_seven_of_swords": {
+  "commons_file": "File:RWS1909 - Swords 07.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_07.jpeg",
+  "original_size": [
+   816,
+   1433
+  ],
+  "license": "Public domain"
+ },
+ "57_eight_of_swords": {
+  "commons_file": "File:RWS1909 - Swords 08.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_08.jpeg",
+  "original_size": [
+   838,
+   1428
+  ],
+  "license": "Public domain"
+ },
+ "58_nine_of_swords": {
+  "commons_file": "File:RWS1909 - Swords 09.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_09.jpeg",
+  "original_size": [
+   817,
+   1453
+  ],
+  "license": "Public domain"
+ },
+ "59_ten_of_swords": {
+  "commons_file": "File:RWS1909 - Swords 10.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_10.jpeg",
+  "original_size": [
+   846,
+   1453
+  ],
+  "license": "Public domain"
+ },
+ "60_page_of_swords": {
+  "commons_file": "File:RWS1909 - Swords 11.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_11.jpeg",
+  "original_size": [
+   818,
+   1430
+  ],
+  "license": "Public domain"
+ },
+ "61_knight_of_swords": {
+  "commons_file": "File:RWS1909 - Swords 12.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_12.jpeg",
+  "original_size": [
+   837,
+   1419
+  ],
+  "license": "Public domain"
+ },
+ "62_queen_of_swords": {
+  "commons_file": "File:RWS1909 - Swords 13.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_13.jpeg",
+  "original_size": [
+   819,
+   1452
+  ],
+  "license": "Public domain"
+ },
+ "63_king_of_swords": {
+  "commons_file": "File:RWS1909 - Swords 14.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_14.jpeg",
+  "original_size": [
+   846,
+   1442
+  ],
+  "license": "Public domain"
+ },
+ "64_ace_of_pentacles": {
+  "commons_file": "File:RWS1909 - Pentacles 01.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_01.jpeg",
+  "original_size": [
+   819,
+   1423
+  ],
+  "license": "Public domain"
+ },
+ "65_two_of_pentacles": {
+  "commons_file": "File:RWS1909 - Pentacles 02.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_02.jpeg",
+  "original_size": [
+   833,
+   1423
+  ],
+  "license": "Public domain"
+ },
+ "66_three_of_pentacles": {
+  "commons_file": "File:RWS1909 - Pentacles 03.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_03.jpeg",
+  "original_size": [
+   817,
+   1443
+  ],
+  "license": "Public domain"
+ },
+ "67_four_of_pentacles": {
+  "commons_file": "File:RWS1909 - Pentacles 04.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_04.jpeg",
+  "original_size": [
+   843,
+   1449
+  ],
+  "license": "Public domain"
+ },
+ "68_five_of_pentacles": {
+  "commons_file": "File:RWS1909 - Pentacles 05.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_05.jpeg",
+  "original_size": [
+   823,
+   1412
+  ],
+  "license": "Public domain"
+ },
+ "69_six_of_pentacles": {
+  "commons_file": "File:RWS1909 - Pentacles 06.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_06.jpeg",
+  "original_size": [
+   840,
+   1415
+  ],
+  "license": "Public domain"
+ },
+ "70_seven_of_pentacles": {
+  "commons_file": "File:RWS1909 - Pentacles 07.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_07.jpeg",
+  "original_size": [
+   818,
+   1444
+  ],
+  "license": "Public domain"
+ },
+ "71_eight_of_pentacles": {
+  "commons_file": "File:RWS1909 - Pentacles 08.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_08.jpeg",
+  "original_size": [
+   839,
+   1452
+  ],
+  "license": "Public domain"
+ },
+ "72_nine_of_pentacles": {
+  "commons_file": "File:RWS1909 - Pentacles 09.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_09.jpeg",
+  "original_size": [
+   817,
+   1420
+  ],
+  "license": "Public domain"
+ },
+ "73_ten_of_pentacles": {
+  "commons_file": "File:RWS1909 - Pentacles 10.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_10.jpeg",
+  "original_size": [
+   834,
+   1434
+  ],
+  "license": "Public domain"
+ },
+ "74_page_of_pentacles": {
+  "commons_file": "File:RWS1909 - Pentacles 11.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_11.jpeg",
+  "original_size": [
+   816,
+   1438
+  ],
+  "license": "Public domain"
+ },
+ "75_knight_of_pentacles": {
+  "commons_file": "File:RWS1909 - Pentacles 12.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_12.jpeg",
+  "original_size": [
+   844,
+   1440
+  ],
+  "license": "Public domain"
+ },
+ "76_queen_of_pentacles": {
+  "commons_file": "File:RWS1909 - Pentacles 13.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_13.jpeg",
+  "original_size": [
+   825,
+   1431
+  ],
+  "license": "Public domain"
+ },
+ "77_king_of_pentacles": {
+  "commons_file": "File:RWS1909 - Pentacles 14.jpeg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_14.jpeg",
+  "original_size": [
+   839,
+   1419
+  ],
+  "license": "Public domain"
+ }
+}

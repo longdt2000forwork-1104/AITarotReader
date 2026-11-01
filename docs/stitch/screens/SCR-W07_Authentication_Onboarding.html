@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Web — Authentication &amp; Mystic Profile Onboarding (SCR-W07)</title>
+<!-- Google Fonts: Newsreader (Editorial Serif) & Be Vietnam Pro (Disciplined Clean Sans) -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Configuration Verbatim from System Prompt -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-bright": "#faf9f6",
+            "outline-variant": "#bccac0",
+            "on-secondary": "#ffffff",
+            "background": "#faf9f6",
+            "on-primary-container": "#f5fff7",
+            "surface-variant": "#e3e2e0",
+            "on-background": "#1a1c1a",
+            "secondary-container": "#dae2fd",
+            "tertiary-fixed-dim": "#ffb77d",
+            "on-tertiary": "#ffffff",
+            "tertiary": "#8d4b00",
+            "surface-container-lowest": "#ffffff",
+            "outline": "#6d7a72",
+            "surface-tint": "#006c4a",
+            "primary": "#006948",
+            "on-tertiary-fixed": "#2f1500",
+            "inverse-primary": "#68dba9",
+            "on-surface-variant": "#3d4a42",
+            "inverse-surface": "#2f312f",
+            "secondary": "#565e74",
+            "surface-container-low": "#f4f3f1",
+            "primary-container": "#00855d",
+            "on-surface": "#1a1c1a",
+            "on-primary": "#ffffff",
+            "on-tertiary-fixed-variant": "#6e3900",
+            "inverse-on-surface": "#f2f1ee",
+            "surface-dim": "#dbdad7",
+            "surface": "#faf9f6",
+            "surface-container": "#efeeeb",
+            "on-secondary-fixed": "#131b2e",
+            "tertiary-fixed": "#ffdcc3",
+            "on-error-container": "#93000a",
+            "primary-fixed-dim": "#68dba9",
+            "on-error": "#ffffff",
+            "on-secondary-container": "#5c647a",
+            "on-primary-fixed": "#002114",
+            "on-tertiary-container": "#fffbff",
+            "on-secondary-fixed-variant": "#3f465c",
+            "error": "#ba1a1a",
+            "surface-container-highest": "#e3e2e0",
+            "secondary-fixed-dim": "#bec6e0",
+            "primary-fixed": "#85f8c4",
+            "on-primary-fixed-variant": "#005137",
+            "surface-container-high": "#e9e8e5",
+            "tertiary-container": "#b15f00",
+            "secondary-fixed": "#dae2fd",
+            "error-container": "#ffdad6"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xs": "0.25rem",
+            "space-xl": "2.5rem",
+            "space-sm": "0.5rem",
+            "space-md": "1rem",
+            "space-lg": "1.5rem",
+            "margin": "1.5rem",
+            "gutter": "1.25rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Be Vietnam Pro"],
+            "label-md": ["Be Vietnam Pro"],
+            "label-sm": ["Be Vietnam Pro"],
+            "headline-md": ["Newsreader"],
+            "headline-lg": ["Newsreader"],
+            "body-md": ["Be Vietnam Pro"],
+            "headline-xl": ["Newsreader"],
+            "body-sm": ["Be Vietnam Pro"],
+            "headline-sm": ["Newsreader"]
+          },
+          "fontSize": {
+            "body-lg": ["16px", { "lineHeight": "26px", "fontWeight": "400" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "22px", "fontWeight": "400" }],
+            "headline-xl": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.025em", "fontWeight": "600" }],
+            "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 20px;
+      line-height: 1;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-feature-settings: 'liga';
+      -webkit-font-smoothing: antialiased;
+    }
+    /* Editorial fine woodcut grid aesthetic */
+    .fine-hairline {
+      border: 1px solid #E2E8F0;
+    }
+    .fine-hairline-b {
+      border-bottom: 1px solid #E2E8F0;
+    }
+    .fine-hairline-r {
+      border-right: 1px solid #E2E8F0;
+    }
+    .fine-hairline-t {
+      border-top: 1px solid #E2E8F0;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface antialiased font-body-md text-body-md selection:bg-primary-fixed selection:text-on-primary-fixed min-h-screen flex flex-col justify-between">
+<!-- 1. Top Global Utility Bar (SCR-W07 Header) -->
+<header class="w-full h-14 bg-surface-container-lowest fine-hairline-b px-8 flex items-center justify-between z-30 select-none">
+<!-- Left Identity Cluster -->
+<div class="flex items-center space-x-4">
+<div class="flex items-center space-x-2">
+<!-- Botanical 8-pointed star crest -->
+<svg class="w-5 h-5 text-primary" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 0L14.2 9.8L24 12L14.2 14.2L12 24L9.8 14.2L0 12L9.8 9.8L12 0Z" opacity="0.9"></path>
+<circle cx="12" cy="12" fill="#FAF9F6" r="2.5"></circle>
+</svg>
+<span class="font-headline-sm text-sm tracking-tight font-bold text-on-surface uppercase">AITAROT // ARCHIVE &amp; ORACLE</span>
+</div>
+<span class="text-outline-variant">|</span>
+<div class="flex items-center space-x-1.5 px-2.5 py-0.5 rounded bg-surface-container-low text-on-surface-variant text-[11px] font-mono tracking-wider">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span class="font-semibold text-primary">SCR-W07</span>
+<span class="text-outline">· AUTHENTICATION &amp; MYSTIC ONBOARDING</span>
+</div>
+</div>
+<!-- Right Utility Cluster -->
+<div class="flex items-center space-x-6 text-on-surface-variant font-label-sm text-label-sm">
+<div class="flex items-center bg-surface-container px-2 py-1 rounded fine-hairline text-on-surface">
+<span class="text-primary font-bold">EN</span>
+<span class="mx-1.5 text-outline-variant">|</span>
+<span class="text-on-surface-variant hover:text-on-surface cursor-pointer">VI</span>
+</div>
+<a class="inline-flex items-center space-x-1 text-on-surface hover:text-primary transition-colors font-medium" href="#">
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+<span>Back to Editorial Portal (Guest Mode)</span>
+</a>
+</div>
+</header>
+<!-- 2. Main Body: 2-Column Architectural Desktop Split Screen (1280px container layout) -->
+<main class="w-full flex-1 max-w-[1440px] mx-auto grid grid-cols-12 min-h-[calc(1024px-56px)] bg-surface">
+<!-- LEFT COLUMN: Authentic Enrollment & OAuth Vault (~540px equivalent) -->
+<section class="col-span-12 lg:col-span-5 bg-surface-container-lowest fine-hairline-r p-8 lg:p-12 flex flex-col justify-between">
+<div>
+<!-- Segmented Tab Switcher -->
+<nav class="flex items-center space-x-8 fine-hairline-b pb-3 mb-8">
+<button class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer pb-2" type="button">
+            01 · Sign In (Đăng Nhập)
+          </button>
+<button class="relative font-label-md text-label-md text-primary font-semibold pb-2 cursor-pointer flex items-center space-x-1" type="button">
+<span>02 · Create Sanctuary Account (Đăng Ký)</span>
+<span class="absolute bottom-[-13px] left-0 right-0 h-0.5 bg-primary"></span>
+</button>
+</nav>
+<!-- Editorial Headline -->
+<div class="mb-8">
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-2 font-normal">
+            Enter the Archival Sanctuary
+          </h1>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+            Synchronize your Tarot Journal, unlocked 78-card editions, and Crystal Ledger across Web &amp; Android.
+          </p>
+</div>
+<!-- Google OAuth 2.0 Button -->
+<button class="w-full py-3 px-4 rounded-lg fine-hairline bg-surface-container-lowest hover:bg-surface-container-low transition-all flex items-center justify-center space-x-3 text-on-surface font-body-md font-medium shadow-sm mb-6 group cursor-pointer" type="button">
+<svg class="w-4 h-4 flex-shrink-0" viewbox="0 0 24 24">
+<path d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" fill="#4285F4"></path>
+<path d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z" fill="#34A853"></path>
+<path d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.15z" fill="#FBBC05"></path>
+<path d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z" fill="#EA4335"></path>
+</svg>
+<span class="group-hover:text-primary transition-colors">Continue with Google (OAuth 2.0)</span>
+</button>
+<!-- Divider -->
+<div class="relative flex items-center justify-center my-6">
+<div class="w-full fine-hairline-t"></div>
+<span class="absolute bg-surface-container-lowest px-3 text-[10px] uppercase tracking-widest text-outline font-label-sm font-semibold">
+            Or enroll with email &amp; 6-digit OTP
+          </span>
+</div>
+<!-- Form Fields -->
+<form class="space-y-4" onsubmit="event.preventDefault();">
+<!-- Display Name -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1.5">
+              Display Name / Tên Hiển Thị
+            </label>
+<div class="relative flex items-center">
+<span class="absolute left-3.5 material-symbols-outlined text-outline text-[18px]">person</span>
+<input class="w-full bg-surface fine-hairline rounded-lg py-2.5 pl-10 pr-4 text-on-surface font-body-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all" placeholder="Enter your sanctuary alias" type="text" value="Aria M. Nguyen"/>
+</div>
+</div>
+<!-- Email Address -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1.5">
+              Email Address
+            </label>
+<div class="relative flex items-center">
+<span class="absolute left-3.5 material-symbols-outlined text-outline text-[18px]">mail</span>
+<input class="w-full bg-surface fine-hairline rounded-lg py-2.5 pl-10 pr-10 text-on-surface font-body-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all" placeholder="you@domain.com" type="email" value="aria.nguyen@studio.vn"/>
+<span class="absolute right-3.5 material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Row: Password & OTP -->
+<div class="grid grid-cols-2 gap-3.5">
+<!-- Password -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1.5">
+                Password / Mật Khẩu
+              </label>
+<div class="relative flex items-center">
+<input class="w-full bg-surface fine-hairline rounded-lg py-2.5 px-3.5 text-on-surface font-body-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary tracking-widest" type="password" value="••••••••••••"/>
+<button class="absolute right-3 text-outline hover:text-on-surface" type="button">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+</button>
+</div>
+</div>
+<!-- OTP Field -->
+<div>
+<div class="flex items-center justify-between mb-1.5">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+                  6-Digit OTP
+                </label>
+<span class="text-[10px] text-primary font-bold bg-primary-fixed/30 px-1.5 py-0.2 rounded">
+                  Verified ✓
+                </span>
+</div>
+<div class="relative flex items-center">
+<input class="w-full bg-surface fine-hairline rounded-lg py-2.5 px-3 text-on-surface font-mono font-medium focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary" type="text" value="842-190"/>
+<span class="absolute right-2 text-[10px] text-outline font-mono">00:48</span>
+</div>
+</div>
+</div>
+<!-- Primary CTA Button -->
+<div class="pt-2">
+<button class="w-full bg-primary hover:bg-[#047857] text-on-primary py-3.5 px-6 rounded-lg font-body-md font-semibold tracking-wide flex items-center justify-center space-x-2 shadow-sm transition-all cursor-pointer group" type="submit">
+<span>Complete Enrollment &amp; Claim +15 Welcome Credits</span>
+<span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</form>
+<!-- Footer Switch & Account Recovery Links -->
+<div class="mt-6 pt-5 fine-hairline-t flex items-center justify-between text-xs text-on-surface-variant font-label-md">
+<span class="hover:text-primary cursor-pointer transition-colors">
+            Already registered? <strong class="text-on-surface underline font-semibold">Sign In</strong>
+</span>
+<span class="text-outline-variant hover:text-on-surface cursor-pointer transition-colors">
+            Forgot Password?
+          </span>
+</div>
+</div>
+<!-- Trust & Canonical Compliance Stamp -->
+<div class="pt-8 text-[11px] text-outline flex items-start space-x-2">
+<span class="material-symbols-outlined text-[16px] text-primary flex-shrink-0 mt-0.5">verified_user</span>
+<p class="leading-tight">
+          End-to-end encrypted mystic vault. Zero advertising telemetry. RWS 1909 canonical alignment.
+        </p>
+</div>
+</section>
+<!-- RIGHT COLUMN: Mystic Profile & Natal Blueprint Calibration (~740px equivalent) -->
+<section class="col-span-12 lg:col-span-7 bg-surface p-8 lg:p-12 flex flex-col justify-between overflow-y-auto">
+<div class="space-y-6">
+<!-- Header Badge & Sub-system Tracker -->
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-label-sm text-label-sm font-bold tracking-widest text-primary uppercase">
+              STEP 02 // PERSONAL MYSTIC PROFILE (FR-1.2 &amp; FR-1.3)
+            </span>
+</div>
+<span class="px-2 py-0.5 bg-surface-container-high text-on-surface-variant rounded text-[11px] font-mono uppercase tracking-wider font-semibold">
+            LIVE NATAL CALIBRATION
+          </span>
+</div>
+<!-- Section Title & Narrative -->
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-1">
+            Personal Natal &amp; Inquiry Blueprint
+          </h2>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed max-w-2xl">
+            Used by the AI Synthesis Engine to harmonize card archetypes and reading interpretations with your celestial and numerological rhythm.
+          </p>
+</div>
+<!-- Interactive Birth Calibration Card -->
+<div class="bg-surface-container-lowest fine-hairline rounded-xl p-5 shadow-sm">
+<div class="flex items-center justify-between mb-3">
+<label class="font-label-sm text-label-sm font-semibold tracking-wider text-on-surface uppercase flex items-center space-x-2">
+<span class="material-symbols-outlined text-[16px] text-primary">calendar_month</span>
+<span>Date of Birth (DD / MM / YYYY) &amp; Natal Ascendant</span>
+</label>
+<span class="text-xs text-outline font-mono">UTC+07:00</span>
+</div>
+<div class="grid grid-cols-3 gap-3">
+<!-- Day -->
+<div class="p-3 bg-surface fine-hairline rounded-lg">
+<span class="block text-[10px] uppercase font-semibold text-outline mb-0.5">Day / Ngày</span>
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-on-surface">12</span>
+<span class="text-xs text-primary font-medium">Aries Decan II</span>
+</div>
+</div>
+<!-- Month -->
+<div class="p-3 bg-surface fine-hairline rounded-lg">
+<span class="block text-[10px] uppercase font-semibold text-outline mb-0.5">Month / Tháng</span>
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-on-surface">04</span>
+<span class="text-xs text-on-surface-variant">April</span>
+</div>
+</div>
+<!-- Year -->
+<div class="p-3 bg-surface fine-hairline rounded-lg">
+<span class="block text-[10px] uppercase font-semibold text-outline mb-0.5">Year / Năm</span>
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-on-surface">1998</span>
+<span class="text-xs text-outline font-mono">Tiger · Hổ</span>
+</div>
+</div>
+</div>
+<div class="mt-3.5 pt-3 fine-hairline-t flex items-center justify-between text-xs text-on-surface-variant">
+<div class="flex items-center space-x-1.5">
+<span class="material-symbols-outlined text-[15px] text-outline">schedule</span>
+<span>Time of Birth: <strong class="text-on-surface font-semibold">04:15 ICT</strong> (Indochina Standard Time)</span>
+</div>
+<span class="text-primary hover:underline cursor-pointer font-medium">Refine Natal House &amp; Minutes →</span>
+</div>
+</div>
+<!-- 2 Side-by-Side Architectural Specimen Cards (Emperor & Hermit Canonical Engravings) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Card A: Sun Sign Aries / IV The Emperor -->
+<div class="bg-surface-container-lowest fine-hairline rounded-xl p-4.5 flex space-x-4 items-stretch shadow-sm relative overflow-hidden">
+<!-- Canonical Engraving Plate (SVG 80x110) -->
+<div class="w-20 h-28 flex-shrink-0 bg-surface rounded fine-hairline p-1 flex items-center justify-center bg-[#fdfcf9]">
+<svg class="w-full h-full text-[#1A1C1A]" fill="none" stroke="currentColor" viewbox="0 0 80 110">
+<!-- Outer Frame hairline -->
+<rect fill="#FAF9F6" height="106" rx="2" stroke="#6D7A72" stroke-width="0.8" width="76" x="2" y="2"></rect>
+<rect height="101" stroke="#BCCAC0" stroke-width="0.5" width="71" x="4.5" y="4.5"></rect>
+<!-- Alpine Mountain Peaks in background -->
+<path d="M6 55 L24 24 L42 55 L58 32 L74 55 Z" fill="#E3E2E0" stroke="#6D7A72" stroke-width="0.7"></path>
+<!-- Stone Throne Base & Ram Heads -->
+<path d="M18 52 L62 52 L60 98 L20 98 Z" fill="#FAF9F6" stroke="#1A1C1A" stroke-width="0.9"></path>
+<!-- Ram Head Left -->
+<path d="M15 54 C12 48 20 44 24 50 C22 52 18 53 15 54 Z" fill="#6D7A72" stroke="#1A1C1A" stroke-width="0.6"></path>
+<!-- Ram Head Right -->
+<path d="M65 54 C68 48 60 44 56 50 C58 52 62 53 65 54 Z" fill="#6D7A72" stroke="#1A1C1A" stroke-width="0.6"></path>
+<!-- The Emperor figure (Robes, Long Beard, Crown) -->
+<path d="M30 46 Q40 40 50 46 L53 88 L27 88 Z" fill="#006948" fill-opacity="0.12" stroke="#1A1C1A" stroke-width="0.8"></path>
+<!-- Crown & Armor -->
+<path d="M35 34 L37 28 L40 33 L43 28 L45 34 Z" fill="#8D4B00" stroke="#1A1C1A" stroke-width="0.7"></path>
+<!-- Long white beard -->
+<path d="M36 42 Q40 52 44 42" fill="#FAF9F6" stroke="#1A1C1A" stroke-width="0.8"></path>
+<!-- Golden Scepter (Ankh) in right hand -->
+<line stroke="#8D4B00" stroke-width="1.2" x1="28" x2="28" y1="56" y2="78"></line>
+<circle cx="28" cy="54" fill="#FAF9F6" r="3" stroke="#8D4B00" stroke-width="1"></circle>
+<line stroke="#8D4B00" stroke-width="1" x1="25" x2="31" y1="58" y2="58"></line>
+<!-- Golden Orb in left hand -->
+<circle cx="52" cy="66" fill="#8D4B00" fill-opacity="0.3" r="3.5" stroke="#8D4B00" stroke-width="1"></circle>
+<!-- Roman Numeral IV & Botanical Thistle border snippet -->
+<text fill="#1A1C1A" font-family="Newsreader, serif" font-size="7" font-weight="bold" stroke="none" text-anchor="middle" x="40" y="14">IV</text>
+<text fill="#6D7A72" font-family="Be Vietnam Pro, sans-serif" font-size="4.5" font-weight="600" stroke="none" text-anchor="middle" x="40" y="103">THE EMPEROR</text>
+</svg>
+</div>
+<!-- Card Specimen Data -->
+<div class="flex-1 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold text-primary uppercase tracking-widest font-label-sm">SUN SIGN · ♈ ARIES</span>
+<span class="text-[10px] text-outline font-mono">DECAN II</span>
+</div>
+<h3 class="font-headline-sm text-[17px] text-on-surface leading-tight mb-1">
+                  Bạch Dương · The Initiator
+                </h3>
+<p class="text-xs text-on-surface-variant mb-2">
+                  Element: <span class="font-medium text-on-surface">Fire (Cardinal)</span> • Ruler: <span class="font-medium text-on-surface">Mars</span>
+</p>
+</div>
+<div class="p-2 bg-surface fine-hairline rounded text-[11px] text-on-surface-variant flex items-center justify-between">
+<span>Tarot Key: <strong class="text-on-surface font-semibold">IV The Emperor</strong></span>
+<span class="text-primary font-bold">Cardinal Will</span>
+</div>
+</div>
+</div>
+<!-- Card B: Life Path 07 / IX The Hermit -->
+<div class="bg-surface-container-lowest fine-hairline rounded-xl p-4.5 flex space-x-4 items-stretch shadow-sm relative overflow-hidden">
+<!-- Canonical Engraving Plate (SVG 80x110) -->
+<div class="w-20 h-28 flex-shrink-0 bg-surface rounded fine-hairline p-1 flex items-center justify-center bg-[#fdfcf9]">
+<svg class="w-full h-full text-[#1A1C1A]" fill="none" stroke="currentColor" viewbox="0 0 80 110">
+<!-- Outer Frame hairline -->
+<rect fill="#FAF9F6" height="106" rx="2" stroke="#6D7A72" stroke-width="0.8" width="76" x="2" y="2"></rect>
+<rect height="101" stroke="#BCCAC0" stroke-width="0.5" width="71" x="4.5" y="4.5"></rect>
+<!-- Craggy Mountain Peak Sage Stands Upon -->
+<path d="M12 96 L35 72 L58 84 L72 96 Z" fill="#E3E2E0" stroke="#6D7A72" stroke-width="0.8"></path>
+<!-- Hooded Sage Cloak & Staff -->
+<!-- Cloak Body -->
+<path d="M38 32 C34 32 30 42 28 65 L48 90 L52 65 Z" fill="#565E74" fill-opacity="0.12" stroke="#1A1C1A" stroke-width="0.8"></path>
+<!-- Hooded Head -->
+<path d="M38 28 C34 28 32 34 35 38 C37 40 42 39 42 34 C42 29 40 28 38 28 Z" fill="#FAF9F6" stroke="#1A1C1A" stroke-width="0.8"></path>
+<!-- Walking Staff in left hand -->
+<line stroke="#8D4B00" stroke-width="1.2" x1="27" x2="22" y1="38" y2="88"></line>
+<!-- The Hexagonal Lantern with 6-pointed Star -->
+<path d="M50 36 L55 36 L57 47 L48 47 Z" fill="#FAF9F6" stroke="#1A1C1A" stroke-width="0.7"></path>
+<line stroke="#1A1C1A" stroke-width="0.8" x1="52.5" x2="52.5" y1="32" y2="36"></line>
+<!-- Radiant Star of Solomon in lantern -->
+<path d="M52.5 39 L54.5 44 L50.5 44 Z" fill="#8D4B00" stroke="#8D4B00" stroke-width="0.4"></path>
+<path d="M52.5 45 L54.5 40 L50.5 40 Z" fill="#8D4B00" stroke="#8D4B00" stroke-width="0.4"></path>
+<!-- Lantern Light Rays -->
+<line stroke="#8D4B00" stroke-dasharray="1 1" stroke-width="0.5" x1="58" x2="63" y1="41" y2="40"></line>
+<line stroke="#8D4B00" stroke-dasharray="1 1" stroke-width="0.5" x1="58" x2="64" y1="44" y2="46"></line>
+<!-- Roman Numeral IX & Title -->
+<text fill="#1A1C1A" font-family="Newsreader, serif" font-size="7" font-weight="bold" stroke="none" text-anchor="middle" x="40" y="14">IX</text>
+<text fill="#6D7A72" font-family="Be Vietnam Pro, sans-serif" font-size="4.5" font-weight="600" stroke="none" text-anchor="middle" x="40" y="103">THE HERMIT</text>
+</svg>
+</div>
+<!-- Card Specimen Data -->
+<div class="flex-1 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold text-primary uppercase tracking-widest font-label-sm">LIFE PATH · 07</span>
+<span class="text-[10px] text-outline font-mono">(1+2)+4+9=16→7</span>
+</div>
+<h3 class="font-headline-sm text-[17px] text-on-surface leading-tight mb-1">
+                  Số 7 · The Seeker
+                </h3>
+<p class="text-xs text-on-surface-variant mb-2">
+                  Trí Tuệ &amp; Chiêm Nghiệm • Archetype: <span class="font-medium text-on-surface">The Mystic Analyst</span>
+</p>
+</div>
+<div class="p-2 bg-surface fine-hairline rounded text-[11px] text-on-surface-variant flex items-center justify-between">
+<span>Tarot Key: <strong class="text-on-surface font-semibold">IX The Hermit</strong></span>
+<span class="text-primary font-bold">Inner Lantern</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Inquiry Focus Domain Selector -->
+<div class="bg-surface-container-lowest fine-hairline rounded-xl p-5 shadow-sm">
+<div class="flex items-center justify-between mb-3">
+<label class="font-label-sm text-label-sm font-semibold tracking-wider text-on-surface uppercase flex items-center space-x-2">
+<span class="material-symbols-outlined text-[16px] text-primary">filter_center_focus</span>
+<span>Primary Inquiry Focus (Select 1–2 Domains)</span>
+</label>
+<span class="text-xs text-outline">Customizes Prompt Engine &amp; Spreads</span>
+</div>
+<!-- Multi-select interactive pills -->
+<div class="flex flex-wrap gap-2.5">
+<!-- Active 1 -->
+<button class="py-2 px-3.5 rounded-lg bg-primary text-on-primary text-xs font-medium flex items-center space-x-1.5 shadow-sm cursor-pointer" type="button">
+<span>Creative Ideation</span>
+<span class="material-symbols-outlined text-[14px]">check</span>
+</button>
+<!-- Active 2 -->
+<button class="py-2 px-3.5 rounded-lg bg-primary text-on-primary text-xs font-medium flex items-center space-x-1.5 shadow-sm cursor-pointer" type="button">
+<span>Career &amp; Strategy</span>
+<span class="material-symbols-outlined text-[14px]">check</span>
+</button>
+<!-- Inactive options -->
+<button class="py-2 px-3.5 rounded-lg bg-surface fine-hairline text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors text-xs font-medium cursor-pointer" type="button">
+              Relationships &amp; Harmony
+            </button>
+<button class="py-2 px-3.5 rounded-lg bg-surface fine-hairline text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors text-xs font-medium cursor-pointer" type="button">
+              Personal Growth
+            </button>
+<button class="py-2 px-3.5 rounded-lg bg-surface fine-hairline text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors text-xs font-medium cursor-pointer" type="button">
+              Financial Clarity
+            </button>
+</div>
+</div>
+<!-- AI Context Guardrail Toggle (FR-1.3) -->
+<div class="bg-surface-container-low border border-primary/20 rounded-xl p-4.5 flex items-center justify-between">
+<div class="flex items-start space-x-3 pr-4">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5">psychology</span>
+<div>
+<h4 class="font-label-sm text-sm font-semibold text-on-surface">
+                AI Mystic Context Memory (FR-1.3)
+              </h4>
+<p class="text-xs text-on-surface-variant leading-relaxed mt-0.5">
+                Allow AI Tarot Master to weave your Zodiac (Aries) and Life Path (7) into spread syntheses and recurring "stalker card" alert patterns.
+              </p>
+</div>
+</div>
+<!-- Switch ON -->
+<div class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+<div class="w-11 h-6 bg-primary rounded-full transition-colors"></div>
+<div class="absolute left-6 w-4 h-4 bg-white rounded-full transition-transform shadow"></div>
+</div>
+</div>
+</div>
+<!-- Bottom Subtext / Status Bar -->
+<div class="pt-6 mt-4 fine-hairline-t flex items-center justify-between text-xs text-outline">
+<div class="flex items-center space-x-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>Engine: GPT-4o &amp; Claude 3.5 Sonnet RWS 1909 Hybrid Calibrator</span>
+</div>
+<div class="font-mono text-[11px]">
+          SESSION_ID: <span class="text-on-surface">SANCTUARY-VN-980412</span>
+</div>
+</div>
+</section>
+</main>
+</body></html>

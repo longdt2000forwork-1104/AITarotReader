@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AITAROT // TACTILE DECK DRAW</title>
+<!-- Google Fonts: Newsreader (Display & Titles) + Be Vietnam Pro (Body, UI, Metadata) -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            surface: "#FAF9F6",
+            "surface-pure": "#FFFFFF",
+            "surface-subtle": "#F8FAFC",
+            "surface-tint": "#F1F5F9",
+            "outline-soft": "#E2E8F0",
+            "outline-card": "#CBD5E1",
+            "ink-primary": "#0F172A",
+            "ink-secondary": "#475569",
+            "ink-muted": "#94A3B8",
+            emerald: {
+              DEFAULT: "#059669",
+              light: "#ECFDF5",
+              border: "#059669"
+            },
+            amber: {
+              DEFAULT: "#D97706",
+              light: "#FEF3C7"
+            }
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Newsreader", "serif"],
+            display: ["Newsreader", "serif"],
+            body: ["Be Vietnam Pro", "sans-serif"],
+            label: ["Be Vietnam Pro", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    
+    /* Tactile Paper Texture and Shadows */
+    .paper-texture {
+      background-color: #FAF9F6;
+      background-image: radial-gradient(#E2E8F0 0.75px, transparent 0.75px);
+      background-size: 16px 16px;
+    }
+
+    .card-shadow-active {
+      box-shadow: 0 12px 24px -6px rgba(15, 23, 42, 0.12), 0 4px 8px -4px rgba(15, 23, 42, 0.06);
+    }
+    
+    .card-shadow-ambient {
+      box-shadow: 0 4px 6px -2px rgba(15, 23, 42, 0.05), -2px 0 4px -1px rgba(15, 23, 42, 0.03);
+    }
+
+    /* Scrollbar hide for horizontal card rail */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-ink-primary font-body antialiased min-h-screen flex flex-col justify-between selection:bg-emerald-light selection:text-emerald">
+<!-- WRAPPER: Mobile 390px - 430px Portrait Canvas -->
+<div class="w-full max-w-[420px] mx-auto min-h-screen bg-surface flex flex-col justify-between border-x border-outline-soft relative shadow-sm">
+<!-- ========================================================================= -->
+<!-- 1. TOP HEADER BAR                                                         -->
+<!-- ========================================================================= -->
+<header class="sticky top-0 z-40 bg-surface-pure border-b border-outline-soft px-4 py-3 flex items-center justify-between">
+<!-- Left Action -->
+<a class="inline-flex items-center gap-1 text-ink-secondary hover:text-ink-primary text-xs font-label uppercase tracking-wider font-semibold py-1 pr-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+<span>Back</span>
+</a>
+<!-- Center Title & Status Badge -->
+<div class="flex flex-col items-center justify-center text-center">
+<h1 class="font-headline text-base font-semibold tracking-tight text-ink-primary leading-tight">
+          3-Card Trajectory // Draw
+        </h1>
+<div class="mt-0.5 inline-flex items-center gap-1.5 px-2 py-0.5 bg-surface-subtle border border-outline-soft rounded">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald"></span>
+<span class="font-mono text-[10px] uppercase tracking-wider text-ink-secondary font-medium">STEP 2 OF 3</span>
+</div>
+</div>
+<!-- Right Action -->
+<button class="text-xs font-label text-ink-secondary hover:text-ink-primary transition-colors py-1 pl-2" type="button">
+        Reset
+      </button>
+</header>
+<!-- MAIN SCROLLABLE CONTENT CANVAS -->
+<main class="flex-1 flex flex-col justify-between overflow-x-hidden">
+<!-- ========================================================================= -->
+<!-- 2. SPREAD SLOT RECEPTOR ROW                                               -->
+<!-- ========================================================================= -->
+<section class="px-4 pt-3.5 pb-2.5 bg-surface-pure border-b border-outline-soft">
+<div class="flex items-center justify-between mb-2">
+<span class="font-mono text-[10px] tracking-wider uppercase text-ink-secondary font-semibold">Spread Layout Receptors</span>
+<span class="text-[11px] text-ink-muted font-label">Trajectory Protocol</span>
+</div>
+<div class="grid grid-cols-3 gap-2.5">
+<!-- Slot 01: SITUATION (Locked) -->
+<div class="bg-surface-subtle border border-outline-soft rounded-lg p-2 flex flex-col items-center justify-between text-center relative overflow-hidden transition-all h-[132px]">
+<div class="w-full text-left">
+<span class="font-mono text-[9px] uppercase tracking-wider text-ink-secondary block font-medium">01 · SITUATION</span>
+</div>
+<!-- Mini Card Stamp Back Graphic -->
+<div class="w-10 h-16 bg-surface-pure rounded border border-outline-card relative p-1 flex flex-col items-center justify-center shadow-xs">
+<div class="w-full h-full border border-dashed border-amber/40 rounded-[2px] flex items-center justify-center bg-[#FCFBF7]">
+<span class="material-symbols-outlined text-[16px] text-emerald" style="font-variation-settings: 'FILL' 1;">eco</span>
+</div>
+</div>
+<!-- Status Pill -->
+<div class="w-full pt-1">
+<div class="inline-flex items-center justify-center gap-1 w-full py-0.5 px-1 bg-surface-pure border border-outline-soft rounded text-[9.5px] font-mono text-ink-secondary font-medium">
+<span class="text-emerald font-bold">✓</span>
+<span>#14 LOCKED</span>
+</div>
+</div>
+</div>
+<!-- Slot 02: ACTION (ACTIVE SELECTION) -->
+<div class="bg-emerald-light border-2 border-emerald rounded-lg p-2 flex flex-col items-center justify-between text-center relative shadow-xs h-[132px]">
+<div class="w-full text-left flex items-center justify-between">
+<span class="font-mono text-[9px] uppercase tracking-wider text-emerald font-bold">02 · ACTION</span>
+<span class="relative flex h-1.5 w-1.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald opacity-75"></span>
+<span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald"></span>
+</span>
+</div>
+<!-- Elevated Selection Target Ghost -->
+<div class="w-10 h-16 rounded border-2 border-dashed border-emerald/60 bg-surface-pure/80 flex flex-col items-center justify-center p-1">
+<span class="material-symbols-outlined text-emerald text-[18px]">touch_app</span>
+</div>
+<!-- Status Pill -->
+<div class="w-full pt-1">
+<div class="inline-flex items-center justify-center gap-1 w-full py-0.5 px-1 bg-surface-pure border border-emerald/30 rounded text-[9.5px] font-mono text-emerald font-bold tracking-tight">
+<span>SELECTING...</span>
+</div>
+</div>
+</div>
+<!-- Slot 03: OUTCOME (Empty Waiting State) -->
+<div class="bg-surface-subtle/50 border border-dashed border-outline-card rounded-lg p-2 flex flex-col items-center justify-between text-center relative h-[132px]">
+<div class="w-full text-left">
+<span class="font-mono text-[9px] uppercase tracking-wider text-ink-muted font-medium">03 · OUTCOME</span>
+</div>
+<!-- Empty Ghost Card Frame -->
+<div class="w-10 h-16 rounded border border-dashed border-outline-card/70 flex flex-col items-center justify-center opacity-60">
+<span class="material-symbols-outlined text-[16px] text-ink-muted">add</span>
+</div>
+<!-- Status Pill -->
+<div class="w-full pt-1">
+<div class="inline-flex items-center justify-center w-full py-0.5 px-1 bg-transparent rounded text-[9.5px] font-mono text-ink-muted font-normal tracking-wide">
+<span>WAITING</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 3. DECK STATUS BAR                                                        -->
+<!-- ========================================================================= -->
+<section class="bg-surface-subtle border-y border-outline-soft px-4 py-2 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[15px] text-ink-secondary">style</span>
+<span class="font-mono text-[11px] text-ink-secondary font-medium tracking-tight">
+            77 CARDS IN DECK · UPRIGHT / REVERSED
+          </span>
+</div>
+<button class="inline-flex items-center gap-1 px-2.5 py-1 bg-surface-pure hover:bg-surface-tint active:scale-95 border border-outline-soft rounded text-[11px] font-label font-medium text-ink-primary shadow-xs transition-all" type="button">
+<span class="material-symbols-outlined text-[14px] text-ink-secondary">shuffle</span>
+<span>Shuffle &amp; Cut</span>
+</button>
+</section>
+<!-- ========================================================================= -->
+<!-- 4. MAIN TACTILE CARD RAIL & ARCHIVAL FAN                                   -->
+<!-- ========================================================================= -->
+<section class="paper-texture flex-1 py-4 flex flex-col justify-center relative overflow-hidden">
+<!-- Arcana Selection Guidance Header -->
+<div class="px-5 mb-2 flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-amber">auto_awesome</span>
+<span class="font-label text-xs uppercase tracking-wider text-ink-secondary font-semibold">Living Arcana Ribbon</span>
+</div>
+<span class="font-mono text-[11px] text-ink-muted">Card 27 of 78</span>
+</div>
+<!-- Floating Selection Tag (Directly above Center Elevated Card) -->
+<div class="w-full flex justify-center mb-1 pointer-events-none z-30">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-pure border border-emerald rounded-full shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald"></span>
+<span class="font-label text-[11px] text-ink-primary font-semibold tracking-tight">Selected for Pos 02 · Ready</span>
+<span class="material-symbols-outlined text-[13px] text-emerald">check_circle</span>
+</div>
+</div>
+<!-- Horizontal Tactile Fanned Cards Strip (Overflow Scrollable) -->
+<div class="relative w-full py-4 overflow-x-auto no-scrollbar scroll-smooth">
+<div class="flex items-end px-12 min-w-max h-[264px] pb-3">
+<!-- Card 23 -->
+<div class="-mr-8 transition-transform hover:-translate-y-2 cursor-pointer opacity-75">
+<div class="w-[110px] h-[184px] bg-surface-pure rounded-lg border border-outline-card p-2 flex flex-col justify-between card-shadow-ambient relative">
+<div class="w-full h-full border border-outline-soft rounded flex flex-col items-center justify-between p-1.5 bg-[#FAF9F6]">
+<span class="font-mono text-[8px] text-ink-muted">XXIII</span>
+<div class="w-8 h-8 rounded-full border border-outline-soft flex items-center justify-center">
+<span class="material-symbols-outlined text-[15px] text-ink-secondary">star_rate</span>
+</div>
+<span class="font-mono text-[8px] text-ink-muted">ARCANA</span>
+</div>
+</div>
+</div>
+<!-- Card 24 -->
+<div class="-mr-8 transition-transform hover:-translate-y-2 cursor-pointer opacity-80">
+<div class="w-[110px] h-[184px] bg-surface-pure rounded-lg border border-outline-card p-2 flex flex-col justify-between card-shadow-ambient relative">
+<div class="w-full h-full border border-outline-soft rounded flex flex-col items-center justify-between p-1.5 bg-[#FAF9F6]">
+<span class="font-mono text-[8px] text-ink-muted">XXIV</span>
+<div class="w-8 h-8 rounded-full border border-outline-soft flex items-center justify-center">
+<span class="material-symbols-outlined text-[15px] text-ink-secondary">spa</span>
+</div>
+<span class="font-mono text-[8px] text-ink-muted">ARCANA</span>
+</div>
+</div>
+</div>
+<!-- Card 25 -->
+<div class="-mr-8 transition-transform hover:-translate-y-2 cursor-pointer opacity-85">
+<div class="w-[110px] h-[184px] bg-surface-pure rounded-lg border border-outline-card p-2 flex flex-col justify-between card-shadow-ambient relative">
+<div class="w-full h-full border border-outline-soft rounded flex flex-col items-center justify-between p-1.5 bg-[#FAF9F6]">
+<span class="font-mono text-[8px] text-ink-muted">XXV</span>
+<div class="w-8 h-8 rounded-full border border-outline-soft flex items-center justify-center">
+<span class="material-symbols-outlined text-[15px] text-ink-secondary">wb_sunny</span>
+</div>
+<span class="font-mono text-[8px] text-ink-muted">ARCANA</span>
+</div>
+</div>
+</div>
+<!-- Card 26 -->
+<div class="-mr-8 transition-transform hover:-translate-y-2 cursor-pointer opacity-95">
+<div class="w-[110px] h-[184px] bg-surface-pure rounded-lg border border-outline-card p-2 flex flex-col justify-between card-shadow-ambient relative">
+<div class="w-full h-full border border-outline-soft rounded flex flex-col items-center justify-between p-1.5 bg-[#FAF9F6]">
+<span class="font-mono text-[8px] text-ink-muted">XXVI</span>
+<div class="w-8 h-8 rounded-full border border-outline-soft flex items-center justify-center">
+<span class="material-symbols-outlined text-[15px] text-amber">all_inclusive</span>
+</div>
+<span class="font-mono text-[8px] text-ink-muted">ARCANA</span>
+</div>
+</div>
+</div>
+<!-- ================================================================= -->
+<!-- CARD 27: ACTIVE SELECTED CARD (PULLED UPWARD 16px + EMERALD BORDER) -->
+<!-- ================================================================= -->
+<div class="-mr-8 z-20 cursor-pointer -translate-y-4 transition-all">
+<div class="w-[118px] h-[198px] bg-surface-pure rounded-lg border-2 border-emerald p-2 flex flex-col justify-between card-shadow-active relative">
+<!-- Archival Engraving Card Back -->
+<div class="w-full h-full border border-emerald/40 rounded flex flex-col items-center justify-between p-2 bg-[#FCFBF7] relative overflow-hidden">
+<!-- Top Corner Roman Numeral -->
+<div class="w-full flex justify-between items-center text-ink-secondary">
+<span class="font-mono text-[8.5px] font-bold text-emerald">N° 27</span>
+<span class="material-symbols-outlined text-[11px] text-emerald">auto_awesome</span>
+</div>
+<!-- Central Woodcut Sunburst / Botanical Diamond -->
+<div class="relative w-14 h-14 flex items-center justify-center my-auto">
+<!-- Concentric Sacred Geometric Wireframe -->
+<div class="absolute inset-0 rounded-full border border-amber/30 border-dashed animate-spin" style="animation-duration: 40s;"></div>
+<div class="absolute inset-1.5 rounded-full border border-emerald/40"></div>
+<div class="w-9 h-9 rotate-45 border border-ink-primary/20 flex items-center justify-center bg-surface-pure shadow-xs">
+<span class="material-symbols-outlined text-[18px] text-emerald -rotate-45" style="font-variation-settings: 'FILL' 1;">spa</span>
+</div>
+</div>
+<!-- Bottom Label -->
+<div class="w-full flex justify-between items-center text-ink-secondary pt-1 border-t border-outline-soft/80">
+<span class="font-label text-[8px] tracking-wider uppercase font-semibold text-ink-primary">UPRIGHT</span>
+<span class="font-mono text-[8px] text-emerald font-bold">READY</span>
+</div>
+<!-- Tactile Gold Foil Accent Line -->
+<div class="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-transparent via-amber to-transparent opacity-80"></div>
+</div>
+</div>
+</div>
+<!-- Card 28 -->
+<div class="-mr-8 transition-transform hover:-translate-y-2 cursor-pointer opacity-95">
+<div class="w-[110px] h-[184px] bg-surface-pure rounded-lg border border-outline-card p-2 flex flex-col justify-between card-shadow-ambient relative">
+<div class="w-full h-full border border-outline-soft rounded flex flex-col items-center justify-between p-1.5 bg-[#FAF9F6]">
+<span class="font-mono text-[8px] text-ink-muted">XXVIII</span>
+<div class="w-8 h-8 rounded-full border border-outline-soft flex items-center justify-center">
+<span class="material-symbols-outlined text-[15px] text-ink-secondary">nature</span>
+</div>
+<span class="font-mono text-[8px] text-ink-muted">ARCANA</span>
+</div>
+</div>
+</div>
+<!-- Card 29 -->
+<div class="-mr-8 transition-transform hover:-translate-y-2 cursor-pointer opacity-85">
+<div class="w-[110px] h-[184px] bg-surface-pure rounded-lg border border-outline-card p-2 flex flex-col justify-between card-shadow-ambient relative">
+<div class="w-full h-full border border-outline-soft rounded flex flex-col items-center justify-between p-1.5 bg-[#FAF9F6]">
+<span class="font-mono text-[8px] text-ink-muted">XXIX</span>
+<div class="w-8 h-8 rounded-full border border-outline-soft flex items-center justify-center">
+<span class="material-symbols-outlined text-[15px] text-ink-secondary">cyclone</span>
+</div>
+<span class="font-mono text-[8px] text-ink-muted">ARCANA</span>
+</div>
+</div>
+</div>
+<!-- Card 30 -->
+<div class="-mr-8 transition-transform hover:-translate-y-2 cursor-pointer opacity-80">
+<div class="w-[110px] h-[184px] bg-surface-pure rounded-lg border border-outline-card p-2 flex flex-col justify-between card-shadow-ambient relative">
+<div class="w-full h-full border border-outline-soft rounded flex flex-col items-center justify-between p-1.5 bg-[#FAF9F6]">
+<span class="font-mono text-[8px] text-ink-muted">XXX</span>
+<div class="w-8 h-8 rounded-full border border-outline-soft flex items-center justify-center">
+<span class="material-symbols-outlined text-[15px] text-ink-secondary">blur_on</span>
+</div>
+<span class="font-mono text-[8px] text-ink-muted">ARCANA</span>
+</div>
+</div>
+</div>
+<!-- Card 31 -->
+<div class="transition-transform hover:-translate-y-2 cursor-pointer opacity-75">
+<div class="w-[110px] h-[184px] bg-surface-pure rounded-lg border border-outline-card p-2 flex flex-col justify-between card-shadow-ambient relative">
+<div class="w-full h-full border border-outline-soft rounded flex flex-col items-center justify-between p-1.5 bg-[#FAF9F6]">
+<span class="font-mono text-[8px] text-ink-muted">XXXI</span>
+<div class="w-8 h-8 rounded-full border border-outline-soft flex items-center justify-center">
+<span class="material-symbols-outlined text-[15px] text-ink-secondary">flare</span>
+</div>
+<span class="font-mono text-[8px] text-ink-muted">ARCANA</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Instructional Guidance Footnote -->
+<div class="text-center px-4 mt-1">
+<p class="text-xs text-ink-secondary font-label inline-flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-ink-muted">swipe</span>
+<span>Swipe to browse arcana · Tap card to inspect orientation</span>
+</p>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- Tactile Card Inspection Strip / Micro Summary Panel                      -->
+<!-- ========================================================================= -->
+<section class="bg-surface-pure border-t border-outline-soft px-4 py-2.5 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded border border-outline-soft bg-surface-subtle flex items-center justify-center font-mono text-xs font-semibold text-emerald">
+            27
+          </div>
+<div>
+<div class="text-xs font-headline font-semibold text-ink-primary">
+              The Sovereign Oak (Arcana Major)
+            </div>
+<div class="text-[10px] font-mono text-ink-muted">
+              Orientation: Upright (Natural Aspect)
+            </div>
+</div>
+</div>
+<div class="flex items-center gap-1 text-[11px] font-label text-ink-secondary bg-surface-subtle px-2 py-1 rounded border border-outline-soft">
+<span class="material-symbols-outlined text-[13px] text-amber">lock</span>
+<span>Position 2 of 3</span>
+</div>
+</section>
+</main>
+<!-- ========================================================================= -->
+<!-- 5. BOTTOM ACTION BAR (DOCKED)                                             -->
+<!-- ========================================================================= -->
+<footer class="bg-surface-pure border-t border-outline-soft px-4 py-3 sticky bottom-0 z-40">
+<div class="flex items-center gap-3">
+<!-- Left: Secondary Button (Shuffle Again) -->
+<button class="w-2/5 flex items-center justify-center gap-1.5 px-3 py-2.5 bg-surface-pure hover:bg-surface-subtle active:scale-95 border border-outline-card rounded-lg text-ink-primary text-xs font-label font-semibold transition-all" type="button">
+<span class="material-symbols-outlined text-[16px] text-ink-secondary">shuffle</span>
+<span>Shuffle Again</span>
+</button>
+<!-- Right: Primary CTA (Confirm Card for Pos 02) -->
+<button class="w-3/5 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald hover:bg-emerald/90 active:scale-95 text-surface-pure rounded-lg text-xs font-label font-semibold tracking-wide shadow-sm transition-all" type="button">
+<span>Confirm for Pos 02 (2/3)</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</footer>
+</div>
+</body></html>

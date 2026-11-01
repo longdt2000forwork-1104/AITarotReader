@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AITAROT // PRINT EXPORT STUDIO &amp; CREDIT LEDGER</title>
+<!-- Google Fonts: Newsreader (Editorial Serif) & Be Vietnam Pro (Geometric UI/Print sans) -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            surface: "#FAF9F6",
+            "surface-variant": "#F1F5F9",
+            primary: "#059669",
+            "on-primary": "#FFFFFF",
+            "on-surface": "#0F172A",
+            "on-surface-variant": "#64748B",
+            "outline-variant": "#E2E8F0"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Newsreader", "serif"],
+            display: ["Newsreader", "serif"],
+            body: ["Be Vietnam Pro", "sans-serif"],
+            label: ["Be Vietnam Pro", "sans-serif"],
+            mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .material-symbols-fill {
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    }
+    /* Subtle Paper Texture & Print Crop Marks */
+    .print-paper-shadow {
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08), 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+    }
+    .crop-mark {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-color: #94A3B8;
+    }
+    /* Custom scrollbars for print studio precision */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F8FAFC;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+  </style>
+</head>
+<body class="bg-[#FAF9F6] text-[#0F172A] font-body min-h-screen flex flex-col antialiased selection:bg-emerald-100 selection:text-emerald-900">
+<!-- ========================================================================= -->
+<!-- 1. TOP NAVIGATION HEADER                                                 -->
+<!-- ========================================================================= -->
+<header class="h-14 bg-white border-b border-slate-200 px-6 flex items-center justify-between z-30 sticky top-0">
+<!-- Left Cluster: Brand & Breadcrumb -->
+<div class="flex items-center gap-4">
+<a class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors py-1 px-2 rounded hover:bg-slate-100" href="#workbench">
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+<span>Reading Workbench (#042)</span>
+</a>
+<span class="text-slate-300 font-light">|</span>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-700 text-sm">print</span>
+<h1 class="font-mono text-xs font-bold tracking-wider text-slate-800 uppercase">
+          AITAROT // PRINT EXPORT STUDIO &amp; CREDIT LEDGER
+        </h1>
+<span class="font-mono text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200">SCR-W05</span>
+</div>
+</div>
+<!-- Right Cluster: Status Chips, Currency & Language -->
+<div class="flex items-center gap-3">
+<!-- Balance Chip -->
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 border border-amber-200 rounded text-amber-800 text-xs font-mono font-medium">
+<span class="material-symbols-outlined text-amber-600 text-sm material-symbols-fill">toll</span>
+<span>BALANCE: <strong>45 CR</strong></span>
+</div>
+<!-- Active Tier Chip -->
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded text-emerald-800 text-xs font-mono">
+<span class="material-symbols-outlined text-emerald-600 text-sm material-symbols-fill">verified</span>
+<span class="font-semibold">ARCHIVAL PRO</span>
+<span class="text-emerald-600">($6.99/MO)</span>
+</div>
+<!-- Language Toggle -->
+<div class="flex items-center bg-slate-100 border border-slate-200 rounded text-[11px] font-mono p-0.5">
+<button class="px-2 py-0.5 rounded bg-white text-slate-900 font-bold shadow-xs">EN</button>
+<button class="px-2 py-0.5 rounded text-slate-500 hover:text-slate-900">VI</button>
+</div>
+<!-- Quick Export Specimen Action -->
+<button class="inline-flex items-center gap-1.5 bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-medium px-3 py-1.5 rounded transition-colors shadow-sm">
+<span class="material-symbols-outlined text-sm">ios_share</span>
+<span>Export Specimen</span>
+</button>
+</div>
+</header>
+<!-- ========================================================================= -->
+<!-- 2-ZONE SPLIT WORKSPACE                                                   -->
+<!-- ========================================================================= -->
+<main class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+<!-- ======================================================================= -->
+<!-- LEFT / CENTER ZONE (STUDIO CANVAS)                                      -->
+<!-- ======================================================================= -->
+<section class="flex-1 bg-[#F8FAFC] border-r border-slate-200 flex flex-col overflow-y-auto">
+<!-- Top Control Strip -->
+<div class="p-6 pb-0">
+<div class="bg-white rounded-lg border border-slate-200 p-3 shadow-xs flex flex-wrap items-center justify-between gap-4">
+<!-- Format Selector & Paper Stock -->
+<div class="flex flex-wrap items-center gap-4">
+<!-- Format Tabs -->
+<div class="flex items-center gap-1 bg-slate-100 p-1 rounded-md border border-slate-200 text-xs font-mono">
+<button class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 transition-colors">9:16 Story</button>
+<button class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 transition-colors">1:1 Square</button>
+<button class="px-2.5 py-1 rounded bg-white text-emerald-800 font-semibold shadow-xs flex items-center gap-1 border border-slate-200">
+<span>Both Side-by-Side</span>
+<span class="material-symbols-outlined text-[14px] text-emerald-600">check</span>
+</button>
+</div>
+<!-- Paper Stock Pills -->
+<div class="flex items-center gap-1.5 text-xs">
+<span class="text-slate-400 font-mono text-[11px] uppercase tracking-wider">Paper:</span>
+<button class="px-2 py-1 bg-amber-50/70 border border-amber-300 text-amber-900 font-medium rounded text-[11px] flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-[#FAF9F6] border border-amber-400"></span>
+                Warm Archival Cream
+                <span class="material-symbols-outlined text-[12px] text-emerald-700">check</span>
+</button>
+<button class="px-2 py-1 bg-slate-100 hover:bg-slate-200/70 border border-slate-200 text-slate-600 rounded text-[11px] flex items-center gap-1 transition-colors">
+<span class="w-2 h-2 rounded-full bg-emerald-100 border border-emerald-300"></span>
+                Botanical Sage
+              </button>
+<button class="px-2 py-1 bg-slate-100 hover:bg-slate-200/70 border border-slate-200 text-slate-600 rounded text-[11px] flex items-center gap-1 transition-colors">
+<span class="w-2 h-2 rounded-full bg-slate-200 border border-slate-400"></span>
+                Monochrome Bone
+              </button>
+</div>
+</div>
+<!-- Options & Primary Download CTA -->
+<div class="flex items-center gap-3">
+<!-- Pro Watermark Toggle -->
+<label class="flex items-center gap-2 cursor-pointer select-none text-xs text-slate-700">
+<input checked="" class="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500" type="checkbox"/>
+<span class="font-medium">Hide Watermark <span class="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200">PRO ✓</span></span>
+</label>
+<!-- Resolution Specimen Tag -->
+<span class="font-mono text-[11px] text-slate-500 border-l border-slate-200 pl-3">
+              300 DPI <span class="text-slate-400">(Vector Print)</span>
+</span>
+<!-- Actions -->
+<button class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-slate-700 hover:bg-slate-100 border border-slate-200 rounded font-medium transition-colors">
+<span class="material-symbols-outlined text-sm">link</span>
+<span>Copy Link</span>
+</button>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#059669] hover:bg-emerald-700 text-white rounded text-xs font-semibold shadow-xs transition-colors">
+<span class="material-symbols-outlined text-sm">download</span>
+<span>Download High-Res PNG (0 CR)</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Poster Display Canvas (Side-by-Side Showcase) -->
+<div class="p-6 flex-1 flex items-center justify-center">
+<div class="w-full max-w-5xl flex flex-col md:flex-row items-center justify-center gap-8 py-4">
+<!-- ========================================== -->
+<!-- POSTER 1: 9:16 VERTICAL STORY PRINT       -->
+<!-- ========================================== -->
+<div class="relative w-[340px] h-[604px] bg-[#FAF9F6] text-[#0F172A] border border-[#0F172A] p-6 print-paper-shadow flex flex-col justify-between select-none">
+<!-- Corner Register Marks (Editorial Colophon style) -->
+<div class="crop-mark top-1.5 left-1.5 border-t border-l"></div>
+<div class="crop-mark top-1.5 right-1.5 border-t border-r"></div>
+<div class="crop-mark bottom-1.5 left-1.5 border-b border-l"></div>
+<div class="crop-mark bottom-1.5 right-1.5 border-b border-r"></div>
+<!-- Inner Hairline Border -->
+<div class="absolute inset-3 border border-slate-300 pointer-events-none"></div>
+<!-- Top Header & Meta -->
+<div class="relative z-10 text-center pt-2">
+<div class="flex items-center justify-between border-b border-slate-300 pb-2 text-[10px] font-mono tracking-wider text-slate-600 uppercase">
+<span>SPECIMEN NO. 042</span>
+<span class="font-serif italic lowercase tracking-normal text-slate-500">archival folio</span>
+<span>OCT 31, 2026</span>
+</div>
+<h2 class="font-headline italic text-lg text-slate-900 mt-3 leading-snug px-2">
+                “Where should I focus my creative project?”
+              </h2>
+<p class="font-mono text-[10px] uppercase text-emerald-800 tracking-widest mt-1">Spread: Three-Fold Crucible</p>
+</div>
+<!-- Tarot Card Specimen Miniatures (3 Cards) -->
+<div class="relative z-10 grid grid-cols-3 gap-2 my-auto px-1">
+<!-- Card 1: The Magician -->
+<div class="bg-white border border-slate-300 rounded p-2 text-center flex flex-col items-center justify-between shadow-2xs">
+<span class="font-mono text-[9px] text-slate-500 uppercase tracking-widest">I</span>
+<div class="my-2 text-slate-800">
+<!-- Botanical Glyph / Conduit Woodcut line-art -->
+<svg class="w-8 h-8 mx-auto stroke-slate-800 fill-none stroke-[1.2]" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="9"></circle>
+<path d="M12 3v18M3 12h18"></path>
+<circle class="fill-emerald-50 stroke-emerald-700" cx="12" cy="12" r="3"></circle>
+</svg>
+</div>
+<div>
+<h4 class="font-headline font-bold text-xs leading-tight">The Magician</h4>
+<span class="inline-block mt-1 font-mono text-[8px] text-emerald-700 uppercase bg-emerald-50 px-1 rounded">Conduit</span>
+</div>
+</div>
+<!-- Card 2: The Hermit -->
+<div class="bg-white border border-slate-300 rounded p-2 text-center flex flex-col items-center justify-between shadow-2xs">
+<span class="font-mono text-[9px] text-slate-500 uppercase tracking-widest">IX</span>
+<div class="my-2 text-slate-800">
+<!-- Lantern Star Glyph -->
+<svg class="w-8 h-8 mx-auto stroke-slate-800 fill-none stroke-[1.2]" viewbox="0 0 24 24">
+<polygon points="12 2 15 8.5 22 9 17 14 18.5 21 12 17.5 5.5 21 7 14 2 9 9 8.5 12 2"></polygon>
+<circle class="fill-amber-100 stroke-amber-600" cx="12" cy="12" r="2"></circle>
+</svg>
+</div>
+<div>
+<h4 class="font-headline font-bold text-xs leading-tight">The Hermit</h4>
+<span class="inline-block mt-1 font-mono text-[8px] text-slate-600 uppercase bg-slate-100 px-1 rounded">Solitude</span>
+</div>
+</div>
+<!-- Card 3: The Sun -->
+<div class="bg-white border border-slate-300 rounded p-2 text-center flex flex-col items-center justify-between shadow-2xs">
+<span class="font-mono text-[9px] text-slate-500 uppercase tracking-widest">XIX</span>
+<div class="my-2 text-slate-800">
+<!-- Solar Bloom Glyph -->
+<svg class="w-8 h-8 mx-auto stroke-slate-800 fill-none stroke-[1.2]" viewbox="0 0 24 24">
+<circle class="fill-amber-50 stroke-slate-800" cx="12" cy="12" r="5"></circle>
+<path d="M12 2v3m0 14v3M2 12h3m14 0h3m-3.5-6.5-2.1 2.1M6.6 17.4l-2.1 2.1m14.9 0-2.1-2.1M6.6 6.6 4.5 4.5"></path>
+</svg>
+</div>
+<div>
+<h4 class="font-headline font-bold text-xs leading-tight">The Sun</h4>
+<span class="inline-block mt-1 font-mono text-[8px] text-amber-800 uppercase bg-amber-50 px-1 rounded">Radiance</span>
+</div>
+</div>
+</div>
+<!-- Editorial Synthesis Quote -->
+<div class="relative z-10 px-2 py-3 border-t border-b border-slate-200 text-center">
+<p class="font-headline italic text-xs text-slate-800 leading-relaxed">
+                “Temper raw visionary speed with quiet incubation. Distill your core thesis before stepping into the sun.”
+              </p>
+<div class="mt-2 flex items-center justify-center gap-3 text-[9px] font-mono text-slate-500">
+<span>ELEMENTS: FIRE / EARTH / AIR</span>
+<span>•</span>
+<span>AFFIRMATION: GROUNDED VISION</span>
+</div>
+</div>
+<!-- Archival Colophon & Verification Stamp -->
+<div class="relative z-10 pt-2 flex items-center justify-between text-[9px] font-mono text-slate-500">
+<div class="flex items-center gap-1.5">
+<!-- Mini QR Code Vector Stamp -->
+<div class="w-6 h-6 border border-slate-400 p-0.5 bg-white grid grid-cols-3 gap-0.5">
+<div class="bg-slate-900"></div><div class="bg-slate-900"></div><div class="bg-slate-300"></div>
+<div class="bg-slate-900"></div><div class="bg-white"></div><div class="bg-slate-900"></div>
+<div class="bg-slate-300"></div><div class="bg-slate-900"></div><div class="bg-slate-900"></div>
+</div>
+<div class="leading-tight">
+<div class="text-slate-900 font-bold">AITAROTREADER.APP</div>
+<div class="text-[8px] text-slate-500">COLOPHON #AT-2026-042</div>
+</div>
+</div>
+<div class="text-right">
+<span class="text-emerald-800 font-bold tracking-tight">NATURAL SYNTHESIS</span>
+<div class="text-[8px] text-slate-400">PRINT SPECIMEN 042</div>
+</div>
+</div>
+</div>
+<!-- ========================================== -->
+<!-- POSTER 2: 1:1 SQUARE INSTAGRAM PRINT      -->
+<!-- ========================================== -->
+<div class="relative w-[360px] h-[360px] bg-[#FAF9F6] text-[#0F172A] border border-[#0F172A] p-5 print-paper-shadow flex flex-col justify-between select-none">
+<!-- Corner Register Marks -->
+<div class="crop-mark top-1.5 left-1.5 border-t border-l"></div>
+<div class="crop-mark top-1.5 right-1.5 border-t border-r"></div>
+<div class="crop-mark bottom-1.5 left-1.5 border-b border-l"></div>
+<div class="crop-mark bottom-1.5 right-1.5 border-b border-r"></div>
+<div class="absolute inset-3 border border-slate-300 pointer-events-none"></div>
+<!-- Header -->
+<div class="relative z-10 flex items-center justify-between border-b border-slate-300 pb-1.5 text-[9px] font-mono uppercase tracking-wider text-slate-600">
+<span class="font-bold text-slate-900">SQUARE RATIO (1:1)</span>
+<span>NO. 042 // WORKBENCH</span>
+<span class="text-emerald-800 font-semibold">300 DPI</span>
+</div>
+<!-- Center Layout: Title + Cards Row -->
+<div class="relative z-10 my-auto text-center">
+<h3 class="font-headline italic text-base text-slate-900 leading-tight">
+                “Where should I focus my creative project?”
+              </h3>
+<!-- Cards Mini Strip -->
+<div class="flex items-center justify-center gap-2 mt-3">
+<div class="w-20 bg-white border border-slate-300 rounded p-1.5 text-center">
+<div class="text-[8px] font-mono text-slate-500">I</div>
+<div class="font-headline font-bold text-[11px] truncate">Magician</div>
+<div class="text-[8px] font-mono text-emerald-700">Conduit</div>
+</div>
+<div class="w-20 bg-white border border-slate-300 rounded p-1.5 text-center">
+<div class="text-[8px] font-mono text-slate-500">IX</div>
+<div class="font-headline font-bold text-[11px] truncate">Hermit</div>
+<div class="text-[8px] font-mono text-slate-600">Solitude</div>
+</div>
+<div class="w-20 bg-white border border-slate-300 rounded p-1.5 text-center">
+<div class="text-[8px] font-mono text-slate-500">XIX</div>
+<div class="font-headline font-bold text-[11px] truncate">The Sun</div>
+<div class="text-[8px] font-mono text-amber-700">Radiance</div>
+</div>
+</div>
+<!-- Elemental Balance Bars -->
+<div class="mt-3 px-3">
+<div class="flex justify-between text-[9px] font-mono text-slate-500 mb-1">
+<span>Fire (50%)</span>
+<span>Earth (25%)</span>
+<span>Air (25%)</span>
+</div>
+<div class="h-1.5 w-full bg-slate-200 rounded-full flex overflow-hidden">
+<div class="bg-amber-600 w-1/2"></div>
+<div class="bg-emerald-600 w-1/4"></div>
+<div class="bg-sky-600 w-1/4"></div>
+</div>
+</div>
+</div>
+<!-- Footer Stamp -->
+<div class="relative z-10 border-t border-slate-300 pt-1.5 flex items-center justify-between text-[8px] font-mono text-slate-600">
+<span>AITAROTREADER.APP</span>
+<span class="italic font-serif lowercase text-slate-500">october reading archive</span>
+<span class="font-bold text-slate-800">PRINT-042-SQ</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Studio Footer Bar -->
+<footer class="h-12 bg-white border-t border-slate-200 px-6 flex items-center justify-between text-xs text-slate-600">
+<!-- Zoom & View controls -->
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-sm">zoom_out</span>
+<input class="w-24 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" max="150" min="50" type="range" value="100"/>
+<span class="material-symbols-outlined text-slate-400 text-sm">zoom_in</span>
+<span class="font-mono text-[11px] text-slate-700 ml-1">100%</span>
+</div>
+<span class="text-slate-300">|</span>
+<div class="font-mono text-[11px] text-slate-500 flex items-center gap-2">
+<span>STORY: 1080×1920 PX</span>
+<span>•</span>
+<span>SQUARE: 1080×1080 PX</span>
+</div>
+</div>
+<!-- Archival Binder Shortcut -->
+<div class="flex items-center gap-2">
+<button class="inline-flex items-center gap-1.5 text-slate-700 hover:text-slate-900 font-medium px-2.5 py-1 rounded hover:bg-slate-100 transition-colors">
+<span class="material-symbols-outlined text-sm">folder_special</span>
+<span>Send to Archival Binder</span>
+</button>
+</div>
+</footer>
+</section>
+<!-- ======================================================================= -->
+<!-- RIGHT ZONE — HYBRID CREDIT LEDGER & CHECKOUT PANEL                     -->
+<!-- ======================================================================= -->
+<aside class="w-full lg:w-[440px] bg-white border-l border-slate-200 p-6 overflow-y-auto flex flex-col gap-6 select-none">
+<!-- SECTION 01: ARCHIVAL PRO SUBSCRIPTION -->
+<section>
+<div class="flex items-center justify-between mb-2">
+<h3 class="font-mono text-xs font-bold uppercase tracking-wider text-slate-900">
+            01 // ARCHIVAL PRO SUBSCRIPTION
+          </h3>
+<span class="text-[10px] font-mono uppercase bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded">
+            ACTIVE PLAN
+          </span>
+</div>
+<!-- Highlighted Pro Card -->
+<div class="border-[1.5px] border-[#059669] rounded-lg p-4 bg-emerald-50/20 relative">
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline font-bold text-base text-slate-900">Archival Pro Tier</span>
+<span class="material-symbols-outlined text-emerald-600 text-sm material-symbols-fill">verified</span>
+</div>
+<p class="text-xs text-slate-600 mt-0.5">High-fidelity botanical synthesis &amp; uncompressed exports</p>
+</div>
+<div class="text-right">
+<span class="font-mono font-bold text-lg text-slate-900">$6.99</span>
+<span class="text-xs text-slate-500 font-mono">/mo</span>
+<div class="text-[10px] font-mono text-emerald-700 font-medium">or $49/yr (-42%)</div>
+</div>
+</div>
+<!-- Feature Checklist -->
+<ul class="mt-3.5 space-y-2 text-xs text-slate-700 border-t border-emerald-100 pt-3">
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-700 text-sm">check_circle</span>
+<span><strong>Unlimited Tarot Journal</strong> &amp; local encrypted vaults</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-700 text-sm">check_circle</span>
+<span><strong>+30 CR Daily allowance</strong> (Refills every midnight)</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-700 text-sm">check_circle</span>
+<span>All 3 Reader Personas (Scholar, Mystic, Poetic)</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-700 text-sm">check_circle</span>
+<span>Watermark-Free Print Studio Exports (300 DPI)</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-700 text-sm">check_circle</span>
+<span>Priority Claude 3.5 Sonnet &amp; GPT-4o synthesis</span>
+</li>
+</ul>
+<!-- Status bar -->
+<div class="mt-4 pt-2.5 border-t border-slate-200/80 flex items-center justify-between text-[11px] font-mono">
+<span class="text-slate-600">Renews on <strong>Nov 28, 2026</strong></span>
+<button class="text-slate-500 hover:text-slate-900 underline">Manage Billing</button>
+</div>
+</div>
+</section>
+<!-- SECTION 02: PAY-AS-YOU-GO CREDIT PACKS -->
+<section>
+<div class="flex items-center justify-between mb-2">
+<h3 class="font-mono text-xs font-bold uppercase tracking-wider text-slate-900">
+            02 // PAY-AS-YOU-GO PACKS
+          </h3>
+<span class="text-[10px] font-mono text-slate-500">NEVER EXPIRE</span>
+</div>
+<!-- 3-Pack Selectable Table -->
+<div class="space-y-2">
+<!-- Starter Pack -->
+<label class="flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:border-slate-300 cursor-pointer transition-colors">
+<div class="flex items-center gap-3">
+<input class="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-slate-300" name="credit_pack" type="radio"/>
+<div>
+<div class="text-xs font-bold text-slate-900">Starter Pack</div>
+<div class="text-[11px] font-mono text-slate-500">50 Credits</div>
+</div>
+</div>
+<div class="font-mono text-xs font-bold text-slate-900">$1.99</div>
+</label>
+<!-- Standard Pack (Selected) -->
+<label class="flex items-center justify-between p-3 border-[1.5px] border-[#059669] bg-emerald-50/20 rounded-lg cursor-pointer">
+<div class="flex items-center gap-3">
+<input checked="" class="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-slate-300" name="credit_pack" type="radio"/>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="text-xs font-bold text-slate-900">Standard Pack</span>
+<span class="text-[9px] font-mono bg-emerald-100 text-emerald-800 font-bold px-1 rounded">+20 BONUS</span>
+</div>
+<div class="text-[11px] font-mono text-slate-600">170 Credits total</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-mono text-xs font-bold text-emerald-800">$4.99</div>
+<div class="text-[10px] font-mono text-slate-400 line-through">$5.99</div>
+</div>
+</label>
+<!-- Archive Vault (Best Value) -->
+<label class="flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:border-slate-300 cursor-pointer transition-colors">
+<div class="flex items-center gap-3">
+<input class="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-slate-300" name="credit_pack" type="radio"/>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="text-xs font-bold text-slate-900">Archive Vault</span>
+<span class="text-[9px] font-mono bg-amber-100 text-amber-900 font-bold px-1 rounded">BEST VALUE</span>
+</div>
+<div class="text-[11px] font-mono text-slate-500">480 Credits (+80 Bonus)</div>
+</div>
+</div>
+<div class="font-mono text-xs font-bold text-slate-900">$9.99</div>
+</label>
+</div>
+</section>
+<!-- SECTION 03: INSTANT CHECKOUT -->
+<section>
+<div class="flex items-center justify-between mb-2">
+<h3 class="font-mono text-xs font-bold uppercase tracking-wider text-slate-900">
+            03 // INSTANT CHECKOUT
+          </h3>
+<span class="text-[11px] font-mono text-emerald-700">SSL ENCRYPTED</span>
+</div>
+<!-- Payment Method Tabs -->
+<div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-md border border-slate-200 text-xs font-mono mb-3">
+<button class="py-1 px-2 rounded bg-white text-slate-900 font-semibold shadow-xs flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-emerald-700">qr_code_scanner</span>
+<span>Vietnam VietQR / MoMo</span>
+</button>
+<button class="py-1 px-2 rounded text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[14px]">credit_card</span>
+<span>Card (Stripe)</span>
+</button>
+</div>
+<!-- VietQR Dynamic Payment Box -->
+<div class="border border-slate-200 rounded-lg p-3.5 bg-[#FAF9F6] text-center">
+<div class="flex items-center justify-between text-[11px] font-mono text-slate-500 mb-2">
+<span>AITAROT TECH CORP</span>
+<span class="text-amber-800 font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">timer</span>
+              09:42 remaining
+            </span>
+</div>
+<!-- Realistic QR Specimen Representation -->
+<div class="mx-auto w-40 h-40 bg-white border border-slate-300 p-2 rounded shadow-2xs flex flex-col justify-between items-center relative">
+<!-- Simulated QR pattern elements -->
+<div class="w-full flex justify-between">
+<div class="w-8 h-8 border-2 border-slate-900 p-1"><div class="w-full h-full bg-slate-900"></div></div>
+<div class="w-8 h-8 border-2 border-slate-900 p-1"><div class="w-full h-full bg-slate-900"></div></div>
+</div>
+<!-- Center Emerald Glyph -->
+<div class="w-10 h-10 bg-emerald-50 border border-emerald-300 rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-emerald-800 text-lg material-symbols-fill">spa</span>
+</div>
+<div class="w-full flex justify-between items-end">
+<div class="w-8 h-8 border-2 border-slate-900 p-1"><div class="w-full h-full bg-slate-900"></div></div>
+<div class="text-[8px] font-mono text-slate-400">NAPAS 24/7</div>
+</div>
+</div>
+<!-- Pricing & Vietnamese Dong conversion -->
+<div class="mt-3 flex items-center justify-between border-t border-slate-200 pt-2 text-xs">
+<span class="font-mono text-slate-600">Total Due:</span>
+<span class="font-mono font-bold text-slate-900 text-sm">
+              120,000 VND <span class="text-slate-500 text-xs font-normal">($4.99 USD)</span>
+</span>
+</div>
+</div>
+<!-- Checkout Action Button -->
+<button class="w-full mt-3 py-2.5 bg-[#059669] hover:bg-emerald-700 text-white rounded font-medium text-xs flex items-center justify-center gap-2 shadow-xs transition-colors">
+<span>Complete Purchase — $4.99</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</section>
+<!-- SECTION 04: TRANSPARENT USAGE RATES -->
+<section class="border-t border-slate-200 pt-4">
+<h4 class="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-2">
+          TRANSPARENT USAGE RATES
+        </h4>
+<div class="grid grid-cols-2 gap-2 text-xs font-mono">
+<div class="p-2 bg-slate-50 rounded border border-slate-200 flex justify-between">
+<span class="text-slate-600">1-Card Daily</span>
+<span class="font-bold text-emerald-700">FREE</span>
+</div>
+<div class="p-2 bg-slate-50 rounded border border-slate-200 flex justify-between">
+<span class="text-slate-600">3-Card Spread</span>
+<span class="font-bold text-slate-900">10 CR</span>
+</div>
+<div class="p-2 bg-slate-50 rounded border border-slate-200 flex justify-between">
+<span class="text-slate-600">Clarifier</span>
+<span class="font-bold text-slate-900">5 CR</span>
+</div>
+<div class="p-2 bg-slate-50 rounded border border-slate-200 flex justify-between">
+<span class="text-slate-600">AI Inquiry</span>
+<span class="font-bold text-slate-900">3 CR</span>
+</div>
+</div>
+<!-- Transaction Ledger Link -->
+<a class="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 mt-3 font-mono" href="#ledger">
+<span>View Full Billing History &amp; Invoices (#AT-8841-A)</span>
+<span class="material-symbols-outlined text-sm">north_east</span>
+</a>
+</section>
+</aside>
+</main>
+<!-- Interactive Client-side Script for Micro-Interactions -->
+<script>
+    // Quick demonstration interactions (e.g. feedback on actions)
+    document.querySelectorAll('input[type="radio"][name="credit_pack"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        // dynamic state feedback
+        console.log('Selected pack:', e.target.closest('label').querySelector('.font-bold').innerText);
+      });
+    });
+  </script>
+</body></html>

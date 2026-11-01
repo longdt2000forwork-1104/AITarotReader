@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AITarot // Editorial Print &amp; Share Studio</title>
+<!-- Google Fonts: Newsreader (Display/Serif) & Be Vietnam Pro (Body/UI) -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 20px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-feature-settings: 'liga';
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            surface: "#FFFFFF",
+            "surface-variant": "#F1F5F9",
+            "on-surface": "#0F172A",
+            "on-surface-variant": "#64748B",
+            primary: "#059669",
+            "primary-container": "#ECFDF5",
+            "on-primary-container": "#065F46",
+            "outline-variant": "#E2E8F0",
+            canvas: "#FAF9F6"
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            full: "9999px"
+          },
+          fontFamily: {
+            headline: ["Newsreader", "serif"],
+            display: ["Newsreader", "serif"],
+            body: ["Be Vietnam Pro", "sans-serif"],
+            label: ["Be Vietnam Pro", "sans-serif"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#FAF9F6] text-[#0F172A] font-body antialiased min-h-screen flex flex-col justify-between selection:bg-[#ECFDF5] selection:text-[#065F46]">
+<!-- Mobile Wrapper Frame: Strictly disciplined 390px viewport container -->
+<div class="w-full max-w-[420px] mx-auto min-h-screen bg-white flex flex-col shadow-xl border-x border-[#E2E8F0]">
+<!-- 1. Top Header Bar (Task-Focused / Studio Navigation) -->
+<header class="bg-white border-b border-[#E2E8F0] px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+<!-- Back Action -->
+<button aria-label="Go back" class="flex items-center gap-1 text-[#0F172A] hover:text-[#059669] transition-colors py-1 text-xs font-semibold" type="button">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+<span class="font-body text-xs tracking-tight">Back</span>
+</button>
+<!-- Segmented Switcher Pill Container -->
+<div class="inline-flex items-center p-0.5 bg-[#F1F5F9] rounded-lg border border-[#E2E8F0]">
+<button class="px-2.5 py-1 text-[11px] font-medium rounded-md bg-[#059669] text-white shadow-xs flex items-center gap-1 transition-all" type="button">
+<span>Share Print Studio</span>
+<span class="material-symbols-outlined text-[13px] leading-none">check</span>
+</button>
+<button class="px-2.5 py-1 text-[11px] font-medium rounded-md text-[#64748B] hover:text-[#0F172A] transition-colors" type="button">
+<span>Journal Entry</span>
+</button>
+</div>
+<!-- Save Text / Quick Action -->
+<button class="text-xs font-semibold text-[#059669] hover:text-[#047857] transition-colors px-1 py-1" type="button">
+        Save
+      </button>
+</header>
+<!-- Sub-header Meta Banner -->
+<div class="px-4 py-1.5 bg-[#FAF9F6] border-b border-[#E2E8F0] flex items-center justify-between">
+<span class="font-label text-[10px] tracking-widest uppercase text-[#64748B]">SPECIMEN EXPORT // ARCHIVAL PRINT</span>
+<span class="inline-flex items-center gap-1 text-[10px] text-[#059669] font-medium">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-[#059669]"></span>
+        300 DPI READY
+      </span>
+</div>
+<!-- 2. Center Poster Preview Stage (Tactile Swiss Editorial Poster) -->
+<section class="bg-[#F1F5F9] border-b border-[#E2E8F0] px-4 py-5 flex justify-center items-center overflow-hidden">
+<!-- The 9:16 Swiss-Editorial Tarot Share Poster -->
+<div class="bg-[#FAF9F6] border border-[#0F172A] shadow-md p-4 flex flex-col justify-between max-w-[290px] w-full aspect-[9/15] relative transition-transform duration-300" id="poster-artboard">
+<!-- Subtle Inner Frame Inset Hairline -->
+<div class="absolute inset-1 border border-[#E2E8F0] pointer-events-none"></div>
+<!-- Top Colophon -->
+<div class="relative z-10 text-center border-b border-[#E2E8F0] pb-2">
+<div class="flex items-center justify-between text-[9px] tracking-widest text-[#64748B] font-mono uppercase">
+<span>SPECIMEN NO. 042</span>
+<span>OCT 31, 2026</span>
+</div>
+<h1 class="font-headline italic text-[15px] font-bold text-[#0F172A] tracking-tight leading-snug mt-1.5">
+            "Where should I focus my creative project?"
+          </h1>
+</div>
+<!-- 3 Botanical Woodcut Tarot Card Specimens -->
+<div class="relative z-10 my-3">
+<div class="grid grid-cols-3 gap-1.5">
+<!-- Card 1: The Magician -->
+<div class="bg-white border border-[#0F172A] p-1.5 flex flex-col items-center text-center">
+<span class="text-[9px] font-mono font-semibold text-[#64748B] tracking-wider">I</span>
+<!-- Botanical/Woodcut Engraving Glyph Container -->
+<div class="w-full aspect-[3/4] my-1 bg-[#FAF9F6] border border-[#E2E8F0] flex flex-col items-center justify-center p-1">
+<span class="material-symbols-outlined text-[#0F172A] text-xl">auto_fix_high</span>
+<span class="text-[7px] text-[#64748B] uppercase tracking-tighter mt-1">Conduit</span>
+</div>
+<div class="w-full">
+<div class="text-[9px] font-headline font-bold text-[#0F172A] leading-tight truncate">Magician</div>
+<div class="text-[7.5px] uppercase tracking-wider text-[#059669] font-medium">Upright</div>
+</div>
+</div>
+<!-- Card 2: The Hermit -->
+<div class="bg-white border border-[#0F172A] p-1.5 flex flex-col items-center text-center">
+<span class="text-[9px] font-mono font-semibold text-[#64748B] tracking-wider">IX</span>
+<!-- Botanical/Woodcut Engraving Glyph Container -->
+<div class="w-full aspect-[3/4] my-1 bg-[#FAF9F6] border border-[#E2E8F0] flex flex-col items-center justify-center p-1">
+<span class="material-symbols-outlined text-[#0F172A] text-xl">light_mode</span>
+<span class="text-[7px] text-[#64748B] uppercase tracking-tighter mt-1">Solitude</span>
+</div>
+<div class="w-full">
+<div class="text-[9px] font-headline font-bold text-[#0F172A] leading-tight truncate">Hermit</div>
+<div class="text-[7.5px] uppercase tracking-wider text-[#059669] font-medium">Upright</div>
+</div>
+</div>
+<!-- Card 3: The Sun -->
+<div class="bg-white border border-[#0F172A] p-1.5 flex flex-col items-center text-center">
+<span class="text-[9px] font-mono font-semibold text-[#64748B] tracking-wider">XIX</span>
+<!-- Botanical/Woodcut Engraving Glyph Container -->
+<div class="w-full aspect-[3/4] my-1 bg-[#FAF9F6] border border-[#E2E8F0] flex flex-col items-center justify-center p-1">
+<span class="material-symbols-outlined text-[#0F172A] text-xl">wb_sunny</span>
+<span class="text-[7px] text-[#64748B] uppercase tracking-tighter mt-1">Radiance</span>
+</div>
+<div class="w-full">
+<div class="text-[9px] font-headline font-bold text-[#0F172A] leading-tight truncate">The Sun</div>
+<div class="text-[7.5px] uppercase tracking-wider text-[#059669] font-medium">Upright</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Editorial Synthesis Pull-quote -->
+<div class="relative z-10 border-l-2 border-[#059669] pl-2.5 py-0.5 my-1">
+<p class="font-headline italic text-[11px] leading-relaxed text-[#0F172A]">
+            "Temper raw visionary speed with quiet incubation. Distill your core thesis before stepping into the sun."
+          </p>
+<div class="text-[8px] text-[#64748B] uppercase tracking-wider mt-1 font-mono">ARCHIVAL SYNTHESIS // TRI-SPREAD MATRIX</div>
+</div>
+<!-- Bottom Colophon & Minimalist Stamped QR -->
+<div class="relative z-10 pt-2 border-t border-[#E2E8F0] flex items-center justify-between">
+<div class="text-left">
+<div class="text-[8.5px] font-mono font-bold text-[#0F172A] tracking-wider">AITAROTREADER.APP</div>
+<div class="text-[7.5px] text-[#64748B] tracking-tight">VERIFIED NATURAL SYNTHESIS</div>
+</div>
+<!-- Minimalist Archival Stamp -->
+<div class="flex items-center gap-1 border border-[#0F172A] px-1.5 py-0.5 bg-white">
+<span class="material-symbols-outlined text-[13px] text-[#059669]">verified</span>
+<span class="text-[8px] font-mono font-bold text-[#0F172A]">PRINT-042</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. Customization Controls Table -->
+<section class="bg-white px-4 py-4 space-y-3.5 flex-1">
+<!-- Row 1: Aspect Ratio -->
+<div class="space-y-1.5">
+<div class="flex justify-between items-center">
+<span class="font-label uppercase text-[11px] font-semibold tracking-wider text-[#64748B]">Aspect Ratio</span>
+<span class="text-[10px] text-[#059669] font-medium">Auto-fitted</span>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 bg-[#059669] text-white font-medium text-xs py-2 px-3 rounded flex items-center justify-center gap-1.5 shadow-xs" type="button">
+<span class="material-symbols-outlined text-[15px]">crop_portrait</span>
+<span>9:16 Story</span>
+<span class="material-symbols-outlined text-[14px]">check</span>
+</button>
+<button class="flex-1 bg-[#F8FAFC] border border-[#E2E8F0] text-[#0F172A] hover:bg-[#F1F5F9] text-xs py-2 px-3 rounded flex items-center justify-center gap-1.5 transition-colors" type="button">
+<span class="material-symbols-outlined text-[15px] text-[#64748B]">crop_square</span>
+<span>1:1 Square</span>
+</button>
+</div>
+</div>
+<!-- Row 2: Print Theme / Paper Stock -->
+<div class="space-y-1.5 pt-1">
+<span class="font-label uppercase text-[11px] font-semibold tracking-wider text-[#64748B]">Print Theme</span>
+<div class="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+<!-- Warm Archival Paper (Active) -->
+<button class="flex-shrink-0 border-2 border-[#059669] bg-[#FAF9F6] text-xs font-semibold px-3 py-1.5 text-[#0F172A] rounded flex items-center gap-1.5" type="button">
+<span class="w-2.5 h-2.5 rounded-full bg-[#FAF9F6] border border-[#CBD5E1]"></span>
+<span>Warm Archival</span>
+<span class="material-symbols-outlined text-[13px] text-[#059669]">check</span>
+</button>
+<!-- Botanical Sage -->
+<button class="flex-shrink-0 border border-[#E2E8F0] bg-[#F4F7F4] text-xs font-normal px-3 py-1.5 text-[#64748B] hover:text-[#0F172A] rounded flex items-center gap-1.5 transition-colors" type="button">
+<span class="w-2.5 h-2.5 rounded-full bg-[#E2ECE2] border border-[#CBD5E1]"></span>
+<span>Botanical Sage</span>
+</button>
+<!-- Monochrome Ink -->
+<button class="flex-shrink-0 border border-[#E2E8F0] bg-white text-xs font-normal px-3 py-1.5 text-[#64748B] hover:text-[#0F172A] rounded flex items-center gap-1.5 transition-colors" type="button">
+<span class="w-2.5 h-2.5 rounded-full bg-white border border-[#0F172A]"></span>
+<span>Monochrome Ink</span>
+</button>
+</div>
+</div>
+<!-- Row 3: Journal Reflection Note -->
+<div class="space-y-1.5 pt-1">
+<label class="font-label uppercase text-[11px] font-semibold tracking-wider text-[#64748B] flex items-center justify-between" for="journal-note">
+<span>Journal Reflection</span>
+<span class="text-[10px] font-normal text-[#64748B]">Optional Note</span>
+</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#64748B]">
+<span class="material-symbols-outlined text-[18px]">edit_note</span>
+</div>
+<input class="w-full pl-9 pr-3 py-2 text-xs bg-white border border-[#E2E8F0] rounded-lg text-[#0F172A] placeholder-[#94A3B8] focus:border-[#059669] focus:ring-1 focus:ring-[#059669] focus:outline-none transition-all" id="journal-note" placeholder="Add personal reflection note to Tarot Journal..." type="text" value="Distill vision before action. Focus energy on thesis draft."/>
+</div>
+</div>
+</section>
+<!-- 4. Bottom Action Bar -->
+<footer class="bg-white border-t border-[#E2E8F0] p-4 flex gap-3 items-center sticky bottom-0 z-40">
+<!-- Left Secondary Action: Save to Journal -->
+<button class="border border-[#CBD5E1] bg-white text-[#0F172A] hover:bg-[#F8FAFC] active:bg-[#F1F5F9] font-medium text-xs sm:text-sm py-2.5 px-3 rounded-lg flex-1 text-center transition-colors flex items-center justify-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[17px] text-[#64748B]">menu_book</span>
+<span>Save to Journal</span>
+</button>
+<!-- Right Primary Action: Share / Download Print -->
+<button class="bg-[#059669] hover:bg-[#047857] active:bg-[#065F46] text-white font-semibold text-xs sm:text-sm py-2.5 px-3 rounded-lg flex-1 text-center shadow-sm transition-colors flex items-center justify-center gap-1.5" type="button">
+<span>Share / Download Print</span>
+<span class="material-symbols-outlined text-[17px]">arrow_forward</span>
+</button>
+</footer>
+</div>
+</body></html>
