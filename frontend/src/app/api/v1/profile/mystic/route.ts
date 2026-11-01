@@ -1,10 +1,30 @@
+export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { MOCK_MYSTIC_PROFILE } from "@/services/mockData";
 
-export async function GET() {
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
+export async function GET(request: Request) {
+  try {
+    const authHeader = request.headers.get("authorization");
+    const headers: Record<string, string> = {};
+    if (authHeader) headers["Authorization"] = authHeader;
+
+    const res = await fetch(`${BACKEND_URL}/api/v1/profile/mystic`, {
+      headers,
+      cache: "no-store"
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return NextResponse.json(data);
+    }
+  } catch (e) {
+    console.warn("Proxy to Supabase backend failed, returning fallback profile:", e);
+  }
+
   return NextResponse.json({
     code: 200,
-    message: "OK",
+    message: "OK (Fallback)",
     data: MOCK_MYSTIC_PROFILE,
     timestamp: new Date().toISOString()
   });
@@ -13,10 +33,23 @@ export async function GET() {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
+    const authHeader = request.headers.get("authorization");
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (authHeader) headers["Authorization"] = authHeader;
+
+    const res = await fetch(`${BACKEND_URL}/api/v1/profile/mystic`, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify(body)
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return NextResponse.json(data);
+    }
     const updated = { ...MOCK_MYSTIC_PROFILE, ...body };
     return NextResponse.json({
       code: 200,
-      message: "Profile updated",
+      message: "Profile updated (Fallback)",
       data: updated,
       timestamp: new Date().toISOString()
     });

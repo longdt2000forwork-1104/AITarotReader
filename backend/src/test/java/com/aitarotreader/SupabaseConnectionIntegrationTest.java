@@ -1,8 +1,11 @@
 package com.aitarotreader;
 
-import com.aitarotreader.modules.tarot.TarotCardRepository;
-import com.aitarotreader.modules.tarot.TarotDeckRepository;
-import com.aitarotreader.modules.tarot.SpreadTemplateRepository;
+import com.aitarotreader.repositories.*;
+import com.aitarotreader.entities.*;
+
+
+
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

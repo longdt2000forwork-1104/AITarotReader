@@ -62,7 +62,10 @@ export default function MobileSpreadConfigPage() {
           <span>Back</span>
         </Link>
         <span className="font-mono text-xs font-semibold text-on-surface">NEW READING CONFIG</span>
-        <span className="text-xs font-mono text-primary font-semibold">MOCK MODE</span>
+        <span className="text-xs font-mono text-emerald-600 font-semibold flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          SUPABASE LIVE
+        </span>
       </header>
 
       {/* 4-Step Form */}

@@ -131,7 +131,7 @@ export default function JournalPatternLedgerPage() {
                 >
                   <div className="flex justify-between items-center text-[10px] font-mono text-slate-400">
                     <span>{entry.sessionCode}</span>
-                    <span>{new Date(entry.createdAt).toLocaleDateString()}</span>
+                    <span suppressHydrationWarning>{new Date(entry.createdAt).toLocaleDateString()}</span>
                   </div>
                   <h4 className="font-headline font-bold text-sm text-on-surface mt-1">
                     {entry.title || entry.spreadNameVi}

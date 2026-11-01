@@ -13,6 +13,23 @@ export default function MobileDailyHomePage() {
   const [wallet, setWallet] = useState<WalletBalanceDto | null>(null);
   const [isClaiming, setIsClaiming] = useState(false);
   const [claimToast, setClaimToast] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [todayDateStr, setTodayDateStr] = useState("");
+
+  useEffect(() => {
+    setMounted(true);
+    try {
+      const formatted = new Date().toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      }).toUpperCase();
+      setTodayDateStr(formatted);
+    } catch {
+      setTodayDateStr("TODAY");
+    }
+  }, [locale]);
 
   useEffect(() => {
     async function loadData() {
@@ -116,7 +133,7 @@ export default function MobileDailyHomePage() {
         {/* Issue & Date Kicker */}
         <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-widest text-slate-400">
           <span>{locale === "vi" ? "THÁNH ĐỊA HÀNG NGÀY" : "DAILY SANCTUARY"}</span>
-          <span>{new Date().toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}</span>
+          <span suppressHydrationWarning>{mounted && todayDateStr ? todayDateStr : "TODAY"}</span>
         </div>
 
         {/* Drawn Card Specimen Card */}
