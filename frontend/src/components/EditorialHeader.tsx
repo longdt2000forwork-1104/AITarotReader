@@ -24,10 +24,10 @@ export default function EditorialHeader({
   ];
 
   return (
-    <header className="w-full bg-white/95 backdrop-blur-md border-b border-outline-variant h-16 sticky top-0 z-50 transition-colors shadow-sm">
-      <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between px-4 sm:px-6 lg:px-8 gap-4">
+    <header suppressHydrationWarning className="w-full bg-white/95 backdrop-blur-md border-b border-outline-variant h-16 sticky top-0 z-50 transition-colors shadow-sm">
+      <div suppressHydrationWarning className="max-w-[1440px] mx-auto h-full flex items-center justify-between px-4 sm:px-6 lg:px-8 gap-4">
         {/* Brand & Canonical Title */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div suppressHydrationWarning className="flex items-center gap-3 shrink-0">
           <Link
             href="/"
             className="flex items-center gap-2 group transition-colors"
@@ -65,9 +65,9 @@ export default function EditorialHeader({
         </nav>
 
         {/* Right Utility Actions */}
-        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+        <div suppressHydrationWarning className="flex items-center gap-2.5 sm:gap-3 shrink-0">
           {/* Interactive Language Switch (Segmented Control) */}
-          <div className="flex items-center p-0.5 border border-slate-200 rounded-lg bg-slate-50 text-[11px] font-mono font-medium shrink-0">
+          <div suppressHydrationWarning className="flex items-center p-0.5 border border-slate-200 rounded-lg bg-slate-50 text-[11px] font-mono font-medium shrink-0">
             <button
               onClick={() => setLocale("en")}
               type="button"

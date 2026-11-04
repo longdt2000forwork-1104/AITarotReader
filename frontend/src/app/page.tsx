@@ -140,7 +140,7 @@ export default function EditorialPortalPage() {
       <EditorialHeader activeTab="daily" />
 
       {/* MAIN EDITORIAL CANVASES (1280px+ Wide Responsive Layout) */}
-      <main className="flex-1 max-w-[1440px] w-full mx-auto border-x border-outline-variant flex flex-col bg-white">
+      <main suppressHydrationWarning className="flex-1 max-w-[1440px] w-full mx-auto border-x border-outline-variant flex flex-col bg-white">
         {/* 2-COLUMN HERO EDITORIAL GRID */}
         <section className="grid grid-cols-1 lg:grid-cols-12 min-h-[580px] border-b border-outline-variant">
           {/* LEFT EDITORIAL SECTION (60% on desktop) */}
