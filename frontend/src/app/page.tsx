@@ -72,29 +72,48 @@ export default function EditorialPortalPage() {
   };
 
   useEffect(() => {
+    // 1. Check local client cache for today's card synchronously on mount
+    const todayKey = getTodayDateKey();
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem("ai_tarot_daily_draw");
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && parsed.dateKey === todayKey && parsed.session) {
+            setDailySession(parsed.session);
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch {
+        // ignore cache parse error
+      }
+    }
+
     loadDailyCard(false);
   }, [locale]);
 
-  // Resolve current active card (fallback to card 19 The Sun)
-  const defaultCard = TAROT_CARDS.find((c) => c.id === 19) || TAROT_CARDS[0];
+  // Resolve current active card (only when drawnCardData is available from today's draw)
   const drawnCardData = dailySession?.drawnCards?.[0];
   const apiCard = drawnCardData?.card as any;
-  const staticCard = TAROT_CARDS.find((c) => c.id === Number(apiCard?.id)) || defaultCard;
+  const staticCard = apiCard ? (TAROT_CARDS.find((c) => c.id === Number(apiCard?.id)) || null) : null;
 
-  const card = {
-    ...staticCard,
-    ...(apiCard || {}),
-    image: apiCard?.imageUrl || apiCard?.image || staticCard.image,
-    keywordsVi: apiCard?.keywordsUprightVi || apiCard?.keywordsVi || staticCard.keywordsVi || "",
-    keywordsEn: apiCard?.keywordsUprightEn || apiCard?.keywordsEn || staticCard.keywordsEn || "",
-    meaningUprightVi: apiCard?.summaryVi || apiCard?.meaningUprightVi || staticCard.meaningUprightVi || "",
-    meaningUprightEn: apiCard?.summaryEn || apiCard?.meaningUprightEn || staticCard.meaningUprightEn || "",
-  };
+  const card = (apiCard || staticCard)
+    ? {
+        ...(staticCard || {}),
+        ...(apiCard || {}),
+        image: apiCard?.imageUrl || apiCard?.image || staticCard?.image || "",
+        keywordsVi: apiCard?.keywordsUprightVi || apiCard?.keywordsVi || staticCard?.keywordsVi || "",
+        keywordsEn: apiCard?.keywordsUprightEn || apiCard?.keywordsEn || staticCard?.keywordsEn || "",
+        meaningUprightVi: apiCard?.summaryVi || apiCard?.meaningUprightVi || staticCard?.meaningUprightVi || "",
+        meaningUprightEn: apiCard?.summaryEn || apiCard?.meaningUprightEn || staticCard?.meaningUprightEn || "",
+      }
+    : null;
   const isReversed = Boolean(drawnCardData?.isReversed);
   const aiMessage = dailySession?.aiInterpretation || dailySession?.aiSynthesisResult || t.portal.advisoryQuote;
 
   // Resolve Element mapping
-  const getElementDetails = (element: string) => {
+  const getElementDetails = (element?: string) => {
     switch (element?.toLowerCase()) {
       case "fire":
         return { label: isVi ? "Hỏa 🔥" : "Fire 🔥", ratio: isVi ? "52% Năng Động" : "52% Kinetic" };
@@ -109,10 +128,11 @@ export default function EditorialPortalPage() {
     }
   };
 
-  const elementDetails = getElementDetails(card.element);
+  const elementDetails = getElementDetails(card?.element);
 
   // Resolve Arcana label
   const getArcanaLabel = (c: any) => {
+    if (!c) return "";
     if (c.suit === "MAJOR" || c.arcana === "MAJOR" || !c.suit) {
       return isVi ? `Ẩn Chính ${c.number ?? ""} (Major Arcana)` : `Major Arcana · ${c.number ?? ""}`;
     }
@@ -129,11 +149,13 @@ export default function EditorialPortalPage() {
   };
 
   // Keywords tags
-  const rawKeywords: string = String((isVi ? card.keywordsVi : card.keywordsEn) || "");
+  const rawKeywords: string = card ? String((isVi ? card.keywordsVi : card.keywordsEn) || "") : "";
   const keywordsList: string[] = rawKeywords
-    .split(/[·,]/)
-    .map((k: string) => k.trim())
-    .filter(Boolean);
+    ? rawKeywords
+        .split(/[·,]/)
+        .map((k: string) => k.trim())
+        .filter(Boolean)
+    : [];
 
   return (
     <>
@@ -237,105 +259,164 @@ export default function EditorialPortalPage() {
               </div>
 
               {/* Specimen Card + Table Display Grid */}
-              <div className="mt-6 grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
-                {/* Tarot Card Visual Specimen Frame */}
-                <div className="sm:col-span-5 bg-[#FAF9F6] border border-outline-variant rounded-lg p-3 text-center flex flex-col items-center justify-between min-h-[250px] shadow-sm relative overflow-hidden">
-                  <div className="w-full flex justify-between items-center text-[10px] font-mono text-slate-400 border-b border-slate-200 pb-1">
-                    <span>Rider-Waite 1909</span>
-                    <span>{card.suit === "MAJOR" || (card as any).arcana === "MAJOR" || !card.suit ? (isVi ? "Bộ Ẩn Chính" : "Major Arcana") : card.suit}</span>
-                  </div>
+              {!card ? (
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-12 gap-6 items-start animate-pulse">
+                  {/* Tarot Card Visual Specimen Skeleton */}
+                  <div className="sm:col-span-5 bg-[#FAF9F6] border border-outline-variant rounded-lg p-3 text-center flex flex-col items-center justify-between min-h-[250px] shadow-sm relative overflow-hidden">
+                    <div className="w-full flex justify-between items-center text-[10px] font-mono text-slate-400 border-b border-slate-200 pb-1">
+                      <span>Rider-Waite 1909</span>
+                      <span className="w-16 h-2.5 bg-slate-200 rounded" />
+                    </div>
 
-                  {/* Real Tarot Card Artwork */}
-                  <div className="my-2 relative group cursor-pointer">
-                    <img
-                      src={card.image}
-                      alt={`${card.number} ${isVi ? card.nameVi : card.nameEn}`}
-                      className={`w-28 h-48 object-cover rounded border border-slate-200 shadow-md group-hover:scale-105 transition-all duration-300 ${
-                        isReversed ? "rotate-180" : ""
-                      } ${isRedrawing ? "opacity-40 blur-xs scale-95" : "opacity-100 scale-100"}`}
-                    />
-                    {isRedrawing && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-primary text-3xl animate-spin">
+                    {/* Shimmer Card Preview Frame */}
+                    <div className="my-2 relative w-28 h-48 rounded border border-slate-200 bg-slate-100/70 shadow-md flex flex-col items-center justify-center overflow-hidden linen-texture">
+                      <div className="w-22 h-42 border border-slate-300/70 rounded-sm flex flex-col items-center justify-center p-2 text-center">
+                        <span className="material-symbols-outlined text-primary/70 text-3xl animate-spin mb-2">
                           progress_activity
                         </span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="w-full pt-2 border-t border-slate-200">
-                    <div className="font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
-                      {card.number}
-                    </div>
-                    <div className="font-headline font-bold text-sm tracking-tight text-on-surface uppercase line-clamp-1">
-                      {isVi ? card.nameVi : card.nameEn}
-                    </div>
-                    <div
-                      className={`text-[10px] font-mono font-medium ${
-                        isReversed ? "text-amber-700" : "text-emerald-600"
-                      }`}
-                    >
-                      {isReversed
-                        ? isVi
-                          ? "Ngược (Reversed)"
-                          : "Reversed"
-                        : isVi
-                        ? "Xuôi (Upright)"
-                        : "Upright"}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Elemental & Archetype Specimen Table */}
-                <div className="sm:col-span-7 flex flex-col justify-between h-full pt-1">
-                  <div>
-                    <h2 className="font-headline text-lg font-bold text-on-surface leading-snug">
-                      {card.number} — {isVi ? card.nameVi : card.nameEn}
-                    </h2>
-                    <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
-                      {isReversed
-                        ? isVi
-                          ? card.meaningUprightVi
-                          : card.meaningUprightEn
-                        : isVi
-                        ? card.meaningUprightVi
-                        : card.meaningUprightEn}
-                    </p>
-                  </div>
-
-                  {/* Metadata Table Matrix */}
-                  <div className="mt-4 border border-outline-variant rounded-lg divide-y divide-outline-variant text-xs">
-                    <div className="p-2.5 flex items-center justify-between bg-surface-subtle">
-                      <span className="text-slate-500 font-mono text-[11px]">{t.portal.primaryElement}</span>
-                      <span className="font-medium text-on-surface flex items-center gap-1.5">
-                        <span>{elementDetails.label}</span>
-                        <span className="text-emerald-600 font-mono text-[10px] bg-emerald-50 px-1 rounded">
-                          {elementDetails.ratio}
+                        <span className="text-[9px] font-mono tracking-wider text-slate-400 uppercase">
+                          {isVi ? "Đang rút quẻ..." : "Drawing..."}
                         </span>
-                      </span>
+                      </div>
                     </div>
-                    <div className="p-2.5 flex items-center justify-between">
-                      <span className="text-slate-500 font-mono text-[11px]">{t.portal.arcanaClass}</span>
-                      <span className="font-medium text-on-surface truncate max-w-[160px]">
-                        {getArcanaLabel(card)}
-                      </span>
+
+                    <div className="w-full pt-2 border-t border-slate-200 flex flex-col items-center gap-1.5">
+                      <div className="h-2 w-8 bg-slate-200 rounded" />
+                      <div className="h-3.5 w-24 bg-slate-200 rounded" />
+                      <div className="h-2.5 w-16 bg-slate-100 rounded" />
                     </div>
-                    <div className="p-2.5 flex flex-col gap-1 bg-white">
-                      <span className="text-slate-500 font-mono text-[11px]">{t.portal.coreKeywords}</span>
-                      <div className="flex flex-wrap gap-1 mt-0.5">
-                        {keywordsList.map((kw: string, idx: number) => (
-                          <span
-                            key={idx}
-                            className="px-1.5 py-0.5 bg-slate-100 rounded text-[11px] text-slate-700 font-medium"
-                          >
-                            {kw}
-                          </span>
-                        ))}
+                  </div>
+
+                  {/* Metadata Table Skeleton */}
+                  <div className="sm:col-span-7 flex flex-col justify-between h-full pt-1">
+                    <div>
+                      <div className="h-6 w-44 bg-slate-200 rounded mb-2" />
+                      <div className="h-3 w-full bg-slate-100 rounded mb-1.5" />
+                      <div className="h-3 w-3/4 bg-slate-100 rounded" />
+                    </div>
+
+                    {/* Metadata Table Matrix Skeleton */}
+                    <div className="mt-4 border border-outline-variant rounded-lg divide-y divide-outline-variant text-xs">
+                      <div className="p-2.5 flex items-center justify-between bg-surface-subtle">
+                        <span className="text-slate-400 font-mono text-[11px]">{t.portal.primaryElement}</span>
+                        <div className="h-3.5 w-20 bg-slate-200 rounded" />
+                      </div>
+                      <div className="p-2.5 flex items-center justify-between">
+                        <span className="text-slate-400 font-mono text-[11px]">{t.portal.arcanaClass}</span>
+                        <div className="h-3.5 w-28 bg-slate-200 rounded" />
+                      </div>
+                      <div className="p-2.5 flex flex-col gap-1.5 bg-white">
+                        <span className="text-slate-400 font-mono text-[11px]">{t.portal.coreKeywords}</span>
+                        <div className="flex gap-1.5 mt-0.5">
+                          <div className="h-5 w-16 bg-slate-100 rounded" />
+                          <div className="h-5 w-20 bg-slate-100 rounded" />
+                          <div className="h-5 w-14 bg-slate-100 rounded" />
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
+                  {/* Tarot Card Visual Specimen Frame */}
+                  <div className="sm:col-span-5 bg-[#FAF9F6] border border-outline-variant rounded-lg p-3 text-center flex flex-col items-center justify-between min-h-[250px] shadow-sm relative overflow-hidden">
+                    <div className="w-full flex justify-between items-center text-[10px] font-mono text-slate-400 border-b border-slate-200 pb-1">
+                      <span>Rider-Waite 1909</span>
+                      <span>{card.suit === "MAJOR" || (card as any).arcana === "MAJOR" || !card.suit ? (isVi ? "Bộ Ẩn Chính" : "Major Arcana") : card.suit}</span>
+                    </div>
+
+                    {/* Real Tarot Card Artwork */}
+                    <div className="my-2 relative group cursor-pointer">
+                      <img
+                        src={card.image}
+                        alt={`${card.number} ${isVi ? card.nameVi : card.nameEn}`}
+                        className={`w-28 h-48 object-cover rounded border border-slate-200 shadow-md group-hover:scale-105 transition-all duration-300 ${
+                          isReversed ? "rotate-180" : ""
+                        } ${isRedrawing ? "opacity-40 blur-xs scale-95" : "opacity-100 scale-100"}`}
+                      />
+                      {isRedrawing && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="material-symbols-outlined text-primary text-3xl animate-spin">
+                            progress_activity
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="w-full pt-2 border-t border-slate-200">
+                      <div className="font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
+                        {card.number}
+                      </div>
+                      <div className="font-headline font-bold text-sm tracking-tight text-on-surface uppercase line-clamp-1">
+                        {isVi ? card.nameVi : card.nameEn}
+                      </div>
+                      <div
+                        className={`text-[10px] font-mono font-medium ${
+                          isReversed ? "text-amber-700" : "text-emerald-600"
+                        }`}
+                      >
+                        {isReversed
+                          ? isVi
+                            ? "Ngược (Reversed)"
+                            : "Reversed"
+                          : isVi
+                          ? "Xuôi (Upright)"
+                          : "Upright"}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Elemental & Archetype Specimen Table */}
+                  <div className="sm:col-span-7 flex flex-col justify-between h-full pt-1">
+                    <div>
+                      <h2 className="font-headline text-lg font-bold text-on-surface leading-snug">
+                        {card.number} — {isVi ? card.nameVi : card.nameEn}
+                      </h2>
+                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
+                        {isReversed
+                          ? isVi
+                            ? card.meaningUprightVi
+                            : card.meaningUprightEn
+                          : isVi
+                          ? card.meaningUprightVi
+                          : card.meaningUprightEn}
+                      </p>
+                    </div>
+
+                    {/* Metadata Table Matrix */}
+                    <div className="mt-4 border border-outline-variant rounded-lg divide-y divide-outline-variant text-xs">
+                      <div className="p-2.5 flex items-center justify-between bg-surface-subtle">
+                        <span className="text-slate-500 font-mono text-[11px]">{t.portal.primaryElement}</span>
+                        <span className="font-medium text-on-surface flex items-center gap-1.5">
+                          <span>{elementDetails.label}</span>
+                          <span className="text-emerald-600 font-mono text-[10px] bg-emerald-50 px-1 rounded">
+                            {elementDetails.ratio}
+                          </span>
+                        </span>
+                      </div>
+                      <div className="p-2.5 flex items-center justify-between">
+                        <span className="text-slate-500 font-mono text-[11px]">{t.portal.arcanaClass}</span>
+                        <span className="font-medium text-on-surface truncate max-w-[160px]">
+                          {getArcanaLabel(card)}
+                        </span>
+                      </div>
+                      <div className="p-2.5 flex flex-col gap-1 bg-white">
+                        <span className="text-slate-500 font-mono text-[11px]">{t.portal.coreKeywords}</span>
+                        <div className="flex flex-wrap gap-1 mt-0.5">
+                          {keywordsList.map((kw: string, idx: number) => (
+                            <span
+                              key={idx}
+                              className="px-1.5 py-0.5 bg-slate-100 rounded text-[11px] text-slate-700 font-medium"
+                            >
+                              {kw}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Daily Synthesis Pullquote Note (Powered by Gemini AI) */}
               <div className="mt-6 p-4 rounded-lg bg-[#FAF9F6] border-l-2 border-primary border-y border-r border-outline-variant relative">
@@ -349,7 +430,7 @@ export default function EditorialPortalPage() {
                   </span>
                 </div>
                 <blockquote className="font-headline italic text-sm md:text-[15px] text-on-surface leading-snug">
-                  {isRedrawing ? (
+                  {isLoading || isRedrawing || !dailySession ? (
                     <span className="text-slate-400 not-italic font-sans text-xs flex items-center gap-2 py-1">
                       <span className="material-symbols-outlined text-sm animate-spin text-primary">sync</span>
                       {isVi

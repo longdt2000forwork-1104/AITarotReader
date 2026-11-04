@@ -96,6 +96,22 @@ export default function MobileDailyHomePage() {
   }, [isVi]);
 
   useEffect(() => {
+    // Check localStorage immediately on mount
+    const todayKey = getTodayDateKey();
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem("ai_tarot_daily_draw");
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && parsed.dateKey === todayKey && parsed.session) {
+            setDailySession(parsed.session);
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
     async function loadData() {
       try {
         const [profRes, walletRes] = await Promise.all([
@@ -138,29 +154,32 @@ export default function MobileDailyHomePage() {
     ? "Bạch Dương"
     : "Aries";
 
-  // Card resolution
-  const defaultCard = TAROT_CARDS.find((c) => c.id === 19) || TAROT_CARDS[0];
+  // Card resolution (only when drawn card exists from today's session)
   const drawnCardData = dailySession?.drawnCards?.[0];
   const apiCard = drawnCardData?.card as any;
-  const staticCard = TAROT_CARDS.find((c) => c.id === Number(apiCard?.id)) || defaultCard;
+  const staticCard = apiCard ? (TAROT_CARDS.find((c) => c.id === Number(apiCard?.id)) || null) : null;
 
-  const card = {
-    ...staticCard,
-    ...(apiCard || {}),
-    image: apiCard?.imageUrl || apiCard?.image || staticCard.image,
-    keywordsVi: apiCard?.keywordsUprightVi || apiCard?.keywordsVi || staticCard.keywordsVi || "",
-    keywordsEn: apiCard?.keywordsUprightEn || apiCard?.keywordsEn || staticCard.keywordsEn || "",
-    meaningUprightVi: apiCard?.summaryVi || apiCard?.meaningUprightVi || staticCard.meaningUprightVi || "",
-    meaningUprightEn: apiCard?.summaryEn || apiCard?.meaningUprightEn || staticCard.meaningUprightEn || "",
-  };
+  const card = (apiCard || staticCard)
+    ? {
+        ...(staticCard || {}),
+        ...(apiCard || {}),
+        image: apiCard?.imageUrl || apiCard?.image || staticCard?.image || "",
+        keywordsVi: apiCard?.keywordsUprightVi || apiCard?.keywordsVi || staticCard?.keywordsVi || "",
+        keywordsEn: apiCard?.keywordsUprightEn || apiCard?.keywordsEn || staticCard?.keywordsEn || "",
+        meaningUprightVi: apiCard?.summaryVi || apiCard?.meaningUprightVi || staticCard?.meaningUprightVi || "",
+        meaningUprightEn: apiCard?.summaryEn || apiCard?.meaningUprightEn || staticCard?.meaningUprightEn || "",
+      }
+    : null;
   const isReversed = Boolean(drawnCardData?.isReversed);
   const aiMessage = dailySession?.aiInterpretation || dailySession?.aiSynthesisResult || t.portal.advisoryQuote;
 
-  const rawKeywords: string = String((isVi ? card.keywordsVi : card.keywordsEn) || "");
+  const rawKeywords: string = card ? String((isVi ? card.keywordsVi : card.keywordsEn) || "") : "";
   const keywordsList: string[] = rawKeywords
-    .split(/[·,]/)
-    .map((k: string) => k.trim())
-    .filter(Boolean);
+    ? rawKeywords
+        .split(/[·,]/)
+        .map((k: string) => k.trim())
+        .filter(Boolean)
+    : [];
 
   return (
     <div className="max-w-[430px] mx-auto min-h-screen bg-surface flex flex-col border-x border-outline-variant pb-20">
@@ -232,68 +251,99 @@ export default function MobileDailyHomePage() {
         </div>
 
         {/* Drawn Card Specimen Card */}
-        <div className="bg-white border border-outline-variant rounded-lg p-5 text-center shadow-sm space-y-3 relative overflow-hidden">
-          <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 border-b border-slate-100 pb-2">
-            <span>Rider-Waite 1909 · {card.suit === "MAJOR" || (card as any).arcana === "MAJOR" || !card.suit ? (isVi ? "Bộ Ẩn Chính" : "Major Arcana") : card.suit}</span>
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={() => loadDailyCard(true)}
-                disabled={isRedrawing}
-                className="text-[10px] font-mono text-slate-500 hover:text-primary flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-slate-200 disabled:opacity-50"
-                title={isVi ? "Rút lại lá bài khác" : "Redraw card"}
-              >
-                <span className={`material-symbols-outlined text-[11px] ${isRedrawing ? "animate-spin text-primary" : ""}`}>
-                  autorenew
-                </span>
-                <span>{isRedrawing ? "..." : (isVi ? "Đổi" : "New")}</span>
-              </button>
-              <span className={`px-2 py-0.5 rounded font-semibold border text-[10px] ${
-                isReversed ? "text-amber-800 bg-amber-50 border-amber-200" : "text-emerald-700 bg-emerald-50 border-emerald-200"
-              }`}>
-                {isReversed ? (isVi ? "NGƯỢC (REVERSED)" : "REVERSED") : (isVi ? "XUÔI (UPRIGHT)" : "UPRIGHT")}
+        {!card ? (
+          <div className="bg-white border border-outline-variant rounded-lg p-5 text-center shadow-sm space-y-3 relative overflow-hidden animate-pulse">
+            <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 border-b border-slate-100 pb-2">
+              <span>Rider-Waite 1909</span>
+              <span className="w-16 h-2.5 bg-slate-200 rounded" />
+            </div>
+
+            {/* Shimmer Card Preview */}
+            <div className="w-32 h-52 mx-auto rounded-lg overflow-hidden border border-slate-200 bg-slate-100/70 shadow-md flex flex-col items-center justify-center p-3 linen-texture">
+              <span className="material-symbols-outlined text-primary/70 text-3xl animate-spin mb-2">
+                progress_activity
+              </span>
+              <span className="text-[10px] font-mono tracking-wider text-slate-400 uppercase">
+                {isVi ? "Đang rút quẻ..." : "Drawing..."}
               </span>
             </div>
-          </div>
 
-          {/* Card Real Art Preview */}
-          <div className="w-32 h-52 mx-auto rounded-lg overflow-hidden border border-slate-200 shadow-md relative group">
-            <img
-              src={card.image}
-              alt={`${card.number} ${isVi ? card.nameVi : card.nameEn}`}
-              className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-300 ${
-                isReversed ? "rotate-180" : ""
-              } ${isRedrawing ? "opacity-40 blur-xs" : "opacity-100"}`}
-            />
-            {isRedrawing && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="material-symbols-outlined text-primary text-2xl animate-spin">
-                  progress_activity
+            <div className="space-y-1.5 flex flex-col items-center">
+              <div className="h-3 w-8 bg-slate-200 rounded" />
+              <div className="h-5 w-32 bg-slate-200 rounded" />
+              <div className="h-3 w-48 bg-slate-100 rounded" />
+            </div>
+
+            <div className="flex justify-center gap-1.5 pt-1">
+              <div className="h-5 w-16 bg-slate-100 rounded" />
+              <div className="h-5 w-16 bg-slate-100 rounded" />
+              <div className="h-5 w-16 bg-slate-100 rounded" />
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white border border-outline-variant rounded-lg p-5 text-center shadow-sm space-y-3 relative overflow-hidden">
+            <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 border-b border-slate-100 pb-2">
+              <span>Rider-Waite 1909 · {card.suit === "MAJOR" || (card as any).arcana === "MAJOR" || !card.suit ? (isVi ? "Bộ Ẩn Chính" : "Major Arcana") : card.suit}</span>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => loadDailyCard(true)}
+                  disabled={isRedrawing}
+                  className="text-[10px] font-mono text-slate-500 hover:text-primary flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-slate-200 disabled:opacity-50"
+                  title={isVi ? "Rút lại lá bài khác" : "Redraw card"}
+                >
+                  <span className={`material-symbols-outlined text-[11px] ${isRedrawing ? "animate-spin text-primary" : ""}`}>
+                    autorenew
+                  </span>
+                  <span>{isRedrawing ? "..." : (isVi ? "Đổi" : "New")}</span>
+                </button>
+                <span className={`px-2 py-0.5 rounded font-semibold border text-[10px] ${
+                  isReversed ? "text-amber-800 bg-amber-50 border-amber-200" : "text-emerald-700 bg-emerald-50 border-emerald-200"
+                }`}>
+                  {isReversed ? (isVi ? "NGƯỢC (REVERSED)" : "REVERSED") : (isVi ? "XUÔI (UPRIGHT)" : "UPRIGHT")}
                 </span>
               </div>
-            )}
-          </div>
+            </div>
 
-          <div>
-            <div className="font-mono text-xs font-semibold text-slate-400 uppercase">{card.number}</div>
-            <h1 className="font-headline font-bold text-xl text-on-surface">
-              {isVi ? card.nameVi.toUpperCase() : card.nameEn.toUpperCase()}
-            </h1>
-            <p className="text-xs text-[#475569] mt-1 line-clamp-2">
-              {isReversed
-                ? (isVi ? card.meaningUprightVi : card.meaningUprightEn)
-                : (isVi ? card.meaningUprightVi : card.meaningUprightEn)}
-            </p>
-          </div>
+            {/* Card Real Art Preview */}
+            <div className="w-32 h-52 mx-auto rounded-lg overflow-hidden border border-slate-200 shadow-md relative group">
+              <img
+                src={card.image}
+                alt={`${card.number} ${isVi ? card.nameVi : card.nameEn}`}
+                className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-300 ${
+                  isReversed ? "rotate-180" : ""
+                } ${isRedrawing ? "opacity-40 blur-xs" : "opacity-100"}`}
+              />
+              {isRedrawing && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-primary text-2xl animate-spin">
+                    progress_activity
+                  </span>
+                </div>
+              )}
+            </div>
 
-          {/* Tags */}
-          <div className="flex flex-wrap justify-center gap-1.5 pt-1">
-            {keywordsList.slice(0, 3).map((kw: string, i: number) => (
-              <span key={i} className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] font-mono">
-                {kw.toUpperCase()}
-              </span>
-            ))}
+            <div>
+              <div className="font-mono text-xs font-semibold text-slate-400 uppercase">{card.number}</div>
+              <h1 className="font-headline font-bold text-xl text-on-surface">
+                {isVi ? card.nameVi.toUpperCase() : card.nameEn.toUpperCase()}
+              </h1>
+              <p className="text-xs text-[#475569] mt-1 line-clamp-2">
+                {isReversed
+                  ? (isVi ? card.meaningUprightVi : card.meaningUprightEn)
+                  : (isVi ? card.meaningUprightVi : card.meaningUprightEn)}
+              </p>
+            </div>
+
+            {/* Tags */}
+            <div className="flex flex-wrap justify-center gap-1.5 pt-1">
+              {keywordsList.slice(0, 3).map((kw: string, i: number) => (
+                <span key={i} className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] font-mono">
+                  {kw.toUpperCase()}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Daily Synthesis Quote (Gemini AI) */}
         <div className="p-4 bg-white border border-outline-variant rounded-lg border-l-4 border-l-primary space-y-1">
