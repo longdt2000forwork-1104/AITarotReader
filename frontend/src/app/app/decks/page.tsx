@@ -1,65 +1,76 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { useLanguage } from "@/context/LanguageContext";
+import { apiClient } from "@/services/apiClient";
+import { TarotDeck } from "@/types/api";
 
 export default function MobileDecksGalleryPage() {
   const { locale, setLocale } = useLanguage();
   const isVi = locale === "vi";
 
-  const decks = [
-    {
-      id: "ED-01",
-      name: "Rider-Waite-Smith 1909",
-      desc: isVi
-        ? "Nét vẽ kinh điển & màu nước thủ công nguyên bản của Pamela Colman Smith."
-        : "Original Pamela Colman Smith hand-drawn linework & watercolor.",
-      status: isVi ? "MẶC ĐỊNH · MIỄN PHÍ" : "DEFAULT · FREE",
-      badge: isVi ? "CHUẨN MỰC" : "CANONICAL",
-      active: false,
-    },
-    {
-      id: "ED-02",
-      name: isVi ? "Thảo Dược Chiêm Tinh (Sunlit Botanical)" : "Sunlit Botanical Herbarium",
-      desc: isVi
-        ? "Giấy thạch cao ấm áp, thảo dược trị liệu học và nét khắc mộc bản thếp vàng."
-        : "Warm Alabaster press, medicinal flora, golden woodcut engraving.",
-      status: isVi ? "ĐANG SỬ DỤNG" : "ACTIVE SELECTION",
-      badge: isVi ? "HOẠT ĐỘNG" : "ACTIVE",
-      active: true,
-    },
-    {
-      id: "ED-03",
-      name: isVi ? "Hình Học Tối Giản Thụy Sĩ" : "Swiss Geometric Construct",
-      desc: isVi
-        ? "Nghệ thuật chữ Bauhaus tối giản, lưới vector chuẩn xác và tính hiện đại biểu cảm."
-        : "Minimalist Bauhaus typography, vector grids, chromatic modernism.",
-      status: isVi ? "BẢN PRO (150 CR)" : "PRO (150 CR)",
-      badge: "PRO",
-      active: false,
-    },
-    {
-      id: "ED-04",
-      name: isVi ? "Di Sản Marseille 1760" : "Marseille 1760 Heritage",
-      desc: isVi
-        ? "Bản khắc gỗ lưu trữ Nicolas Conver, màu mực cổ điển nguyên thủy trung cổ."
-        : "Nicolas Conver woodblock archive, pure primary heraldic inks.",
-      status: isVi ? "BẢN PRO (150 CR)" : "PRO (150 CR)",
-      badge: "PRO",
-      active: false,
-    },
-    {
-      id: "ED-05",
-      name: isVi ? "Thủy Mặc Kyoto Sumi-e" : "Kyoto Sumi-e Ink Wash",
-      desc: isVi
-        ? "Mực mài thư họa Nhật Bản quyện khói mờ và bụi vàng thủ công tinh tế."
-        : "Atmospheric Japanese calligraphy ink, gold leaf dusting.",
-      status: isVi ? "BẢN PRO (200 CR)" : "PRO (200 CR)",
-      badge: "PRO",
-      active: false,
-    },
-  ];
+  const [decks, setDecks] = useState<TarotDeck[]>([]);
+  const [activeDeckId, setActiveDeckId] = useState<string>("ED-01");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [activatingId, setActivatingId] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchDecksAndProfile() {
+      try {
+        setLoading(true);
+        const [decksRes, profileRes] = await Promise.all([
+          apiClient.tarot.getDecks(),
+          apiClient.profile.getMysticProfile()
+        ]);
+        if (decksRes.data && Array.isArray(decksRes.data)) {
+          setDecks(decksRes.data);
+        }
+        if (profileRes.data?.preferredDeckId) {
+          setActiveDeckId(profileRes.data.preferredDeckId);
+        }
+      } catch (err) {
+        console.error("Failed to load mobile decks data:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchDecksAndProfile();
+  }, []);
+
+  const handleSelectDeck = async (deckId: string) => {
+    if (deckId === activeDeckId || activatingId) return;
+    setActivatingId(deckId);
+    try {
+      const res = await apiClient.profile.updateMysticProfile({ preferredDeckId: deckId });
+      if (res.code === 200 || res.data) {
+        setActiveDeckId(deckId);
+        const target = decks.find((d) => d.id === deckId);
+        const name = isVi ? (target?.nameVi || target?.nameEn) : target?.nameEn;
+        setToastMessage(isVi ? `Đã đổi sang bộ bài ${name}!` : `Switched to ${name}!`);
+        setTimeout(() => setToastMessage(null), 3000);
+      }
+    } catch (err) {
+      console.error("Failed to switch mobile deck:", err);
+    } finally {
+      setActivatingId(null);
+    }
+  };
+
+  const activeDeck = decks.find((d) => d.id === activeDeckId) || decks[0];
+  const otherDecks = decks.filter((d) => d.id !== (activeDeck?.id || "ED-01"));
+
+  const getDeckIcon = (deckId: string) => {
+    switch (deckId) {
+      case "ED-02": return "spa";
+      case "ED-03": return "polyline";
+      case "ED-04": return "castle";
+      case "ED-05": return "brush";
+      default: return "auto_awesome";
+    }
+  };
 
   return (
     <div className="max-w-[430px] mx-auto min-h-screen bg-surface flex flex-col border-x border-outline-variant pb-20">
@@ -96,88 +107,142 @@ export default function MobileDecksGalleryPage() {
         </div>
       </header>
 
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="bg-emerald-600 text-white text-xs font-mono font-medium px-4 py-2 text-center flex items-center justify-center gap-2 animate-fadeIn shadow-sm">
+          <span className="material-symbols-outlined text-sm">check_circle</span>
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* Main Content */}
       <main className="p-4 space-y-6">
-        {/* Active Hero Deck */}
-        <div className="bg-white border-2 border-primary rounded-lg p-5 shadow-sm space-y-4">
-          <div className="flex justify-between items-center text-[10px] font-mono border-b border-slate-100 pb-2">
-            <span className="text-primary font-bold">
-              {isVi ? "LỰA CHỌN HIỆN TẠI · ED-02" : "ACTIVE SELECTION · ED-02"}
-            </span>
-            <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded font-semibold">
-              {isVi ? "ĐANG DÙNG" : "IN USE"}
+        {loading ? (
+          <div className="p-12 text-center space-y-2">
+            <div className="w-7 h-7 mx-auto border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <span className="font-mono text-xs text-slate-500">
+              {isVi ? "Đang tải dữ liệu từ Supabase..." : "Loading editions from Supabase..."}
             </span>
           </div>
+        ) : (
+          <>
+            {/* Active Hero Deck */}
+            {activeDeck && (
+              <div className="bg-white border-2 border-primary rounded-lg p-5 shadow-sm space-y-4">
+                <div className="flex justify-between items-center text-[10px] font-mono border-b border-slate-100 pb-2">
+                  <span className="text-primary font-bold">
+                    {isVi ? `LỰA CHỌN HIỆN TẠI · ${activeDeck.id}` : `ACTIVE SELECTION · ${activeDeck.id}`}
+                  </span>
+                  <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded font-semibold">
+                    {isVi ? "ĐANG DÙNG" : "IN USE"}
+                  </span>
+                </div>
 
-          <div className="flex gap-4 items-center">
-            <div className="w-20 h-28 bg-[#FAF9F6] border border-amber-200 rounded flex flex-col items-center justify-center shadow-inner">
-              <span className="material-symbols-outlined text-3xl text-emerald-600">spa</span>
-              <span className="text-[8px] font-mono text-emerald-700 font-bold mt-1">HERBARIUM</span>
-            </div>
-            <div className="flex-1 space-y-1">
-              <h2 className="font-headline font-bold text-base text-on-surface">
-                {isVi ? "Thảo Dược Chiêm Tinh (Sunlit Botanical)" : "Sunlit Botanical Herbarium"}
-              </h2>
-              <p className="text-xs text-[#475569] leading-relaxed">
-                {isVi
-                  ? "78 lá bài in trên nền giấy thạch cao ấm áp kết hợp thảo mộc chữa lành và họa tiết mạ vàng tinh xảo."
-                  : "78 cards printed on warm alabaster stock with medicinal herbs and gold foil accents."}
-              </p>
-              <div className="text-[10px] font-mono text-emerald-700 font-semibold pt-1">
-                {isVi ? "Đã Tạo & Kiểm Định 78 Bản Khắc" : "78 Plates Generated & Verified"}
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-2 border-t border-slate-100 flex gap-2">
-            <Link
-              href="/catalog-picker"
-              className="flex-1 py-2 text-center text-xs font-medium border border-outline-variant rounded-lg hover:bg-slate-50"
-            >
-              {isVi ? "Khám Phá 78 Bản Khắc" : "Browse 78 Plates"}
-            </Link>
-            <button className="flex-1 py-2 text-center text-xs font-semibold bg-primary text-white rounded-lg hover:bg-primary-hover">
-              {isVi ? "Đã Chọn ✓" : "Selected ✓"}
-            </button>
-          </div>
-        </div>
-
-        {/* Other 4 Editions */}
-        <div className="space-y-3">
-          <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400 font-semibold block">
-            {isVi ? "CÁC PHIÊN BẢN KHẢ DỤNG (TÙY Ý CHUYỂN ĐỔI)" : "AVAILABLE EDITIONS (SWITCH FREELY)"}
-          </span>
-
-          {decks
-            .filter((d) => !d.active)
-            .map((deck) => (
-              <div
-                key={deck.id}
-                className="p-4 bg-white border border-outline-variant rounded-lg flex items-center justify-between hover:border-slate-300 transition-colors gap-3"
-              >
-                <div className="flex items-center gap-3">
-                  {deck.id === "ED-01" ? (
-                    <img
-                      src="/decks/rider-waite-1909/cards/00_the_fool.webp"
-                      alt="RWS 1909"
-                      className="w-10 h-16 object-cover rounded border border-slate-200 shrink-0 shadow-2xs"
-                    />
-                  ) : null}
-                  <div className="space-y-1 max-w-[210px]">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-[10px] text-primary font-semibold">{deck.id}</span>
-                      <h3 className="font-headline font-bold text-sm text-on-surface">{deck.name}</h3>
+                <div className="flex gap-4 items-center">
+                  <div className="w-20 h-28 bg-[#FAF9F6] border border-amber-200 rounded flex flex-col items-center justify-center shadow-inner overflow-hidden relative">
+                    {activeDeck.id === "ED-01" ? (
+                      <img
+                        src="/decks/rider-waite-1909/cards/19_the_sun.webp"
+                        alt="RWS 1909"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-3xl text-emerald-600">
+                          {getDeckIcon(activeDeck.id)}
+                        </span>
+                        <span className="text-[8px] font-mono text-emerald-700 font-bold mt-1 text-center px-1">
+                          {activeDeck.id}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <h2 className="font-headline font-bold text-base text-on-surface">
+                      {isVi ? activeDeck.nameVi : activeDeck.nameEn}
+                    </h2>
+                    <p className="text-xs text-[#475569] leading-relaxed line-clamp-2">
+                      {isVi ? activeDeck.descriptionVi : activeDeck.descriptionEn}
+                    </p>
+                    <div className="text-[10px] font-mono text-emerald-700 font-semibold pt-1">
+                      {isVi ? `Đã Kiểm Định ${activeDeck.cardCount} Bản Khắc · ${activeDeck.artist}` : `${activeDeck.cardCount} Plates Verified · ${activeDeck.artist}`}
                     </div>
-                    <p className="text-[11px] text-[#475569]">{deck.desc}</p>
-                    <span className="text-[10px] font-mono text-slate-400 block">{deck.status}</span>
                   </div>
                 </div>
-                <button className="px-3 py-1.5 text-xs font-medium border border-outline-variant rounded-lg hover:bg-slate-50 text-on-surface shrink-0">
-                  {isVi ? "Chọn" : "Switch"}
-                </button>
+
+                <div className="pt-2 border-t border-slate-100 flex gap-2">
+                  <Link
+                    href="/catalog-picker"
+                    className="flex-1 py-2 text-center text-xs font-medium border border-outline-variant rounded-lg hover:bg-slate-50 transition-colors"
+                  >
+                    {isVi ? `Xem ${activeDeck.cardCount} Bản Khắc` : `Browse ${activeDeck.cardCount} Plates`}
+                  </Link>
+                  <button
+                    disabled
+                    className="flex-1 py-2 text-center text-xs font-semibold bg-emerald-100 text-emerald-800 rounded-lg cursor-default"
+                  >
+                    {isVi ? "Đang Hoạt Động ✓" : "Active ✓"}
+                  </button>
+                </div>
               </div>
-            ))}
-        </div>
+            )}
+
+            {/* Other 4 Editions */}
+            <div className="space-y-3">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400 font-semibold block">
+                {isVi ? "CÁC PHIÊN BẢN KHẢ DỤNG (TÙY Ý CHUYỂN ĐỔI)" : "AVAILABLE EDITIONS (SWITCH FREELY)"}
+              </span>
+
+              {otherDecks.map((deck) => {
+                const isActivating = activatingId === deck.id;
+                const deckName = isVi ? deck.nameVi : deck.nameEn;
+                const deckDesc = isVi ? deck.descriptionVi : deck.descriptionEn;
+                const tierText = deck.unlockTier === "FREE"
+                  ? (isVi ? "MẶC ĐỊNH · MIỄN PHÍ" : "DEFAULT · FREE")
+                  : (isVi ? `BẢN PRO (${deck.creditCost} CR)` : `PRO (${deck.creditCost} CR)`);
+
+                return (
+                  <div
+                    key={deck.id}
+                    className="p-4 bg-white border border-outline-variant rounded-lg flex items-center justify-between hover:border-slate-300 transition-colors gap-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-16 bg-[#FAF9F6] border border-slate-200 rounded shrink-0 flex items-center justify-center overflow-hidden">
+                        {deck.id === "ED-01" ? (
+                          <img
+                            src="/decks/rider-waite-1909/cards/00_the_fool.webp"
+                            alt="RWS 1909"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="material-symbols-outlined text-xl text-slate-500">
+                            {getDeckIcon(deck.id)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="space-y-1 max-w-[210px]">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[10px] text-primary font-semibold">{deck.id}</span>
+                          <h3 className="font-headline font-bold text-sm text-on-surface truncate">{deckName}</h3>
+                        </div>
+                        <p className="text-[11px] text-[#475569] line-clamp-1">{deckDesc}</p>
+                        <span className="text-[10px] font-mono text-slate-400 block">{tierText}</span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={isActivating}
+                      onClick={() => handleSelectDeck(deck.id)}
+                      className="px-3 py-1.5 text-xs font-semibold bg-primary text-white hover:bg-primary-hover rounded-lg transition-colors shrink-0 disabled:opacity-50"
+                    >
+                      {isActivating ? "..." : (isVi ? "Chọn" : "Switch")}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
       </main>
 
       <MobileBottomNav activeTab="decks" />

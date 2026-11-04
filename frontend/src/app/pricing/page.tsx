@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import EditorialHeader from "@/components/EditorialHeader";
 import { useLanguage } from "@/context/LanguageContext";
+import { apiClient } from "@/services/apiClient";
 
 export default function PricingPlansStorePage() {
   const { locale } = useLanguage();
+  const isVi = locale === "vi";
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("annual");
   const [selectedProduct, setSelectedProduct] = useState<{
     id: string;
@@ -28,11 +30,34 @@ export default function PricingPlansStorePage() {
   const [claimedDaily, setClaimedDaily] = useState(false);
   const [currentBalance, setCurrentBalance] = useState(45);
   const [transferSuccess, setTransferSuccess] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const handleClaimDaily = () => {
-    if (!claimedDaily) {
-      setCurrentBalance(currentBalance + 5);
-      setClaimedDaily(true);
+  useEffect(() => {
+    async function fetchBalance() {
+      try {
+        const res = await apiClient.wallet.getBalance();
+        if (res.data) {
+          setCurrentBalance(res.data.balance);
+        }
+      } catch (err) {
+        console.error("Failed to load wallet balance:", err);
+      }
+    }
+    fetchBalance();
+  }, []);
+
+  const handleClaimDaily = async () => {
+    if (claimedDaily) return;
+    try {
+      const res = await apiClient.wallet.claimDailyReward();
+      if (res.code === 200 && res.data) {
+        setCurrentBalance(res.data.balance);
+        setClaimedDaily(true);
+        setToastMessage(isVi ? "+10 CR Phước lành hàng ngày đã cộng vào tài khoản Supabase!" : "+10 CR Daily reward deposited to Supabase account!");
+        setTimeout(() => setToastMessage(null), 3000);
+      }
+    } catch (err) {
+      console.error("Error claiming daily reward:", err);
     }
   };
 
@@ -85,6 +110,13 @@ export default function PricingPlansStorePage() {
   return (
     <div className="bg-[#FAF9F6] text-[#0F172A] antialiased min-h-screen flex flex-col font-body selection:bg-emerald-100 selection:text-emerald-900">
       <EditorialHeader activeTab="pricing" credits={currentBalance} />
+
+      {toastMessage && (
+        <div className="bg-emerald-600 text-white text-xs font-mono font-medium px-4 py-2.5 text-center flex items-center justify-center gap-2 sticky top-16 z-50 shadow-md">
+          <span className="material-symbols-outlined text-sm">check_circle</span>
+          <span>{toastMessage}</span>
+        </div>
+      )}
 
       {/* Main Container */}
       <div className="flex-1 flex w-full max-w-[1600px] mx-auto border-x border-[#E2E8F0] bg-white">

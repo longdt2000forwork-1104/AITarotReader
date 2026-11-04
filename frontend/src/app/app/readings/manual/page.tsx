@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { TAROT_CARDS, TarotCard } from "@/data/tarotCards";
+import { apiClient } from "@/services/apiClient";
 
 export default function PhysicalDeckManualPickerPage() {
   const router = useRouter();
@@ -12,6 +13,7 @@ export default function PhysicalDeckManualPickerPage() {
   const isVi = locale === "vi";
 
   const [activeSlot, setActiveSlot] = useState<1 | 2 | 3>(2);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCards, setSelectedCards] = useState<{
     1: { id: number; name: string; isReversed: boolean; image: string } | null;
     2: { id: number; name: string; isReversed: boolean; image: string } | null;
@@ -367,23 +369,54 @@ export default function PhysicalDeckManualPickerPage() {
 
           <button
             type="button"
-            disabled={!allAssigned}
-            onClick={() => router.push("/app/readings/demo-session")}
+            disabled={!allAssigned || isSubmitting}
+            onClick={async () => {
+              if (!allAssigned || isSubmitting) return;
+              setIsSubmitting(true);
+              try {
+                const createRes = await apiClient.readings.create({
+                  spreadId: "S-02",
+                  deckId: "ED-01",
+                  inputMode: "CARD_DRAW",
+                  question: isVi ? "Chiêm nghiệm trải bài 3 lá vật lý" : "Physical 3-card inquiry"
+                });
+                if (createRes.code === 201 && createRes.data) {
+                  const sessionId = createRes.data.id;
+                  await apiClient.readings.drawCards(sessionId);
+                  await apiClient.readings.interpret(sessionId);
+                  router.push(`/app/readings/${sessionId}`);
+                } else {
+                  router.push("/app/readings/demo-session");
+                }
+              } catch (err) {
+                console.error("Failed to create manual reading session:", err);
+                router.push("/app/readings/demo-session");
+              } finally {
+                setIsSubmitting(false);
+              }
+            }}
             className={`w-full py-3 rounded-lg text-xs font-semibold flex items-center justify-center space-x-1 transition-all ${
-              allAssigned
+              allAssigned && !isSubmitting
                 ? "bg-primary text-white hover:bg-primary-hover shadow-md cursor-pointer"
                 : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
             }`}
           >
-            <span>
-              {allAssigned
-                ? isVi
-                  ? "Phân Tích Trải Bài Vật Lý (10 CR) →"
-                  : "Analyze Physical Spread (10 CR) →"
-                : isVi
-                ? "Hãy Chọn Đủ 3 Lá Bài Để Tiếp Tục"
-                : "Assign All 3 Cards To Continue"}
-            </span>
+            {isSubmitting ? (
+              <span className="flex items-center gap-2">
+                <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>{isVi ? "Đang phân tích cùng Gemini AI..." : "Synthesizing with Gemini AI..."}</span>
+              </span>
+            ) : (
+              <span>
+                {allAssigned
+                  ? isVi
+                    ? "Phân Tích Trải Bài Vật Lý (10 CR) →"
+                    : "Analyze Physical Spread (10 CR) →"
+                  : isVi
+                  ? "Hãy Chọn Đủ 3 Lá Bài Để Tiếp Tục"
+                  : "Assign All 3 Cards To Continue"}
+              </span>
+            )}
           </button>
         </div>
       </div>

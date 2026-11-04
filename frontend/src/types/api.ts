@@ -7,13 +7,14 @@ export interface ApiResponse<T> {
 
 export type Arcana = "MAJOR" | "MINOR";
 export type Suit = "WANDS" | "CUPS" | "SWORDS" | "PENTACLES";
-export type Persona = "MYSTIC_SAGE" | "PRACTICAL_COACH" | "SHADOW_EXPLORER";
-export type InputMode = "CARD_DRAW" | "QUESTION_FIRST" | "INTENT_PROMPT";
+export type Persona = "MYSTIC_SAGE" | "PRACTICAL_COACH" | "SHADOW_EXPLORER" | "IDEA_SPARK" | "GENTLE_FRIEND" | "ANALYTICAL_PSYCHOLOGIST" | "POETIC_EMPATH";
+export type InputMode = "CARD_DRAW" | "QUESTION_FIRST" | "INTENT_PROMPT" | "VIRTUAL" | "MANUAL" | "PHYSICAL_INPUT";
 export type SessionStatus = "CREATED" | "DRAWING" | "INTERPRETING" | "COMPLETED";
 
 export interface TarotCardDto {
   id: number;
   slug: string;
+  number?: string;
   arcana: Arcana;
   suit: Suit | null;
   cardOrder: number;
@@ -73,6 +74,7 @@ export interface DrawnCardDto {
   positionNameEn: string;
   positionNameVi: string;
   isReversed: boolean;
+  isClarifier?: boolean;
   notes?: string;
   card: TarotCardDto;
 }
@@ -89,10 +91,15 @@ export interface ReadingSessionDto {
   sessionCode: string;
   status: SessionStatus;
   question: string;
+  userQuestion?: string;
   inputMode: InputMode;
   persona: Persona;
   spreadTemplate: SpreadTemplate;
   deck: TarotDeck;
+  spreadNameEn?: string;
+  spreadNameVi?: string;
+  deckNameEn?: string;
+  deckNameVi?: string;
   drawnCards: DrawnCardDto[];
   aiInterpretation?: string;
   aiSynthesisResult?: string;
@@ -107,6 +114,7 @@ export interface CreateReadingSessionRequest {
   question?: string;
   inputMode?: InputMode;
   persona?: Persona;
+  cards?: any[];
 }
 
 export interface JournalEntryDto {
@@ -124,23 +132,40 @@ export interface JournalEntryDto {
 }
 
 export interface MysticProfileDto {
-  birthDate: string;
-  birthTime: string;
-  birthCity: string;
-  sunSign: string;
-  moonSign: string;
-  risingSign: string;
-  lifePathNumber: number;
-  dominantArchetype: string;
-  readingStyle: string;
+  userId?: string;
+  birthDate?: string;
+  birthTime?: string;
+  birthCity?: string;
+  birthZodiac?: string;
+  zodiacSign?: string;
+  sunSign?: string;
+  moonSign?: string;
+  risingSign?: string;
+  lifePathNumber?: number;
+  dominantArchetype?: string;
+  readingStyle?: string;
+  preferredDeckId?: string;
+  preferredBackId?: string;
+  personaCode?: string;
+  allowAiContext?: boolean;
+  aiContextNotes?: string;
+  locale?: string;
 }
 
 export interface UpdateMysticProfileRequest {
   birthDate?: string;
   birthTime?: string;
   birthCity?: string;
+  birthZodiac?: string;
+  zodiacSign?: string;
   dominantArchetype?: string;
   readingStyle?: string;
+  preferredDeckId?: string;
+  preferredBackId?: string;
+  personaCode?: string;
+  allowAiContext?: boolean;
+  aiContextNotes?: string;
+  locale?: string;
 }
 
 export interface CrystalTransactionDto {

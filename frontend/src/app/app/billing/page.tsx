@@ -1,12 +1,55 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { useLanguage } from "@/context/LanguageContext";
+import { apiClient } from "@/services/apiClient";
+import { WalletBalanceDto } from "@/types/api";
 
 export default function MobileBillingPage() {
   const { locale, setLocale } = useLanguage();
   const isVi = locale === "vi";
+
+  const [wallet, setWallet] = useState<WalletBalanceDto | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [claimedDaily, setClaimedDaily] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadBalance() {
+      try {
+        setLoading(true);
+        const res = await apiClient.wallet.getBalance();
+        if (res.data) {
+          setWallet(res.data);
+        }
+      } catch (err) {
+        console.error("Failed to load mobile wallet balance:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadBalance();
+  }, []);
+
+  const handleClaimDaily = async () => {
+    if (claimedDaily) return;
+    try {
+      const res = await apiClient.wallet.claimDailyReward();
+      if (res.code === 200 && res.data) {
+        setWallet(res.data);
+        setClaimedDaily(true);
+        setToastMessage(isVi ? "+10 CR Phước lành hàng ngày đã cộng vào Supabase!" : "+10 CR Daily reward deposited!");
+        setTimeout(() => setToastMessage(null), 3000);
+      }
+    } catch (err) {
+      console.error("Error claiming daily reward:", err);
+    }
+  };
+
+  const balance = wallet?.balance ?? 45;
+  const isPro = wallet?.tier === "PRO";
 
   return (
     <div className="max-w-[430px] mx-auto min-h-screen bg-surface flex flex-col border-x border-outline-variant pb-20">
@@ -43,18 +86,30 @@ export default function MobileBillingPage() {
         </div>
       </header>
 
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="bg-emerald-600 text-white text-xs font-mono font-medium px-4 py-2 text-center flex items-center justify-center gap-2 sticky top-12 z-50 shadow-md">
+          <span className="material-symbols-outlined text-sm">check_circle</span>
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* Main Content */}
       <main className="p-4 space-y-6">
         {/* Balance Card */}
         <div className="p-5 bg-white border border-outline-variant rounded-lg flex items-center justify-between shadow-sm">
           <div>
             <span className="text-[10px] font-mono uppercase text-slate-400 block">
-              {isVi ? "SỐ DƯ CRYSTAL HIỆN TẠI" : "CURRENT CRYSTAL BALANCE"}
+              {isVi ? "SỐ DƯ CRYSTAL HIỆN TẠI (SUPABASE)" : "CURRENT CRYSTAL BALANCE (SUPABASE)"}
             </span>
             <div className="text-2xl font-headline font-bold text-on-surface flex items-center gap-2 mt-0.5">
-              <span>{isVi ? "45 Crystal" : "45 Credits"}</span>
-              <span className="text-xs font-mono text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                {isVi ? "GÓI PRO ĐANG HOẠT ĐỘNG" : "PRO ACTIVE"}
+              <span>{loading ? "..." : `${balance} Crystal`}</span>
+              <span className={`text-xs font-mono px-2 py-0.5 rounded border ${
+                isPro
+                  ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                  : "text-amber-600 bg-amber-50 border-amber-200"
+              }`}>
+                {isPro ? (isVi ? "GÓI PRO ĐANG HOẠT ĐỘNG" : "PRO ACTIVE") : (isVi ? "GÓI MIỄN PHÍ" : "FREE TIER")}
               </span>
             </div>
             <div className="text-[11px] text-slate-500 mt-1">
@@ -63,8 +118,19 @@ export default function MobileBillingPage() {
                 : "Daily free allowance refilled every midnight."}
             </div>
           </div>
-          <button className="px-3 py-2 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-semibold hover:bg-emerald-100">
-            {isVi ? "+5 CR Điểm Danh" : "+5 CR Daily Free"}
+          <button
+            type="button"
+            disabled={claimedDaily}
+            onClick={handleClaimDaily}
+            className={`px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
+              claimedDaily
+                ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
+                : "bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100"
+            }`}
+          >
+            {claimedDaily
+              ? (isVi ? "Đã nhận ✓" : "Claimed ✓")
+              : (isVi ? "+10 CR Điểm Danh" : "+10 CR Daily Free")}
           </button>
         </div>
 
@@ -102,7 +168,7 @@ export default function MobileBillingPage() {
               <span>{isVi ? "Ưu tiên đường truyền AI tốc độ cao nhất" : "Priority low-latency streaming"}</span>
             </li>
           </ul>
-          <button className="w-full py-3 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-hover shadow-sm">
+          <button className="w-full py-3 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-hover shadow-sm transition-colors">
             {isVi ? "Nâng Cấp Lên Archival Pro (179.000đ)" : "Upgrade to Archival Pro ($6.99)"}
           </button>
         </div>

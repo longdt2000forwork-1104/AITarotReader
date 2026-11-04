@@ -1,15 +1,30 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import EditorialHeader from "@/components/EditorialHeader";
 import { useLanguage } from "@/context/LanguageContext";
+import { apiClient } from "@/services/apiClient";
 
 export default function StudioBillingPage() {
   const { locale, t } = useLanguage();
+  const [balance, setBalance] = useState<number>(45);
+
+  useEffect(() => {
+    async function loadBalance() {
+      try {
+        const res = await apiClient.wallet.getBalance();
+        if (res.data) setBalance(res.data.balance);
+      } catch (err) {
+        console.error("Failed to load studio billing wallet balance:", err);
+      }
+    }
+    loadBalance();
+  }, []);
 
   return (
     <>
-      <EditorialHeader activeTab="ledger" />
+      <EditorialHeader activeTab="ledger" credits={balance} />
 
       {/* WEB — PRINT EXPORT STUDIO & BILLING (SCR-W05) */}
       <main className="flex-1 max-w-[1440px] w-full mx-auto border-x border-outline-variant flex flex-col bg-white">
@@ -25,7 +40,7 @@ export default function StudioBillingPage() {
           </div>
           <div className="flex items-center gap-2">
             <span className="font-mono text-xs text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1 rounded-lg font-semibold">
-              {locale === "vi" ? "Số dư: 120 CR" : "Balance: 120 CR"}
+              {locale === "vi" ? `Số dư: ${balance} CR` : `Balance: ${balance} CR`}
             </span>
           </div>
         </section>
