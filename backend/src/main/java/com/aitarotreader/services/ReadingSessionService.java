@@ -266,6 +266,10 @@ public class ReadingSessionService {
         ReadingSession session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "Session not found"));
 
+        if (session.getMaxFollowUps() == null || session.getMaxFollowUps() < 10) {
+            session.setMaxFollowUps(10);
+        }
+
         if (session.getFollowUpCount() >= session.getMaxFollowUps()) {
             throw new CustomException(ErrorCode.FOLLOW_UP_LIMIT_REACHED);
         }
@@ -275,7 +279,7 @@ public class ReadingSessionService {
                 .role("USER")
                 .content(request.getQuestion())
                 .build();
-        messageRepository.save(userMsg);
+        userMsg = messageRepository.save(userMsg);
 
         String aiAnswer = null;
         if (geminiService != null && geminiService.isConfigured()) {
@@ -291,7 +295,13 @@ public class ReadingSessionService {
                 .role("AI_READER")
                 .content(aiAnswer)
                 .build();
-        messageRepository.save(aiMsg);
+        aiMsg = messageRepository.save(aiMsg);
+
+        if (session.getMessages() == null) {
+            session.setMessages(new ArrayList<>());
+        }
+        session.getMessages().add(userMsg);
+        session.getMessages().add(aiMsg);
 
         session.setFollowUpCount(session.getFollowUpCount() + 1);
         session = sessionRepository.save(session);
@@ -410,7 +420,9 @@ public class ReadingSessionService {
 
     public ReadingSessionDto toSessionDto(ReadingSession session) {
         List<DrawnCard> drawnCards = session.getDrawnCards() != null ? session.getDrawnCards() : Collections.emptyList();
-        List<SessionMessage> messages = session.getMessages() != null ? session.getMessages() : Collections.emptyList();
+        List<SessionMessage> messages = (session.getId() != null)
+                ? messageRepository.findBySessionIdOrderByCreatedAtAsc(session.getId())
+                : (session.getMessages() != null ? session.getMessages() : Collections.emptyList());
 
         List<ReadingSessionDto.DrawnCardView> cardViews = drawnCards.stream()
                 .map(dc -> ReadingSessionDto.DrawnCardView.builder()

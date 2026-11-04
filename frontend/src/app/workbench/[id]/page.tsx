@@ -40,7 +40,7 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
         // If specific session UUID is requested
         if (id && id !== "demo-session") {
           const res = await apiClient.readings.getById(id);
-          if (res.data && isSubscribed) {
+          if (res.data && res.data.drawnCards && res.data.drawnCards.length > 0 && isSubscribed) {
             setSession(res.data);
             initMessages(res.data);
             setIsLoading(false);
@@ -52,15 +52,17 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
         const historyRes = await apiClient.readings.getHistory();
         if (historyRes.data && historyRes.data.length > 0 && isSubscribed) {
           const latest = historyRes.data[0];
-          setSession(latest);
-          initMessages(latest);
-          setIsLoading(false);
-          return;
+          if (latest.drawnCards && latest.drawnCards.length > 0) {
+            setSession(latest);
+            initMessages(latest);
+            setIsLoading(false);
+            return;
+          }
         }
 
         // If no history exists, check daily draw
         const dailyRes = await apiClient.readings.getDailyDraw(locale, false);
-        if (dailyRes.data && isSubscribed) {
+        if (dailyRes.data && dailyRes.data.drawnCards && dailyRes.data.drawnCards.length > 0 && isSubscribed) {
           setSession(dailyRes.data);
           initMessages(dailyRes.data);
           setIsLoading(false);
@@ -85,6 +87,9 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
           const finalSession = interpretedRes.data || drawnRes.data || created;
           setSession(finalSession);
           initMessages(finalSession);
+          if (typeof window !== "undefined" && window.history && id === "demo-session") {
+            window.history.replaceState(null, "", `/workbench/${finalSession.id}`);
+          }
         }
       } catch (err) {
         console.warn("Failed to load workbench session from backend:", err);
@@ -263,6 +268,37 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
       setSession(updatedSession);
       setClarifierSuccess(true);
       setTimeout(() => setClarifierSuccess(false), 4000);
+
+      // Trigger real Gemini AI inquiry for this clarifier
+      const cardName = isVi ? clarifierCard.nameVi : clarifierCard.nameEn;
+      const orient = newDrawnCard.isReversed ? (isVi ? "Ngược" : "Reversed") : (isVi ? "Xuôi" : "Upright");
+      const promptClarifier = isVi
+        ? `Tôi vừa rút thêm lá bài làm rõ: ${cardName} (${orient}). Hãy phân tích ý nghĩa và lời khuyên bổ sung của lá bài này đối với quẻ bài.`
+        : `I just drew a clarifier card: ${cardName} (${orient}). Please analyze its guidance in relation to the current spread.`;
+
+      const nowTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      setChatMessages((prev) => [
+        ...prev,
+        { sender: "user", text: promptClarifier, time: nowTime }
+      ]);
+      setIsSendingChat(true);
+
+      apiClient.readings.sendChat(session.id, promptClarifier).then((chatRes) => {
+        if (chatRes.data?.content) {
+          setChatMessages((prev) => [
+            ...prev,
+            {
+              sender: "ai",
+              text: chatRes.data.content,
+              time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            }
+          ]);
+        }
+      }).catch((err) => {
+        console.warn("Clarifier chat error:", err);
+      }).finally(() => {
+        setIsSendingChat(false);
+      });
     } catch (err) {
       console.error("Clarifier draw error:", err);
     } finally {

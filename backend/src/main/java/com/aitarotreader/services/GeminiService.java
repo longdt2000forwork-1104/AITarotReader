@@ -76,16 +76,30 @@ public class GeminiService {
         }
 
         boolean isVi = locale == null || "vi".equalsIgnoreCase(locale);
+        StringBuilder cardDetails = new StringBuilder();
+        if (session.getDrawnCards() != null && !session.getDrawnCards().isEmpty()) {
+            for (DrawnCard dc : session.getDrawnCards()) {
+                String position = isVi ? dc.getPositionNameVi() : dc.getPositionNameEn();
+                String cardName = dc.getCard() != null ? (isVi ? dc.getCard().getNameVi() : dc.getCard().getNameEn()) : "Lá bài";
+                String orientation = Boolean.TRUE.equals(dc.getIsReversed())
+                        ? (isVi ? "Ngược (Reversed)" : "Reversed")
+                        : (isVi ? "Xuôi (Upright)" : "Upright");
+                cardDetails.append(String.format("- %s: %s (%s)\n", position, cardName, orientation));
+            }
+        }
+
         String prompt = String.format(
-                "Bạn là Tarot Reader đang tiếp tục phiên luận giải. " +
-                "Câu hỏi ban đầu của seeker: \"%s\". " +
-                "Lời giải trước đó tóm tắt: %s. " +
-                "Seeker hỏi thêm câu hỏi sau: \"%s\". " +
-                "Hãy trả lời trực diện, ân cần, định hướng và thấu suốt bằng tiếng %s (định dạng Markdown).",
-                session.getUserQuestion() != null ? session.getUserQuestion() : "",
+                "Bạn là Tarot Reader đang tiếp tục phiên đối thoại đào sâu với Seeker.\n" +
+                "Câu hỏi ban đầu của Seeker: \"%s\".\n" +
+                "Các lá bài trong trải bài:\n%s\n" +
+                "Tóm tắt luận giải trước đó: %s.\n\n" +
+                "Seeker vừa đặt thêm câu hỏi đào sâu: \"%s\".\n\n" +
+                "Hãy trả lời một cách thông thái, ân cần, trực diện và thấu suốt bằng tiếng %s (dưới định dạng Markdown đẹp, có icon biểu tượng cảm xúc phù hợp).",
+                session.getUserQuestion() != null ? session.getUserQuestion() : "Định hướng tổng quan",
+                cardDetails.length() > 0 ? cardDetails.toString() : "- Các lá bài đại diện cho năng lượng chuyển hóa",
                 session.getAiSynthesisResult() != null
-                        ? session.getAiSynthesisResult().substring(0, Math.min(300, session.getAiSynthesisResult().length()))
-                        : "Trải bài định hướng",
+                        ? session.getAiSynthesisResult().substring(0, Math.min(500, session.getAiSynthesisResult().length()))
+                        : "Trải bài khai phóng tiềm năng",
                 userQuestion,
                 isVi ? "Việt" : "Anh"
         );

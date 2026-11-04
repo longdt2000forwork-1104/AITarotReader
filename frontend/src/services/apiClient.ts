@@ -395,11 +395,43 @@ export const apiClient = {
     },
 
     async sendChat(sessionId: string, userMessage: string): Promise<ApiResponse<SessionMessageDto>> {
-      const res = await requestApi<SessionMessageDto>(`/api/v1/readings/sessions/${sessionId}/chat`, {
+      const res = await requestApi<any>(`/api/v1/readings/sessions/${sessionId}/chat`, {
         method: "POST",
         body: JSON.stringify({ question: userMessage })
       });
-      if (res.data) return res;
+
+      if (res.data) {
+        // Backend returns ReadingSessionDto containing messages list
+        const msgs = res.data.messages || [];
+        const lastAiMsg = [...msgs].reverse().find((m: any) => m.role === "AI_READER" || m.sender === "AI_READER");
+        if (lastAiMsg && lastAiMsg.content) {
+          return {
+            code: 200,
+            message: "OK",
+            data: {
+              id: lastAiMsg.id || `MSG-${Date.now()}`,
+              sender: "AI_READER",
+              content: lastAiMsg.content,
+              createdAt: lastAiMsg.createdAt || new Date().toISOString()
+            },
+            timestamp: new Date().toISOString()
+          };
+        }
+
+        if (res.data.content) {
+          return {
+            code: 200,
+            message: "OK",
+            data: {
+              id: res.data.id || `MSG-${Date.now()}`,
+              sender: "AI_READER",
+              content: res.data.content,
+              createdAt: res.data.createdAt || new Date().toISOString()
+            },
+            timestamp: new Date().toISOString()
+          };
+        }
+      }
 
       const fallbackMsg: SessionMessageDto = {
         id: `MSG-${Date.now()}-A`,
