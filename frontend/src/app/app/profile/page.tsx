@@ -7,6 +7,8 @@ import { useLanguage } from "@/context/LanguageContext";
 
 export default function MobileSeekerProfilePage() {
   const { locale, setLocale } = useLanguage();
+  const isVi = locale === "vi";
+
   const [allowAiContext, setAllowAiContext] = useState(true);
   const [selectedPersona, setSelectedPersona] = useState<"MYSTIC" | "SPARK" | "GENTLE">("SPARK");
   const [credits, setCredits] = useState(45);
@@ -22,7 +24,7 @@ export default function MobileSeekerProfilePage() {
   return (
     <div className="bg-[#FAF9F6] text-[#0F172A] font-body min-h-screen flex justify-center selection:bg-emerald-100 selection:text-emerald-900">
       <main className="w-full max-w-[412px] bg-[#FAF9F6] min-h-screen flex flex-col relative pb-28 border-x border-[#E2E8F0] shadow-sm">
-        {/* 1. Android Status Bar */}
+        {/* 1. Status Bar */}
         <header className="w-full pt-3 px-6 pb-2 flex justify-between items-center text-slate-800 select-none bg-white">
           <span className="font-mono text-xs font-bold">09:41</span>
           <div className="flex items-center gap-1.5 text-slate-700">
@@ -37,7 +39,7 @@ export default function MobileSeekerProfilePage() {
           <div className="flex items-center space-x-2">
             <span className="material-symbols-outlined text-primary text-xl">person</span>
             <h1 className="font-headline font-bold text-sm tracking-tight text-slate-900 uppercase">
-              Seeker Profile & Settings
+              {isVi ? "Hồ Sơ & Thiết Lập Người Tìm Kiếm" : "Seeker Profile & Settings"}
             </h1>
           </div>
           <span className="text-[10px] font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">
@@ -61,13 +63,13 @@ export default function MobileSeekerProfilePage() {
                   Aria M. Nguyen
                 </h2>
                 <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full font-mono text-[9px] uppercase font-bold">
-                  ARCHIVAL PRO
+                  {isVi ? "HỘI VIÊN PRO" : "ARCHIVAL PRO"}
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-mono truncate">aria.nguyen@studio.vn</p>
               <div className="flex items-center gap-1.5 mt-1 text-[11px] font-mono text-primary font-medium">
                 <span className="material-symbols-outlined text-[13px]">check_circle</span>
-                <span>Google OAuth2 Verified</span>
+                <span>{isVi ? "Đã Xác Thực Google OAuth2" : "Google OAuth2 Verified"}</span>
               </div>
             </div>
           </div>
@@ -79,29 +81,45 @@ export default function MobileSeekerProfilePage() {
           <section className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-2xs space-y-3">
             <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2">
               <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold">
-                01 // MYSTIC BLUEPRINT (FR-1.2)
+                {isVi ? "01. BẢN ĐỒ CHIÊM TINH HỌC" : "01. MYSTIC BLUEPRINT"}
               </span>
               <span className="text-[10px] font-mono text-slate-400">12/04/1998</span>
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="p-2.5 bg-[#FAF9F6] border border-[#E2E8F0] rounded-lg">
-                <span className="text-[9px] font-mono text-primary font-bold block">SUN SIGN · ♈ ARIES</span>
-                <span className="font-headline font-bold text-slate-900 text-sm block mt-0.5">IV The Emperor</span>
-                <span className="text-[10px] text-slate-500 font-mono">Cardinal Will</span>
+                <span className="text-[9px] font-mono text-primary font-bold block">
+                  {isVi ? "CUNG MẶT TRỜI · ♈ BẠCH DƯƠNG" : "SUN SIGN · ♈ ARIES"}
+                </span>
+                <span className="font-headline font-bold text-slate-900 text-sm block mt-0.5">
+                  {isVi ? "IV Hoàng Đế" : "IV The Emperor"}
+                </span>
+                <span className="text-[10px] text-slate-500 font-mono">
+                  {isVi ? "Ý Chí Khai Phá" : "Cardinal Will"}
+                </span>
               </div>
               <div className="p-2.5 bg-[#FAF9F6] border border-[#E2E8F0] rounded-lg">
-                <span className="text-[9px] font-mono text-primary font-bold block">LIFE PATH · 07</span>
-                <span className="font-headline font-bold text-slate-900 text-sm block mt-0.5">IX The Hermit</span>
-                <span className="text-[10px] text-slate-500 font-mono">Inner Lantern</span>
+                <span className="text-[9px] font-mono text-primary font-bold block">
+                  {isVi ? "SỐ ĐƯỜNG ĐỜI · 07" : "LIFE PATH · 07"}
+                </span>
+                <span className="font-headline font-bold text-slate-900 text-sm block mt-0.5">
+                  {isVi ? "IX Ẩn Sĩ" : "IX The Hermit"}
+                </span>
+                <span className="text-[10px] text-slate-500 font-mono">
+                  {isVi ? "Ngọn Đèn Soi Tâm" : "Inner Lantern"}
+                </span>
               </div>
             </div>
 
             <div className="p-2.5 bg-emerald-50/60 border border-emerald-200/60 rounded-lg flex items-center justify-between">
               <div>
-                <span className="text-xs font-bold text-slate-900 block">AI Contextual Memory</span>
+                <span className="text-xs font-bold text-slate-900 block">
+                  {isVi ? "Bộ Nhớ Ngữ Cảnh AI" : "AI Contextual Memory"}
+                </span>
                 <span className="text-[10px] text-slate-500 leading-tight block">
-                  Infuse Aries Decan II into AI readings
+                  {isVi
+                    ? "Tích hợp năng lượng Bạch Dương Decan II vào các trải bài AI"
+                    : "Infuse Aries Decan II into AI readings"}
                 </span>
               </div>
               <button
@@ -124,34 +142,36 @@ export default function MobileSeekerProfilePage() {
           <section className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-2xs space-y-3">
             <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2">
               <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold">
-                02 // DECK & VOICE CONFIGURATION
+                {isVi ? "02. CẤU HÌNH BỘ BÀI & GIỌNG ĐỌC" : "02. DECK & VOICE CONFIGURATION"}
               </span>
               <Link href="/app/decks" className="text-[10px] font-mono text-primary hover:underline font-semibold">
-                Change Deck →
+                {isVi ? "Đổi Bộ Bài →" : "Change Deck →"}
               </Link>
             </div>
 
             <div className="p-2.5 bg-[#FAF9F6] border border-[#E2E8F0] rounded-lg flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-mono uppercase text-slate-400">Current Archival Deck</span>
+                <span className="text-[10px] font-mono uppercase text-slate-400">
+                  {isVi ? "Bộ Bài Lưu Trữ Hiện Tại" : "Current Archival Deck"}
+                </span>
                 <div className="font-headline font-bold text-xs text-slate-900">
-                  ED-02 Sunlit Botanical Herbarium
+                  {isVi ? "ED-02 Thảo Dược Chiêm Tinh (Botanical)" : "ED-02 Sunlit Botanical Herbarium"}
                 </div>
               </div>
               <span className="text-[9px] font-mono px-2 py-0.5 bg-primary text-white font-bold rounded">
-                ACTIVE
+                {isVi ? "ĐANG DÙNG" : "ACTIVE"}
               </span>
             </div>
 
             <div>
               <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 block mb-1.5">
-                Default Reader Persona
+                {isVi ? "Hình Tượng Giọng Đọc Mặc Định" : "Default Reader Persona"}
               </span>
               <div className="grid grid-cols-3 gap-1.5 text-xs">
                 {[
-                  { code: "MYSTIC", name: "Classic Mystic" },
-                  { code: "SPARK", name: "Idea Spark" },
-                  { code: "GENTLE", name: "Gentle Friend" },
+                  { code: "MYSTIC", name: isVi ? "Nhà Huyền Bí" : "Classic Mystic" },
+                  { code: "SPARK", name: isVi ? "Khai Sáng Ý Tưởng" : "Idea Spark" },
+                  { code: "GENTLE", name: isVi ? "Người Bạn Ôn Hòa" : "Gentle Friend" },
                 ].map((p) => (
                   <button
                     key={p.code}
@@ -174,16 +194,18 @@ export default function MobileSeekerProfilePage() {
           <section className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-2xs space-y-3">
             <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2">
               <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold">
-                03 // WALLET & SUBSCRIPTION (SCR-M07)
+                {isVi ? "03. VÍ CRYSTAL & GÓI HỘI VIÊN" : "03. WALLET & SUBSCRIPTION"}
               </span>
               <Link href="/app/billing" className="text-[10px] font-mono text-primary hover:underline font-semibold">
-                Manage Billing →
+                {isVi ? "Quản Lý Nạp Thẻ →" : "Manage Billing →"}
               </Link>
             </div>
 
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-mono uppercase text-slate-400 block">Available Balance</span>
+                <span className="text-[10px] font-mono uppercase text-slate-400 block">
+                  {isVi ? "Số Dư Khả Dụng" : "Available Balance"}
+                </span>
                 <div className="flex items-baseline space-x-1.5">
                   <span className="font-headline font-bold text-2xl text-slate-900">{credits}</span>
                   <span className="text-xs font-mono font-bold text-primary">CR</span>
@@ -199,7 +221,9 @@ export default function MobileSeekerProfilePage() {
                     : "bg-primary text-white hover:bg-emerald-700 shadow-xs"
                 }`}
               >
-                {claimedDaily ? "Claimed ✓" : "+5 CR Daily Claim"}
+                {claimedDaily
+                  ? (isVi ? "Đã Điểm Danh ✓" : "Claimed ✓")
+                  : (isVi ? "+5 CR Điểm Danh Ngày" : "+5 CR Daily Claim")}
               </button>
             </div>
           </section>
@@ -208,21 +232,25 @@ export default function MobileSeekerProfilePage() {
           <section className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-2xs space-y-3">
             <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2">
               <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold">
-                04 // APPLICATION & PRIVACY
+                {isVi ? "04. ỨNG DỤNG & QUYỀN RIÊNG TƯ" : "04. APPLICATION & PRIVACY"}
               </span>
             </div>
 
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-xs font-semibold text-slate-900 block">Language / Ngôn Ngữ</span>
-                <span className="text-[10px] text-slate-500 font-mono">Bilingual switch (EN / VI)</span>
+                <span className="text-xs font-semibold text-slate-900 block">
+                  {isVi ? "Ngôn Ngữ Ứng Dụng" : "Application Language"}
+                </span>
+                <span className="text-[10px] text-slate-500 font-mono">
+                  {isVi ? "Chuyển đổi song ngữ (Anh / Việt)" : "Bilingual switch (EN / VI)"}
+                </span>
               </div>
               <div className="flex items-center border border-[#E2E8F0] rounded text-xs font-mono overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setLocale("en")}
                   className={`px-2.5 py-1 ${
-                    locale === "en" ? "bg-slate-900 text-white font-bold" : "text-slate-600 hover:bg-slate-100"
+                    !isVi ? "bg-slate-900 text-white font-bold" : "text-slate-600 hover:bg-slate-100"
                   }`}
                 >
                   EN
@@ -231,7 +259,7 @@ export default function MobileSeekerProfilePage() {
                   type="button"
                   onClick={() => setLocale("vi")}
                   className={`px-2.5 py-1 ${
-                    locale === "vi" ? "bg-primary text-white font-bold" : "text-slate-600 hover:bg-slate-100"
+                    isVi ? "bg-primary text-white font-bold" : "text-slate-600 hover:bg-slate-100"
                   }`}
                 >
                   VI
@@ -241,15 +269,19 @@ export default function MobileSeekerProfilePage() {
 
             <div className="pt-2 border-t border-[#E2E8F0] flex items-center justify-between">
               <div>
-                <span className="text-xs font-semibold text-slate-900 block">Export Journal Data</span>
-                <span className="text-[10px] text-slate-500 font-mono">Encrypted readings JSON</span>
+                <span className="text-xs font-semibold text-slate-900 block">
+                  {isVi ? "Xuất Dữ Liệu Nhật Ký" : "Export Journal Data"}
+                </span>
+                <span className="text-[10px] text-slate-500 font-mono">
+                  {isVi ? "Tệp JSON mã hóa lịch sử trải bài" : "Encrypted readings JSON"}
+                </span>
               </div>
               <button
                 type="button"
-                onClick={() => alert("Exporting JSON archive...")}
+                onClick={() => alert(isVi ? "Đang xuất tệp lưu trữ JSON..." : "Exporting JSON archive...")}
                 className="px-2.5 py-1 border border-[#E2E8F0] bg-[#FAF9F6] hover:bg-slate-100 rounded text-xs font-mono text-slate-700"
               >
-                Export JSON
+                {isVi ? "Xuất JSON" : "Export JSON"}
               </button>
             </div>
           </section>

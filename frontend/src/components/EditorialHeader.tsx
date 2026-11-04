@@ -14,115 +14,67 @@ export default function EditorialHeader({
 }: EditorialHeaderProps) {
   const { locale, setLocale, t } = useLanguage();
 
+  const navLinks = [
+    { key: "daily", href: "/", label: t.nav.daily },
+    { key: "workbench", href: "/workbench/demo-session", label: t.nav.workbench },
+    { key: "catalog", href: "/catalog-picker", label: t.nav.catalog },
+    { key: "decks", href: "/decks-archive", label: t.nav.decks },
+    { key: "journal", href: "/journal", label: t.nav.journal },
+    { key: "pricing", href: "/pricing", label: locale === "vi" ? "Bảng Giá" : "Pricing" },
+  ];
+
   return (
-    <header className="w-full bg-white border-b border-outline-variant h-16 sticky top-0 z-50 transition-colors">
-      <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between px-6 lg:px-8">
+    <header className="w-full bg-white/95 backdrop-blur-md border-b border-outline-variant h-16 sticky top-0 z-50 transition-colors shadow-sm">
+      <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between px-4 sm:px-6 lg:px-8 gap-4">
         {/* Brand & Canonical Title */}
-        <div className="flex items-center gap-3">
-          <span className="material-symbols-outlined text-primary text-xl">auto_awesome</span>
+        <div className="flex items-center gap-3 shrink-0">
           <Link
             href="/"
-            className="font-display font-bold text-lg lg:text-xl tracking-tight text-on-surface hover:text-primary transition-colors flex items-center gap-2"
+            className="flex items-center gap-2 group transition-colors"
           >
-            <span>{t.brand}</span>
-            <span className="text-xs font-mono font-normal tracking-widest text-slate-400">
-              {t.brandSub}
+            <span className="material-symbols-outlined text-primary text-2xl group-hover:rotate-12 transition-transform duration-300">
+              auto_awesome
+            </span>
+            <span className="font-serif font-bold text-xl tracking-tight text-on-surface group-hover:text-primary transition-colors">
+              {t.brand}
             </span>
           </Link>
+          <span className="hidden xl:inline-block text-[11px] font-mono tracking-widest text-slate-400 pl-3 border-l border-slate-200 whitespace-nowrap uppercase">
+            {t.brandSub}
+          </span>
         </div>
 
-        {/* Center Links (Desktop Primary Clusters) */}
-        <nav className="hidden md:flex items-center space-x-1 lg:space-x-2 text-xs font-label tracking-wider uppercase">
-          <Link
-            href="/"
-            className={`px-3 py-2 font-semibold transition-colors flex items-center gap-1.5 ${
-              activeTab === "daily"
-                ? "text-primary border-b-2 border-primary"
-                : "text-on-surface-variant hover:text-on-surface font-medium"
-            }`}
-          >
-            <span className="font-mono text-[10px] opacity-75">01</span>
-            <span>{t.nav.daily}</span>
-          </Link>
-          <Link
-            href="/workbench/demo-session"
-            className={`px-3 py-2 font-semibold transition-colors flex items-center gap-1.5 ${
-              activeTab === "workbench"
-                ? "text-primary border-b-2 border-primary"
-                : "text-on-surface-variant hover:text-on-surface font-medium"
-            }`}
-          >
-            <span className="font-mono text-[10px] opacity-75">02</span>
-            <span>{t.nav.workbench}</span>
-          </Link>
-          <Link
-            href="/catalog-picker"
-            className={`px-3 py-2 font-semibold transition-colors flex items-center gap-1.5 ${
-              activeTab === "catalog"
-                ? "text-primary border-b-2 border-primary"
-                : "text-on-surface-variant hover:text-on-surface font-medium"
-            }`}
-          >
-            <span className="font-mono text-[10px] opacity-75">03</span>
-            <span>{t.nav.catalog}</span>
-          </Link>
-          <Link
-            href="/decks-archive"
-            className={`px-3 py-2 font-semibold transition-colors flex items-center gap-1.5 ${
-              activeTab === "decks"
-                ? "text-primary border-b-2 border-primary"
-                : "text-on-surface-variant hover:text-on-surface font-medium"
-            }`}
-          >
-            <span className="font-mono text-[10px] opacity-75">04</span>
-            <span>{t.nav.decks}</span>
-          </Link>
-          <Link
-            href="/journal"
-            className={`px-3 py-2 font-semibold transition-colors flex items-center gap-1.5 ${
-              activeTab === "journal"
-                ? "text-primary border-b-2 border-primary"
-                : "text-on-surface-variant hover:text-on-surface font-medium"
-            }`}
-          >
-            <span className="font-mono text-[10px] opacity-75">05</span>
-            <span>{t.nav.journal}</span>
-          </Link>
-          <Link
-            href="/studio-billing"
-            className={`px-3 py-2 font-semibold transition-colors flex items-center gap-1.5 ${
-              activeTab === "ledger"
-                ? "text-primary border-b-2 border-primary"
-                : "text-on-surface-variant hover:text-on-surface font-medium"
-            }`}
-          >
-            <span className="font-mono text-[10px] opacity-75">06</span>
-            <span>{t.nav.billing}</span>
-          </Link>
-          <Link
-            href="/pricing"
-            className={`px-3 py-2 font-semibold transition-colors flex items-center gap-1.5 ${
-              activeTab === "pricing"
-                ? "text-primary border-b-2 border-primary"
-                : "text-on-surface-variant hover:text-on-surface font-medium"
-            }`}
-          >
-            <span className="font-mono text-[10px] opacity-75">07</span>
-            <span>Pricing</span>
-          </Link>
+        {/* Center Links (Clean Editorial Navigation) */}
+        <nav className="hidden lg:flex items-center gap-1 xl:gap-2 text-[13px] font-medium tracking-normal">
+          {navLinks.map((link) => {
+            const isActive = activeTab === link.key;
+            return (
+              <Link
+                key={link.key}
+                href={link.href}
+                className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-all duration-200 ${
+                  isActive
+                    ? "text-primary font-semibold bg-emerald-50/80 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Right Utility Actions */}
-        <div className="flex items-center gap-3">
-          {/* Interactive Language Switch */}
-          <div className="flex items-center border border-outline-variant rounded-lg text-[11px] font-mono font-medium overflow-hidden bg-surface-subtle shadow-sm">
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          {/* Interactive Language Switch (Segmented Control) */}
+          <div className="flex items-center p-0.5 border border-slate-200 rounded-lg bg-slate-50 text-[11px] font-mono font-medium shrink-0">
             <button
               onClick={() => setLocale("en")}
               type="button"
-              className={`px-2.5 py-1 transition-all ${
+              className={`px-2.5 py-1 rounded-md transition-all ${
                 locale === "en"
-                  ? "bg-slate-900 text-white font-bold"
-                  : "text-slate-600 hover:text-on-surface hover:bg-slate-100"
+                  ? "bg-slate-900 text-white font-bold shadow-sm"
+                  : "text-slate-500 hover:text-slate-900"
               }`}
             >
               EN
@@ -130,10 +82,10 @@ export default function EditorialHeader({
             <button
               onClick={() => setLocale("vi")}
               type="button"
-              className={`px-2.5 py-1 transition-all ${
+              className={`px-2.5 py-1 rounded-md transition-all ${
                 locale === "vi"
-                  ? "bg-primary text-white font-bold"
-                  : "text-slate-600 hover:text-on-surface hover:bg-slate-100"
+                  ? "bg-primary text-white font-bold shadow-sm"
+                  : "text-slate-500 hover:text-slate-900"
               }`}
             >
               VI
@@ -143,36 +95,44 @@ export default function EditorialHeader({
           {/* Amber Credit Badge linking to /pricing */}
           <Link
             href="/pricing"
-            className="flex items-center gap-1.5 px-3 py-1 bg-[#FEF3C7] text-[#B45309] border border-amber-200/80 rounded-lg text-xs font-mono font-semibold hover:bg-amber-100 transition-colors"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-amber-50 text-amber-900 border border-amber-200/90 rounded-lg text-xs font-mono font-semibold hover:bg-amber-100/80 transition-colors shrink-0 shadow-sm"
+            title={locale === "vi" ? "Gói phí & Tinh thể" : "Crystals & Subscription"}
           >
-            <span className="material-symbols-outlined text-[15px]">toll</span>
-            <span>{credits} CR</span>
-            <span className="ml-1 hover:text-amber-950 font-bold" title="Refill credits">
-              [+]
+            <span className="material-symbols-outlined text-[16px] text-amber-600">toll</span>
+            <span className="whitespace-nowrap">{credits} CR</span>
+            <span className="text-amber-500 hover:text-amber-700 font-bold ml-0.5 text-xs leading-none" title={locale === "vi" ? "Nạp thêm tinh thể" : "Refill credits"}>
+              +
             </span>
           </Link>
 
           {/* Astrological Profile Pill linking to /settings/profile */}
           <Link
             href="/settings/profile"
-            className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-outline-variant hover:opacity-85 transition-opacity"
-            title="Seeker Profile & Settings"
+            className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-slate-200 hover:opacity-85 transition-opacity shrink-0"
+            title={locale === "vi" ? "Hồ sơ & Cài đặt" : "Seeker Profile & Settings"}
           >
-            <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 font-serif font-bold text-xs">
+            <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 font-serif font-bold text-xs shrink-0 shadow-sm">
               ♈
             </div>
-            <div className="hidden lg:flex flex-col text-left">
-              <span className="text-xs font-medium text-on-surface leading-tight">Aria</span>
-              <span className="text-[10px] font-mono text-slate-500">Aries · LP 7</span>
+            <div className="hidden sm:flex flex-col text-left">
+              <span className="text-xs font-semibold text-slate-800 leading-tight">Aria</span>
+              <span className="text-[10px] font-mono text-slate-500 leading-none">
+                {locale === "vi" ? "Bạch Dương · Số 7" : "Aries · LP 7"}
+              </span>
             </div>
           </Link>
 
-          {/* Auth Button */}
+          {/* Auth Button (Clean & Subtle) */}
           <Link
             href="/auth"
-            className="hidden sm:inline-flex items-center justify-center px-2.5 py-1 text-[11px] font-mono uppercase tracking-wider text-primary border border-primary/30 rounded-lg hover:bg-emerald-50 transition-colors"
+            className={`hidden md:inline-flex items-center justify-center p-1.5 rounded-lg transition-colors shrink-0 ${
+              activeTab === "auth"
+                ? "bg-primary text-white"
+                : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"
+            }`}
+            title={locale === "vi" ? "Tài khoản & Xác thực" : "Authentication & Account"}
           >
-            Auth
+            <span className="material-symbols-outlined text-[20px]">account_circle</span>
           </Link>
         </div>
       </div>

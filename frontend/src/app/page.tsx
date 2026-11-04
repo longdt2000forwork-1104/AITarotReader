@@ -1,12 +1,139 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import EditorialHeader from "@/components/EditorialHeader";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { useLanguage } from "@/context/LanguageContext";
+import { apiClient } from "@/services/apiClient";
+import { TAROT_CARDS, TarotCard } from "@/data/tarotCards";
+import { ReadingSessionDto } from "@/types/api";
 
 export default function EditorialPortalPage() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const isVi = locale === "vi";
+
+  const [dailySession, setDailySession] = useState<ReadingSessionDto | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRedrawing, setIsRedrawing] = useState(false);
+
+  const getTodayDateKey = (): string => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+
+  const loadDailyCard = async (force: boolean = false) => {
+    if (force) {
+      setIsRedrawing(true);
+    } else {
+      setIsLoading(true);
+    }
+
+    try {
+      const todayKey = getTodayDateKey();
+
+      // 1. Check local client cache for today's card if not force redrawing
+      if (!force && typeof window !== "undefined") {
+        const cached = localStorage.getItem("ai_tarot_daily_draw");
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            if (parsed && parsed.dateKey === todayKey && parsed.session) {
+              setDailySession(parsed.session);
+              setIsLoading(false);
+              return;
+            }
+          } catch {
+            // ignore cache parse error
+          }
+        }
+      }
+
+      // 2. Fetch or trigger new draw via API
+      const res = await apiClient.readings.getDailyDraw(locale, force);
+      if (res.data) {
+        setDailySession(res.data);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(
+            "ai_tarot_daily_draw",
+            JSON.stringify({ dateKey: todayKey, session: res.data })
+          );
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to fetch daily tarot card:", err);
+    } finally {
+      setIsLoading(false);
+      setIsRedrawing(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDailyCard(false);
+  }, [locale]);
+
+  // Resolve current active card (fallback to card 19 The Sun)
+  const defaultCard = TAROT_CARDS.find((c) => c.id === 19) || TAROT_CARDS[0];
+  const drawnCardData = dailySession?.drawnCards?.[0];
+  const apiCard = drawnCardData?.card as any;
+  const staticCard = TAROT_CARDS.find((c) => c.id === Number(apiCard?.id)) || defaultCard;
+
+  const card = {
+    ...staticCard,
+    ...(apiCard || {}),
+    image: apiCard?.imageUrl || apiCard?.image || staticCard.image,
+    keywordsVi: apiCard?.keywordsUprightVi || apiCard?.keywordsVi || staticCard.keywordsVi || "",
+    keywordsEn: apiCard?.keywordsUprightEn || apiCard?.keywordsEn || staticCard.keywordsEn || "",
+    meaningUprightVi: apiCard?.summaryVi || apiCard?.meaningUprightVi || staticCard.meaningUprightVi || "",
+    meaningUprightEn: apiCard?.summaryEn || apiCard?.meaningUprightEn || staticCard.meaningUprightEn || "",
+  };
+  const isReversed = Boolean(drawnCardData?.isReversed);
+  const aiMessage = dailySession?.aiInterpretation || dailySession?.aiSynthesisResult || t.portal.advisoryQuote;
+
+  // Resolve Element mapping
+  const getElementDetails = (element: string) => {
+    switch (element?.toLowerCase()) {
+      case "fire":
+        return { label: isVi ? "Hỏa 🔥" : "Fire 🔥", ratio: isVi ? "52% Năng Động" : "52% Kinetic" };
+      case "water":
+        return { label: isVi ? "Thủy 💧" : "Water 💧", ratio: isVi ? "48% Trực Giác" : "48% Intuitive" };
+      case "air":
+        return { label: isVi ? "Khí 💨" : "Air 💨", ratio: isVi ? "45% Trí Tuệ" : "45% Intellect" };
+      case "earth":
+        return { label: isVi ? "Thổ 🌿" : "Earth 🌿", ratio: isVi ? "55% Thực Tại" : "55% Grounded" };
+      default:
+        return { label: isVi ? "Hỏa ☀️" : "Fire ☀️", ratio: t.portal.elementFireRatio };
+    }
+  };
+
+  const elementDetails = getElementDetails(card.element);
+
+  // Resolve Arcana label
+  const getArcanaLabel = (c: any) => {
+    if (c.suit === "MAJOR" || c.arcana === "MAJOR" || !c.suit) {
+      return isVi ? `Ẩn Chính ${c.number ?? ""} (Major Arcana)` : `Major Arcana · ${c.number ?? ""}`;
+    }
+    const suitName = isVi
+      ? c.suit === "WANDS"
+        ? "Bộ Gậy (Wands)"
+        : c.suit === "CUPS"
+        ? "Bộ Ly (Cups)"
+        : c.suit === "SWORDS"
+        ? "Bộ Kiếm (Swords)"
+        : "Bộ Tiền (Pentacles)"
+      : `Suit of ${c.suit ? (c.suit.charAt(0) + c.suit.slice(1).toLowerCase()) : ""}`;
+    return suitName;
+  };
+
+  // Keywords tags
+  const rawKeywords: string = String((isVi ? card.keywordsVi : card.keywordsEn) || "");
+  const keywordsList: string[] = rawKeywords
+    .split(/[·,]/)
+    .map((k: string) => k.trim())
+    .filter(Boolean);
 
   return (
     <>
@@ -88,36 +215,74 @@ export default function EditorialPortalPage() {
               {/* Specimen Header Strip */}
               <div className="flex items-center justify-between pb-4 border-b border-outline-variant">
                 <div className="font-mono text-[11px] tracking-widest text-slate-500 uppercase flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                  <span className={`w-1.5 h-1.5 rounded-full ${isRedrawing ? "bg-amber-500 animate-ping" : "bg-slate-400"}`} />
                   <span>{t.portal.specimenHeader}</span>
                 </div>
-                <span className="inline-flex items-center gap-1 font-mono text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  {t.portal.drawnBadge}
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => loadDailyCard(true)}
+                    disabled={isLoading || isRedrawing}
+                    className="inline-flex items-center gap-1 font-mono text-[10px] font-semibold px-2 py-0.5 rounded border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 hover:bg-emerald-50/50 transition-colors disabled:opacity-50"
+                    title={isVi ? "Bốc lại lá bài ngẫu nhiên cho hôm nay" : "Redraw a new random card"}
+                  >
+                    <span className={`material-symbols-outlined text-[13px] ${isRedrawing ? "animate-spin text-primary" : ""}`}>
+                      autorenew
+                    </span>
+                    <span>{isRedrawing ? (isVi ? "Đang rút..." : "Drawing...") : (isVi ? "Rút lại" : "Redraw")}</span>
+                  </button>
+                  <span className="inline-flex items-center gap-1 font-mono text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    {t.portal.drawnBadge}
+                  </span>
+                </div>
               </div>
 
               {/* Specimen Card + Table Display Grid */}
               <div className="mt-6 grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
                 {/* Tarot Card Visual Specimen Frame */}
-                <div className="sm:col-span-5 bg-[#FAF9F6] border border-outline-variant rounded-lg p-3 text-center flex flex-col items-center justify-between min-h-[240px] shadow-sm">
+                <div className="sm:col-span-5 bg-[#FAF9F6] border border-outline-variant rounded-lg p-3 text-center flex flex-col items-center justify-between min-h-[250px] shadow-sm relative overflow-hidden">
                   <div className="w-full flex justify-between items-center text-[10px] font-mono text-slate-400 border-b border-slate-200 pb-1">
-                    <span>RWS // 19</span>
-                    <span>MAJOR</span>
+                    <span>Rider-Waite 1909</span>
+                    <span>{card.suit === "MAJOR" || (card as any).arcana === "MAJOR" || !card.suit ? (isVi ? "Bộ Ẩn Chính" : "Major Arcana") : card.suit}</span>
                   </div>
+
                   {/* Real Tarot Card Artwork */}
                   <div className="my-2 relative group cursor-pointer">
                     <img
-                      src="/decks/rider-waite-1909/cards/19_the_sun.webp"
-                      alt="XIX The Sun (Rider-Waite 1909)"
-                      className="w-28 h-48 object-cover rounded border border-slate-200 shadow-md group-hover:scale-105 transition-transform duration-200"
+                      src={card.image}
+                      alt={`${card.number} ${isVi ? card.nameVi : card.nameEn}`}
+                      className={`w-28 h-48 object-cover rounded border border-slate-200 shadow-md group-hover:scale-105 transition-all duration-300 ${
+                        isReversed ? "rotate-180" : ""
+                      } ${isRedrawing ? "opacity-40 blur-xs scale-95" : "opacity-100 scale-100"}`}
                     />
+                    {isRedrawing && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-primary text-3xl animate-spin">
+                          progress_activity
+                        </span>
+                      </div>
+                    )}
                   </div>
+
                   <div className="w-full pt-2 border-t border-slate-200">
                     <div className="font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
-                      XIX
+                      {card.number}
                     </div>
-                    <div className="font-headline font-bold text-sm tracking-tight text-on-surface">THE SUN</div>
-                    <div className="text-[10px] font-mono text-emerald-600 font-medium">Upright (Xuôi)</div>
+                    <div className="font-headline font-bold text-sm tracking-tight text-on-surface uppercase line-clamp-1">
+                      {isVi ? card.nameVi : card.nameEn}
+                    </div>
+                    <div
+                      className={`text-[10px] font-mono font-medium ${
+                        isReversed ? "text-amber-700" : "text-emerald-600"
+                      }`}
+                    >
+                      {isReversed
+                        ? isVi
+                          ? "Ngược (Reversed)"
+                          : "Reversed"
+                        : isVi
+                        ? "Xuôi (Upright)"
+                        : "Upright"}
+                    </div>
                   </div>
                 </div>
 
@@ -125,9 +290,17 @@ export default function EditorialPortalPage() {
                 <div className="sm:col-span-7 flex flex-col justify-between h-full pt-1">
                   <div>
                     <h2 className="font-headline text-lg font-bold text-on-surface leading-snug">
-                      {t.portal.cardTitle}
+                      {card.number} — {isVi ? card.nameVi : card.nameEn}
                     </h2>
-                    <p className="text-xs text-slate-500 mt-0.5">{t.portal.cardDesc}</p>
+                    <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
+                      {isReversed
+                        ? isVi
+                          ? card.meaningUprightVi
+                          : card.meaningUprightEn
+                        : isVi
+                        ? card.meaningUprightVi
+                        : card.meaningUprightEn}
+                    </p>
                   </div>
 
                   {/* Metadata Table Matrix */}
@@ -135,41 +308,57 @@ export default function EditorialPortalPage() {
                     <div className="p-2.5 flex items-center justify-between bg-surface-subtle">
                       <span className="text-slate-500 font-mono text-[11px]">{t.portal.primaryElement}</span>
                       <span className="font-medium text-on-surface flex items-center gap-1.5">
-                        <span>{t.portal.elementFire}</span>
+                        <span>{elementDetails.label}</span>
                         <span className="text-emerald-600 font-mono text-[10px] bg-emerald-50 px-1 rounded">
-                          {t.portal.elementFireRatio}
+                          {elementDetails.ratio}
                         </span>
                       </span>
                     </div>
                     <div className="p-2.5 flex items-center justify-between">
                       <span className="text-slate-500 font-mono text-[11px]">{t.portal.arcanaClass}</span>
-                      <span className="font-medium text-on-surface">{t.portal.arcanaMajor}</span>
+                      <span className="font-medium text-on-surface truncate max-w-[160px]">
+                        {getArcanaLabel(card)}
+                      </span>
                     </div>
                     <div className="p-2.5 flex flex-col gap-1 bg-white">
                       <span className="text-slate-500 font-mono text-[11px]">{t.portal.coreKeywords}</span>
                       <div className="flex flex-wrap gap-1 mt-0.5">
-                        <span className="px-1.5 py-0.5 bg-slate-100 rounded text-[11px] text-slate-700">
-                          {t.portal.kwClarity}
-                        </span>
-                        <span className="px-1.5 py-0.5 bg-slate-100 rounded text-[11px] text-slate-700">
-                          {t.portal.kwMomentum}
-                        </span>
-                        <span className="px-1.5 py-0.5 bg-slate-100 rounded text-[11px] text-slate-700">
-                          {t.portal.kwBreakthrough}
-                        </span>
+                        {keywordsList.map((kw: string, idx: number) => (
+                          <span
+                            key={idx}
+                            className="px-1.5 py-0.5 bg-slate-100 rounded text-[11px] text-slate-700 font-medium"
+                          >
+                            {kw}
+                          </span>
+                        ))}
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Daily Synthesis Pullquote Note */}
-              <div className="mt-6 p-4 rounded-lg bg-[#FAF9F6] border-l-2 border-primary border-y border-r border-outline-variant">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1">
-                  {t.portal.advisoryKicker}
-                </span>
+              {/* Daily Synthesis Pullquote Note (Powered by Gemini AI) */}
+              <div className="mt-6 p-4 rounded-lg bg-[#FAF9F6] border-l-2 border-primary border-y border-r border-outline-variant relative">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400">
+                    {isVi ? "THÔNG ĐIỆP KHẢI HUYỀN · GEMINI AI" : "SYNTHESIS ADVISORY · GEMINI AI"}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                    <span className="material-symbols-outlined text-[11px]">neurology</span>
+                    <span>AI Guidance</span>
+                  </span>
+                </div>
                 <blockquote className="font-headline italic text-sm md:text-[15px] text-on-surface leading-snug">
-                  {t.portal.advisoryQuote}
+                  {isRedrawing ? (
+                    <span className="text-slate-400 not-italic font-sans text-xs flex items-center gap-2 py-1">
+                      <span className="material-symbols-outlined text-sm animate-spin text-primary">sync</span>
+                      {isVi
+                        ? "Gemini AI đang lắng nghe trường năng lượng và khởi tạo thông điệp ngày mới..."
+                        : "Gemini AI is synthesizing today's mindful guidance..."}
+                    </span>
+                  ) : (
+                    `“${aiMessage}”`
+                  )}
                 </blockquote>
               </div>
             </div>
@@ -184,7 +373,7 @@ export default function EditorialPortalPage() {
                 <span>{t.portal.exportPoster}</span>
               </Link>
               <Link
-                href="/workbench/demo-session"
+                href={`/workbench/${dailySession?.id || "demo-session"}`}
                 className="text-xs font-semibold text-primary hover:text-emerald-700 flex items-center gap-1 group transition-colors"
               >
                 <span>{t.portal.viewReport}</span>
@@ -213,10 +402,8 @@ export default function EditorialPortalPage() {
             <div className="p-6 lg:p-7 flex flex-col justify-between hover:bg-slate-50/60 transition-colors group">
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="font-mono text-xs font-semibold text-slate-400">01 PROTOCOL</span>
-                  <span className="px-2 py-0.5 bg-slate-100 text-slate-600 font-mono text-[10px] font-bold rounded">
-                    FREE
-                  </span>
+                  <span className="font-mono text-xs text-primary font-bold">01 PROTOCOL</span>
+                  <span className="text-[11px] font-mono text-slate-400">1 CARD</span>
                 </div>
                 <h3 className="font-headline font-bold text-lg text-on-surface group-hover:text-primary transition-colors">
                   {t.portal.protocol1Title}
@@ -228,24 +415,21 @@ export default function EditorialPortalPage() {
               <div className="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between">
                 <span className="font-mono text-xs font-semibold text-slate-500">{t.portal.rateFree}</span>
                 <Link
-                  href="/app/readings/new?spread=1"
+                  href="/app/readings/draw"
                   className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1 transition-colors"
                 >
-                  <span>{t.portal.select}</span>
+                  <span>{t.portal.deploy}</span>
                   <span className="material-symbols-outlined text-xs">arrow_outward</span>
                 </Link>
               </div>
             </div>
 
-            {/* Spread Card 2 (Active Highlighted Protocol) */}
-            <div className="p-6 lg:p-7 flex flex-col justify-between bg-emerald-50/20 relative group">
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-primary" />
+            {/* Spread Card 2 */}
+            <div className="p-6 lg:p-7 flex flex-col justify-between hover:bg-slate-50/60 transition-colors group">
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="font-mono text-xs font-semibold text-primary">02 PROTOCOL · RECOMMENDED</span>
-                  <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold rounded">
-                    10 CR
-                  </span>
+                  <span className="font-mono text-xs text-primary font-bold">02 PROTOCOL</span>
+                  <span className="text-[11px] font-mono text-slate-400">3 CARDS</span>
                 </div>
                 <h3 className="font-headline font-bold text-lg text-on-surface group-hover:text-primary transition-colors">
                   {t.portal.protocol2Title}
@@ -254,14 +438,14 @@ export default function EditorialPortalPage() {
                   {t.portal.protocol2Desc}
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-outline-variant/80 flex items-center justify-between">
-                <span className="font-mono text-xs font-semibold text-emerald-700">{t.portal.rate10}</span>
+              <div className="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between">
+                <span className="font-mono text-xs font-semibold text-slate-500">{t.portal.rate10}</span>
                 <Link
-                  href="/app/readings/new?spread=2"
-                  className="text-xs font-semibold text-white bg-primary hover:bg-primary-hover px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all"
+                  href="/workbench/demo-session"
+                  className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1 transition-colors"
                 >
                   <span>{t.portal.deploy}</span>
-                  <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                  <span className="material-symbols-outlined text-xs">arrow_outward</span>
                 </Link>
               </div>
             </div>
@@ -270,10 +454,8 @@ export default function EditorialPortalPage() {
             <div className="p-6 lg:p-7 flex flex-col justify-between hover:bg-slate-50/60 transition-colors group">
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="font-mono text-xs font-semibold text-slate-400">03 PROTOCOL</span>
-                  <span className="px-2 py-0.5 bg-slate-100 text-slate-700 font-mono text-[10px] font-bold rounded">
-                    15 CR
-                  </span>
+                  <span className="font-mono text-xs text-primary font-bold">03 PROTOCOL</span>
+                  <span className="text-[11px] font-mono text-slate-400">5 CARDS</span>
                 </div>
                 <h3 className="font-headline font-bold text-lg text-on-surface group-hover:text-primary transition-colors">
                   {t.portal.protocol3Title}
@@ -285,10 +467,10 @@ export default function EditorialPortalPage() {
               <div className="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between">
                 <span className="font-mono text-xs font-semibold text-slate-500">{t.portal.rate15}</span>
                 <Link
-                  href="/app/readings/new?spread=3"
+                  href="/workbench/demo-session"
                   className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1 transition-colors"
                 >
-                  <span>{t.portal.select}</span>
+                  <span>{t.portal.deploy}</span>
                   <span className="material-symbols-outlined text-xs">arrow_outward</span>
                 </Link>
               </div>
@@ -298,7 +480,7 @@ export default function EditorialPortalPage() {
             <div className="p-6 lg:p-7 flex flex-col justify-between hover:bg-slate-50/60 transition-colors group">
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="font-mono text-xs font-semibold text-slate-400">04 PROTOCOL</span>
+                  <span className="font-mono text-xs text-primary font-bold">04 PROTOCOL</span>
                   <span className="px-2 py-0.5 bg-slate-900 text-white font-mono text-[10px] font-bold rounded">
                     25 CR / PRO
                   </span>
@@ -313,10 +495,10 @@ export default function EditorialPortalPage() {
               <div className="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between">
                 <span className="font-mono text-xs font-semibold text-slate-500">{t.portal.rate25}</span>
                 <Link
-                  href="/app/readings/new?spread=4"
+                  href="/workbench/demo-session"
                   className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1 transition-colors"
                 >
-                  <span>{t.portal.select}</span>
+                  <span>{t.portal.deploy}</span>
                   <span className="material-symbols-outlined text-xs">arrow_outward</span>
                 </Link>
               </div>

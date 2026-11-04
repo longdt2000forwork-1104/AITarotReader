@@ -95,6 +95,8 @@ export interface ReadingSessionDto {
   deck: TarotDeck;
   drawnCards: DrawnCardDto[];
   aiInterpretation?: string;
+  aiSynthesisResult?: string;
+  dateKey?: string;
   messages: SessionMessageDto[];
   createdAt: string;
 }

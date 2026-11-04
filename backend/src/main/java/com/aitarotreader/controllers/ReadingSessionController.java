@@ -59,7 +59,7 @@ public class ReadingSessionController {
     }
 
     @Operation(summary = "Perform Daily Card Draw (1 free per 24 hours)")
-    @PostMapping("/daily")
+    @RequestMapping(value = "/daily", method = {RequestMethod.GET, RequestMethod.POST})
     public ResponseEntity<ApiResponse<ReadingSessionDto>> performDailyDraw(@AuthenticationPrincipal UUID userId) {
         ReadingSessionDto session = readingSessionService.performDailyDraw(userId);
         return ResponseEntity.ok(ApiResponse.ok("Daily draw completed", session));

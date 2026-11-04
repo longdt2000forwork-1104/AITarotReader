@@ -8,19 +8,17 @@ echo   * AI Model: Google Gemini 3.5 Flash Lite
 echo   * Frontend: Next.js 14 App Router (Port 3000)
 echo ==============================================================================
 
-if "%JAVA_HOME%"=="" (
-    set "JAVA_HOME=C:\Program Files\Java\jdk-17"
-)
+set JAVA_HOME=C:\Program Files\Java\jdk-17
 set "PATH=%JAVA_HOME%\bin;%PATH%"
 
 echo [1/2] Starting Spring Boot Backend...
-start "AI Tarot Reader - Backend (Port 8080)" cmd /k "cd backend && mvnw.cmd spring-boot:run"
+start "AI Tarot Reader - Backend (Port 8080)" cmd /k "call "%~dp0backend\run.bat""
 
 echo Waiting for backend initialization...
 timeout /t 5 /nobreak > nul
 
 echo [2/2] Starting Next.js Frontend...
-start "AI Tarot Reader - Frontend (Port 3000)" cmd /k "cd frontend && npm run dev"
+start "AI Tarot Reader - Frontend (Port 3000)" /D "%~dp0frontend" cmd /k "npm run dev"
 
 echo.
 echo ==============================================================================

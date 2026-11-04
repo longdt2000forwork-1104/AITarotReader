@@ -4,11 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
-import { TAROT_CARDS, TarotCard, getCardById } from "@/data/tarotCards";
+import { TAROT_CARDS, TarotCard } from "@/data/tarotCards";
 
 export default function PhysicalDeckManualPickerPage() {
   const router = useRouter();
-  const { locale } = useLanguage();
+  const { locale, setLocale } = useLanguage();
+  const isVi = locale === "vi";
 
   const [activeSlot, setActiveSlot] = useState<1 | 2 | 3>(2);
   const [selectedCards, setSelectedCards] = useState<{
@@ -18,7 +19,7 @@ export default function PhysicalDeckManualPickerPage() {
   }>({
     1: {
       id: 1,
-      name: "I. The Magician",
+      name: isVi ? "I. Nhà Ảo Thuật" : "I. The Magician",
       isReversed: false,
       image: "/decks/rider-waite-1909/cards/01_the_magician.webp",
     },
@@ -29,7 +30,7 @@ export default function PhysicalDeckManualPickerPage() {
   const [search, setSearch] = useState("");
   const [suitFilter, setSuitFilter] = useState<string>("ALL");
   const [isReversed, setIsReversed] = useState(false);
-  const [highlightedCard, setHighlightedCard] = useState<TarotCard | null>(null);
+  const [, setHighlightedCard] = useState<TarotCard | null>(null);
 
   const filteredCards = TAROT_CARDS.filter((card) => {
     const matchesSuit = suitFilter === "ALL" || card.suit === suitFilter;
@@ -48,7 +49,7 @@ export default function PhysicalDeckManualPickerPage() {
       ...prev,
       [activeSlot]: {
         id: card.id,
-        name: `${card.number}. ${locale === "vi" ? card.nameVi : card.nameEn}`,
+        name: `${card.number}. ${isVi ? card.nameVi : card.nameEn}`,
         isReversed: isReversed,
         image: card.image,
       },
@@ -61,6 +62,15 @@ export default function PhysicalDeckManualPickerPage() {
 
   const allAssigned = selectedCards[1] && selectedCards[2] && selectedCards[3];
 
+  const suitLabels: Record<string, { en: string; vi: string }> = {
+    ALL: { en: "ALL", vi: "TẤT CẢ" },
+    MAJOR: { en: "MAJOR", vi: "ẨN CHÍNH" },
+    WANDS: { en: "WANDS", vi: "GẬY" },
+    CUPS: { en: "CUPS", vi: "CỐC" },
+    SWORDS: { en: "SWORDS", vi: "KIẾM" },
+    PENTACLES: { en: "PENTACLES", vi: "TIỀN" },
+  };
+
   return (
     <div className="bg-[#FAF9F6] text-[#0F172A] font-body min-h-screen flex justify-center selection:bg-emerald-100 selection:text-emerald-900">
       <div className="w-full max-w-[420px] bg-[#FAF9F6] min-h-screen flex flex-col relative pb-32 border-x border-[#E2E8F0] shadow-sm">
@@ -71,20 +81,34 @@ export default function PhysicalDeckManualPickerPage() {
             className="text-xs uppercase font-mono tracking-wider text-slate-500 font-semibold hover:text-slate-900 flex items-center gap-1"
           >
             <span className="material-symbols-outlined text-[16px]">arrow_back</span>
-            <span>Back</span>
+            <span>{isVi ? "Quay lại" : "Back"}</span>
           </Link>
           <div className="text-center px-1">
             <h1 className="font-headline font-bold text-sm tracking-tight text-slate-900">
-              {locale === "vi" ? "Bộ Bài Vật Lý · Nhập Thủ Công" : "Physical Deck Manual Picker"}
+              {isVi ? "Bộ Bài Vật Lý · Nhập Thủ Công" : "Physical Deck Manual Picker"}
             </h1>
             <p className="text-[10px] text-slate-500 font-mono">
-              Rider-Waite 1909 Canon (78 Cards)
+              {isVi ? "Chuẩn Rider-Waite 1909 (78 Lá)" : "Rider-Waite 1909 Canon (78 Cards)"}
             </p>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="font-mono text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-              78 Cards
-            </span>
+          {/* Language Switcher */}
+          <div className="flex items-center border border-[#E2E8F0] rounded text-[10px] font-mono overflow-hidden shadow-xs">
+            <button
+              onClick={() => setLocale("en")}
+              className={`px-2 py-0.5 font-bold ${
+                !isVi ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              EN
+            </button>
+            <button
+              onClick={() => setLocale("vi")}
+              className={`px-2 py-0.5 font-bold ${
+                isVi ? "bg-primary text-white" : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              VI
+            </button>
           </div>
         </header>
 
@@ -102,7 +126,7 @@ export default function PhysicalDeckManualPickerPage() {
           >
             <div className="flex items-center justify-between">
               <span className={`font-mono text-[9px] uppercase font-bold ${activeSlot === 1 ? "text-primary" : "text-slate-500"}`}>
-                01 · SITUATION
+                {isVi ? "01 · TÌNH HUỐNG" : "01 · SITUATION"}
               </span>
               {selectedCards[1] && (
                 <span className="material-symbols-outlined text-primary text-[12px]">check</span>
@@ -117,11 +141,21 @@ export default function PhysicalDeckManualPickerPage() {
                 />
               ) : null}
               <p className="font-headline font-bold text-xs text-slate-900 truncate">
-                {selectedCards[1]?.name || "Empty"}
+                {selectedCards[1]?.name || (isVi ? "Trống" : "Empty")}
               </p>
             </div>
             <span className="text-[9px] text-slate-500 font-mono">
-              {selectedCards[1] ? (selectedCards[1].isReversed ? "Reversed ↓" : "Upright ↑") : "Waiting..."}
+              {selectedCards[1]
+                ? selectedCards[1].isReversed
+                  ? isVi
+                    ? "Ngược ↓"
+                    : "Reversed ↓"
+                  : isVi
+                  ? "Xuôi ↑"
+                  : "Upright ↑"
+                : isVi
+                ? "Chờ chọn..."
+                : "Waiting..."}
             </span>
           </button>
 
@@ -137,7 +171,7 @@ export default function PhysicalDeckManualPickerPage() {
           >
             <div className="flex items-center justify-between">
               <span className={`font-mono text-[9px] uppercase font-bold ${activeSlot === 2 ? "text-primary" : "text-slate-500"}`}>
-                02 · ACTION
+                {isVi ? "02 · HÀNH ĐỘNG" : "02 · ACTION"}
               </span>
               {selectedCards[2] ? (
                 <span className="material-symbols-outlined text-primary text-[12px]">check</span>
@@ -154,11 +188,25 @@ export default function PhysicalDeckManualPickerPage() {
                 />
               ) : null}
               <p className="font-headline font-bold text-xs text-slate-900 truncate">
-                {selectedCards[2]?.name || (activeSlot === 2 ? "Selecting..." : "Empty")}
+                {selectedCards[2]?.name || (activeSlot === 2 ? (isVi ? "Đang chọn..." : "Selecting...") : (isVi ? "Trống" : "Empty"))}
               </p>
             </div>
             <span className="text-[9px] text-primary font-mono font-semibold">
-              {selectedCards[2] ? (selectedCards[2].isReversed ? "Reversed ↓" : "Upright ↑") : activeSlot === 2 ? "ACTIVE" : "Waiting..."}
+              {selectedCards[2]
+                ? selectedCards[2].isReversed
+                  ? isVi
+                    ? "Ngược ↓"
+                    : "Reversed ↓"
+                  : isVi
+                  ? "Xuôi ↑"
+                  : "Upright ↑"
+                : activeSlot === 2
+                ? isVi
+                  ? "ĐANG CHỌN"
+                  : "ACTIVE"
+                : isVi
+                ? "Chờ chọn..."
+                : "Waiting..."}
             </span>
           </button>
 
@@ -174,7 +222,7 @@ export default function PhysicalDeckManualPickerPage() {
           >
             <div className="flex items-center justify-between">
               <span className={`font-mono text-[9px] uppercase font-bold ${activeSlot === 3 ? "text-primary" : "text-slate-500"}`}>
-                03 · OUTCOME
+                {isVi ? "03 · KẾT QUẢ" : "03 · OUTCOME"}
               </span>
               {selectedCards[3] && (
                 <span className="material-symbols-outlined text-primary text-[12px]">check</span>
@@ -189,11 +237,21 @@ export default function PhysicalDeckManualPickerPage() {
                 />
               ) : null}
               <p className="font-headline font-bold text-xs text-slate-900 truncate">
-                {selectedCards[3]?.name || "Empty"}
+                {selectedCards[3]?.name || (isVi ? "Trống" : "Empty")}
               </p>
             </div>
             <span className="text-[9px] text-slate-500 font-mono">
-              {selectedCards[3] ? (selectedCards[3].isReversed ? "Reversed ↓" : "Upright ↑") : "Waiting..."}
+              {selectedCards[3]
+                ? selectedCards[3].isReversed
+                  ? isVi
+                    ? "Ngược ↓"
+                    : "Reversed ↓"
+                  : isVi
+                  ? "Xuôi ↑"
+                  : "Upright ↑"
+                : isVi
+                ? "Chờ chọn..."
+                : "Waiting..."}
             </span>
           </button>
         </section>
@@ -206,26 +264,33 @@ export default function PhysicalDeckManualPickerPage() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search card by name, roman numeral, keywords..."
+              placeholder={
+                isVi
+                  ? "Tìm lá bài theo tên tiếng Việt/Anh, số la mã, từ khóa..."
+                  : "Search card by name, roman numeral, keywords..."
+              }
               className="w-full bg-[#FAF9F6] border border-[#E2E8F0] rounded-lg py-1.5 pl-9 pr-3 text-xs focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
             />
           </div>
 
           <div className="flex gap-1 overflow-x-auto pb-1 no-scrollbar text-[11px] font-mono">
-            {["ALL", "MAJOR", "WANDS", "CUPS", "SWORDS", "PENTACLES"].map((suit) => (
-              <button
-                key={suit}
-                type="button"
-                onClick={() => setSuitFilter(suit)}
-                className={`px-2.5 py-1 rounded whitespace-nowrap transition-colors ${
-                  suitFilter === suit
-                    ? "bg-slate-900 text-white font-bold"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
-              >
-                {suit}
-              </button>
-            ))}
+            {["ALL", "MAJOR", "WANDS", "CUPS", "SWORDS", "PENTACLES"].map((suit) => {
+              const label = isVi ? suitLabels[suit]?.vi || suit : suitLabels[suit]?.en || suit;
+              return (
+                <button
+                  key={suit}
+                  type="button"
+                  onClick={() => setSuitFilter(suit)}
+                  className={`px-2.5 py-1 rounded whitespace-nowrap transition-colors ${
+                    suitFilter === suit
+                      ? "bg-slate-900 text-white font-bold"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
         </section>
 
@@ -259,11 +324,11 @@ export default function PhysicalDeckManualPickerPage() {
                     />
                   </div>
                   <div className="font-headline font-bold text-xs text-slate-900 mt-1 line-clamp-1">
-                    {locale === "vi" ? card.nameVi : card.nameEn}
+                    {isVi ? card.nameVi : card.nameEn}
                   </div>
                 </div>
                 <div className="mt-1 text-[8px] text-slate-500 font-mono truncate">
-                  {card.keywordsVi}
+                  {isVi ? card.keywordsVi : card.keywordsEn}
                 </div>
               </button>
             );
@@ -274,7 +339,9 @@ export default function PhysicalDeckManualPickerPage() {
         <div className="fixed bottom-0 left-0 right-0 max-w-[420px] mx-auto bg-white border-t border-[#E2E8F0] p-3 shadow-lg z-40 space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <span className="text-xs font-mono text-slate-700">Card Orientation:</span>
+              <span className="text-xs font-mono text-slate-700">
+                {isVi ? "Chiều lá bài:" : "Card Orientation:"}
+              </span>
               <button
                 type="button"
                 onClick={() => setIsReversed(!isReversed)}
@@ -284,10 +351,18 @@ export default function PhysicalDeckManualPickerPage() {
                     : "bg-emerald-50 text-emerald-900 border-emerald-300"
                 }`}
               >
-                {isReversed ? "Reversed (Ngược) ↓" : "Upright (Xuôi) ↑"}
+                {isReversed
+                  ? isVi
+                    ? "Ngược (Reversed) ↓"
+                    : "Reversed ↓"
+                  : isVi
+                  ? "Xuôi (Upright) ↑"
+                  : "Upright ↑"}
               </button>
             </div>
-            <span className="text-xs font-mono text-slate-500">Cost: 10 CR</span>
+            <span className="text-xs font-mono text-slate-500">
+              {isVi ? "Chi phí: 10 CR" : "Cost: 10 CR"}
+            </span>
           </div>
 
           <button
@@ -300,7 +375,15 @@ export default function PhysicalDeckManualPickerPage() {
                 : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
             }`}
           >
-            <span>{allAssigned ? "Analyze Physical Spread (10 CR) →" : "Assign All 3 Cards To Continue"}</span>
+            <span>
+              {allAssigned
+                ? isVi
+                  ? "Phân Tích Trải Bài Vật Lý (10 CR) →"
+                  : "Analyze Physical Spread (10 CR) →"
+                : isVi
+                ? "Hãy Chọn Đủ 3 Lá Bài Để Tiếp Tục"
+                : "Assign All 3 Cards To Continue"}
+            </span>
           </button>
         </div>
       </div>

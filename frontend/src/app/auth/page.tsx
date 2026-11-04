@@ -12,7 +12,7 @@ export default function AuthOnboardingPage() {
   const [password, setPassword] = useState("••••••••••••");
   const [showPassword, setShowPassword] = useState(false);
   const [otp, setOtp] = useState("842-190");
-  
+
   // Natal blueprint state
   const [day, setDay] = useState(12);
   const [month, setMonth] = useState(4);
@@ -34,12 +34,14 @@ export default function AuthOnboardingPage() {
   };
 
   const domainOptions = [
-    "Creative Ideation",
-    "Career & Strategy",
-    "Relationships & Harmony",
-    "Personal Growth",
-    "Financial Clarity",
+    { id: "Creative Ideation", labelEn: "Creative Ideation", labelVi: "Ý Tưởng Sáng Tạo" },
+    { id: "Career & Strategy", labelEn: "Career & Strategy", labelVi: "Sự Nghiệp & Chiến Lược" },
+    { id: "Relationships & Harmony", labelEn: "Relationships & Harmony", labelVi: "Mối Quan Hệ & Gắn Kết" },
+    { id: "Personal Growth", labelEn: "Personal Growth", labelVi: "Phát Triển Bản Thân" },
+    { id: "Financial Clarity", labelEn: "Financial Clarity", labelVi: "Tài Chính & Định Hướng" },
   ];
+
+  const isVi = locale === "vi";
 
   return (
     <div className="bg-[#FAF9F6] text-[#0F172A] antialiased min-h-screen flex flex-col justify-between selection:bg-emerald-100 selection:text-emerald-900">
@@ -53,14 +55,16 @@ export default function AuthOnboardingPage() {
               <circle cx="12" cy="12" fill="#FAF9F6" r="2.5" />
             </svg>
             <span className="font-headline font-bold text-sm tracking-tight text-[#0F172A] uppercase">
-              AITAROT // ARCHIVE & ORACLE
+              AITAROT · {isVi ? "LƯU TRỮ & CHIÊM BÁI" : "ARCHIVE & ORACLE"}
             </span>
           </Link>
           <span className="text-slate-300">|</span>
           <div className="hidden sm:flex items-center space-x-1.5 px-2.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[11px] font-mono tracking-wider">
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
             <span className="font-semibold text-primary">SCR-W07</span>
-            <span className="text-slate-400">· AUTHENTICATION & MYSTIC ONBOARDING</span>
+            <span className="text-slate-400">
+              · {isVi ? "XÁC THỰC & KHỞI TẠO HỒ SƠ" : "AUTHENTICATION & MYSTIC ONBOARDING"}
+            </span>
           </div>
         </div>
 
@@ -89,7 +93,7 @@ export default function AuthOnboardingPage() {
             className="inline-flex items-center space-x-1 text-slate-700 hover:text-primary transition-colors font-medium text-xs"
           >
             <span className="material-symbols-outlined text-[16px]">arrow_back</span>
-            <span>Back to Editorial Portal</span>
+            <span>{isVi ? "Về Trang Chủ" : "Back to Editorial Portal"}</span>
           </Link>
         </div>
       </header>
@@ -108,7 +112,7 @@ export default function AuthOnboardingPage() {
                   tab === "signin" ? "text-primary" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
-                01 · Sign In (Đăng Nhập)
+                {isVi ? "01 · Đăng Nhập" : "01 · Sign In"}
                 {tab === "signin" && (
                   <span className="absolute bottom-[-13px] left-0 right-0 h-0.5 bg-primary" />
                 )}
@@ -120,7 +124,7 @@ export default function AuthOnboardingPage() {
                   tab === "register" ? "text-primary" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
-                02 · Create Account (Đăng Ký)
+                {isVi ? "02 · Đăng Ký Tài Khoản" : "02 · Create Account"}
                 {tab === "register" && (
                   <span className="absolute bottom-[-13px] left-0 right-0 h-0.5 bg-primary" />
                 )}
@@ -131,11 +135,13 @@ export default function AuthOnboardingPage() {
             <div className="mb-6">
               <h1 className="font-headline text-2xl lg:text-3xl text-[#0F172A] mb-2 font-normal">
                 {tab === "register"
-                  ? "Enter the Archival Sanctuary"
-                  : "Welcome Back, Seeker"}
+                  ? (isVi ? "Bước Vào Thánh Địa Lưu Trữ" : "Enter the Archival Sanctuary")
+                  : (isVi ? "Chào Mừng Trở Lại, Người Tìm Kiếm" : "Welcome Back, Seeker")}
               </h1>
               <p className="text-xs lg:text-sm text-slate-600 leading-relaxed">
-                Synchronize your Tarot Journal, unlocked 78-card editions, and Crystal Ledger across Web & Android.
+                {isVi
+                  ? "Đồng bộ Nhật Ký Tarot, các bộ bài 78 lá đã mở khóa và ví Tinh Thể trên mọi thiết bị Web & Di Động."
+                  : "Synchronize your Tarot Journal, unlocked 78-card editions, and Crystal Ledger across Web & Android."}
               </p>
             </div>
 
@@ -150,14 +156,16 @@ export default function AuthOnboardingPage() {
                 <path d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.15z" fill="#FBBC05" />
                 <path d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z" fill="#EA4335" />
               </svg>
-              <span className="group-hover:text-primary transition-colors">Continue with Google (OAuth 2.0)</span>
+              <span className="group-hover:text-primary transition-colors">
+                {isVi ? "Tiếp tục với Google (OAuth 2.0)" : "Continue with Google (OAuth 2.0)"}
+              </span>
             </button>
 
             {/* Divider */}
             <div className="relative flex items-center justify-center my-6">
               <div className="w-full border-t border-[#E2E8F0]" />
               <span className="absolute bg-white px-3 text-[10px] uppercase tracking-widest text-slate-400 font-mono font-semibold">
-                Or enroll with email & 6-digit OTP
+                {isVi ? "Hoặc dùng Email & Mã OTP 6 chữ số" : "Or enroll with email & 6-digit OTP"}
               </span>
             </div>
 
@@ -166,7 +174,7 @@ export default function AuthOnboardingPage() {
               {tab === "register" && (
                 <div>
                   <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-600 mb-1.5">
-                    Display Name / Tên Hiển Thị
+                    {isVi ? "Tên Hiển Thị Của Bạn" : "Display Name"}
                   </label>
                   <div className="relative flex items-center">
                     <span className="absolute left-3.5 material-symbols-outlined text-slate-400 text-[18px]">person</span>
@@ -175,7 +183,7 @@ export default function AuthOnboardingPage() {
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       className="w-full bg-[#FAF9F6] border border-[#E2E8F0] rounded-lg py-2.5 pl-10 pr-4 text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
-                      placeholder="Enter your sanctuary alias"
+                      placeholder={isVi ? "Nhập tên hoặc biệt danh" : "Enter your sanctuary alias"}
                     />
                   </div>
                 </div>
@@ -183,7 +191,7 @@ export default function AuthOnboardingPage() {
 
               <div>
                 <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-600 mb-1.5">
-                  Email Address
+                  {isVi ? "Địa Chỉ Email" : "Email Address"}
                 </label>
                 <div className="relative flex items-center">
                   <span className="absolute left-3.5 material-symbols-outlined text-slate-400 text-[18px]">mail</span>
@@ -201,7 +209,7 @@ export default function AuthOnboardingPage() {
               <div className="grid grid-cols-2 gap-3.5">
                 <div>
                   <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-600 mb-1.5">
-                    Password / Mật Khẩu
+                    {isVi ? "Mật Khẩu" : "Password"}
                   </label>
                   <div className="relative flex items-center">
                     <input
@@ -225,10 +233,10 @@ export default function AuthOnboardingPage() {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-[11px] font-mono uppercase tracking-wider text-slate-600">
-                      6-Digit OTP
+                      {isVi ? "Mã OTP 6 Số" : "6-Digit OTP"}
                     </label>
                     <span className="text-[10px] text-primary font-bold bg-emerald-50 px-1.5 py-0.5 rounded">
-                      Verified ✓
+                      {isVi ? "Đã xác thực ✓" : "Verified ✓"}
                     </span>
                   </div>
                   <div className="relative flex items-center">
@@ -250,8 +258,8 @@ export default function AuthOnboardingPage() {
                 >
                   <span>
                     {tab === "register"
-                      ? "Complete Enrollment & Claim +15 Welcome Credits"
-                      : "Sign In to Archival Sanctuary"}
+                      ? (isVi ? "Hoàn Tất Đăng Ký & Nhận +15 Tinh Thể Khởi Đầu" : "Complete Enrollment & Claim +15 Welcome Credits")
+                      : (isVi ? "Đăng Nhập Vào Thánh Địa" : "Sign In to Archival Sanctuary")}
                   </span>
                   <span className="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">
                     arrow_forward
@@ -267,16 +275,22 @@ export default function AuthOnboardingPage() {
               >
                 {tab === "register" ? (
                   <>
-                    Already registered? <strong className="text-slate-900 underline font-semibold">Sign In</strong>
+                    {isVi ? "Đã có tài khoản?" : "Already registered?"}{" "}
+                    <strong className="text-slate-900 underline font-semibold">
+                      {isVi ? "Đăng Nhập" : "Sign In"}
+                    </strong>
                   </>
                 ) : (
                   <>
-                    New Seeker? <strong className="text-slate-900 underline font-semibold">Create Sanctuary Account</strong>
+                    {isVi ? "Người tìm kiếm mới?" : "New Seeker?"}{" "}
+                    <strong className="text-slate-900 underline font-semibold">
+                      {isVi ? "Tạo Tài Khoản Mới" : "Create Sanctuary Account"}
+                    </strong>
                   </>
                 )}
               </span>
               <span className="text-slate-400 hover:text-slate-700 cursor-pointer transition-colors">
-                Forgot Password?
+                {isVi ? "Quên Mật Khẩu?" : "Forgot Password?"}
               </span>
             </div>
           </div>
@@ -285,7 +299,9 @@ export default function AuthOnboardingPage() {
           <div className="pt-8 text-[11px] text-slate-400 flex items-start space-x-2">
             <span className="material-symbols-outlined text-[16px] text-primary flex-shrink-0 mt-0.5">verified_user</span>
             <p className="leading-tight">
-              End-to-end encrypted mystic vault. Zero advertising telemetry. RWS 1909 canonical alignment.
+              {isVi
+                ? "Kho lưu trữ bảo mật mã hóa đầu cuối. Không thu thập dữ liệu quảng cáo. Chuẩn mực RWS 1909."
+                : "End-to-end encrypted mystic vault. Zero advertising telemetry. RWS 1909 canonical alignment."}
             </p>
           </div>
         </section>
@@ -298,20 +314,22 @@ export default function AuthOnboardingPage() {
               <div className="flex items-center space-x-2">
                 <span className="w-2 h-2 rounded-full bg-primary" />
                 <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase">
-                  STEP 02 // PERSONAL MYSTIC PROFILE (FR-1.2 & FR-1.3)
+                  {isVi ? "BƯỚC 02: HỒ SƠ CHIÊM TINH CÁ NHÂN" : "STEP 02: PERSONAL MYSTIC PROFILE"}
                 </span>
               </div>
               <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-mono uppercase tracking-wider font-semibold border border-slate-200">
-                LIVE NATAL CALIBRATION
+                {isVi ? "HIỆU CHUẨN TRỰC TIẾP" : "LIVE NATAL CALIBRATION"}
               </span>
             </div>
 
             <div>
               <h2 className="font-headline text-2xl text-[#0F172A] mb-1">
-                Personal Natal & Inquiry Blueprint
+                {isVi ? "Bản Đồ Ngày Sinh & Định Hướng Chiêm Nghiệm" : "Personal Natal & Inquiry Blueprint"}
               </h2>
               <p className="text-xs text-slate-600 leading-relaxed max-w-2xl">
-                Used by the AI Synthesis Engine to harmonize card archetypes and reading interpretations with your celestial and numerological rhythm.
+                {isVi
+                  ? "Được AI phân tích để hòa hợp các nguyên mẫu lá bài và góc nhìn luận giải với chu kỳ thiên văn và nhân số học của bạn."
+                  : "Used by the AI Synthesis Engine to harmonize card archetypes and reading interpretations with your celestial and numerological rhythm."}
               </p>
             </div>
 
@@ -320,14 +338,16 @@ export default function AuthOnboardingPage() {
               <div className="flex items-center justify-between mb-3">
                 <label className="text-xs font-mono font-semibold tracking-wider text-[#0F172A] uppercase flex items-center space-x-2">
                   <span className="material-symbols-outlined text-[16px] text-primary">calendar_month</span>
-                  <span>Date of Birth (DD / MM / YYYY) & Natal Ascendant</span>
+                  <span>{isVi ? "Ngày Sinh (Ngày / Tháng / Năm) & Cung Mọc" : "Date of Birth (DD / MM / YYYY) & Natal Ascendant"}</span>
                 </label>
                 <span className="text-xs text-slate-400 font-mono">UTC+07:00</span>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 {/* Day */}
                 <div className="p-3 bg-[#FAF9F6] border border-[#E2E8F0] rounded-lg">
-                  <span className="block text-[10px] font-mono uppercase font-semibold text-slate-500 mb-0.5">Day / Ngày</span>
+                  <span className="block text-[10px] font-mono uppercase font-semibold text-slate-500 mb-0.5">
+                    {isVi ? "Ngày" : "Day"}
+                  </span>
                   <div className="flex items-center justify-between">
                     <span className="font-headline text-xl text-[#0F172A] font-bold">{day}</span>
                     <span className="text-xs text-primary font-medium">Aries Decan II</span>
@@ -335,18 +355,22 @@ export default function AuthOnboardingPage() {
                 </div>
                 {/* Month */}
                 <div className="p-3 bg-[#FAF9F6] border border-[#E2E8F0] rounded-lg">
-                  <span className="block text-[10px] font-mono uppercase font-semibold text-slate-500 mb-0.5">Month / Tháng</span>
+                  <span className="block text-[10px] font-mono uppercase font-semibold text-slate-500 mb-0.5">
+                    {isVi ? "Tháng" : "Month"}
+                  </span>
                   <div className="flex items-center justify-between">
                     <span className="font-headline text-xl text-[#0F172A] font-bold">0{month}</span>
-                    <span className="text-xs text-slate-600">April</span>
+                    <span className="text-xs text-slate-600">{isVi ? "Tháng Tư" : "April"}</span>
                   </div>
                 </div>
                 {/* Year */}
                 <div className="p-3 bg-[#FAF9F6] border border-[#E2E8F0] rounded-lg">
-                  <span className="block text-[10px] font-mono uppercase font-semibold text-slate-500 mb-0.5">Year / Năm</span>
+                  <span className="block text-[10px] font-mono uppercase font-semibold text-slate-500 mb-0.5">
+                    {isVi ? "Năm" : "Year"}
+                  </span>
                   <div className="flex items-center justify-between">
                     <span className="font-headline text-xl text-[#0F172A] font-bold">{year}</span>
-                    <span className="text-xs text-slate-500 font-mono">Tiger · Hổ</span>
+                    <span className="text-xs text-slate-500 font-mono">{isVi ? "Mậu Dần · Hổ" : "Tiger · Hổ"}</span>
                   </div>
                 </div>
               </div>
@@ -354,10 +378,13 @@ export default function AuthOnboardingPage() {
               <div className="mt-3.5 pt-3 border-t border-[#E2E8F0] flex items-center justify-between text-xs text-slate-600">
                 <div className="flex items-center space-x-1.5">
                   <span className="material-symbols-outlined text-[15px] text-slate-400">schedule</span>
-                  <span>Time of Birth: <strong className="text-slate-900 font-semibold">04:15 ICT</strong> (Indochina Time)</span>
+                  <span>
+                    {isVi ? "Giờ sinh:" : "Time of Birth:"}{" "}
+                    <strong className="text-slate-900 font-semibold">04:15 ICT</strong> (Giờ Đông Dương)
+                  </span>
                 </div>
                 <span className="text-primary hover:underline cursor-pointer font-medium">
-                  Refine Natal House & Coordinates →
+                  {isVi ? "Hiệu chỉnh Nhà & Tọa độ →" : "Refine Natal House & Coordinates →"}
                 </span>
               </div>
             </div>
@@ -384,19 +411,23 @@ export default function AuthOnboardingPage() {
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] font-bold text-primary uppercase tracking-widest font-mono">SUN SIGN · ♈ ARIES</span>
+                      <span className="text-[10px] font-bold text-primary uppercase tracking-widest font-mono">
+                        {isVi ? "CUNG MẶT TRỜI · ♈ BẠCH DƯƠNG" : "SUN SIGN · ♈ ARIES"}
+                      </span>
                       <span className="text-[10px] text-slate-400 font-mono">DECAN II</span>
                     </div>
                     <h3 className="font-headline text-[16px] text-slate-900 leading-tight mb-1 font-bold">
-                      Bạch Dương · The Initiator
+                      {isVi ? "Bạch Dương · Người Tiên Phong" : "Aries · The Initiator"}
                     </h3>
                     <p className="text-[11px] text-slate-600 mb-2">
-                      Element: <span className="font-medium text-slate-900">Fire (Cardinal)</span> • Ruler: <span className="font-medium text-slate-900">Mars</span>
+                      {isVi ? "Nguyên tố:" : "Element:"}{" "}
+                      <span className="font-medium text-slate-900">{isVi ? "Hỏa (Thống Lĩnh)" : "Fire (Cardinal)"}</span> • {isVi ? "Chủ quản:" : "Ruler:"}{" "}
+                      <span className="font-medium text-slate-900">{isVi ? "Sao Hỏa" : "Mars"}</span>
                     </p>
                   </div>
                   <div className="p-2 bg-[#FAF9F6] border border-[#E2E8F0] rounded text-[11px] text-slate-600 flex items-center justify-between">
-                    <span>Tarot Key: <strong className="text-slate-900 font-semibold">IV The Emperor</strong></span>
-                    <span className="text-primary font-bold">Cardinal Will</span>
+                    <span>{isVi ? "Lá Bài Chủ:" : "Tarot Key:"} <strong className="text-slate-900 font-semibold">{isVi ? "IV Hoàng Đế" : "IV The Emperor"}</strong></span>
+                    <span className="text-primary font-bold">{isVi ? "Ý Chí" : "Cardinal Will"}</span>
                   </div>
                 </div>
               </div>
@@ -421,19 +452,22 @@ export default function AuthOnboardingPage() {
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] font-bold text-primary uppercase tracking-widest font-mono">LIFE PATH · 07</span>
+                      <span className="text-[10px] font-bold text-primary uppercase tracking-widest font-mono">
+                        {isVi ? "SỐ ĐƯỜNG ĐỜI · 07" : "LIFE PATH · 07"}
+                      </span>
                       <span className="text-[10px] text-slate-400 font-mono">(1+2)+4+9=16→7</span>
                     </div>
                     <h3 className="font-headline text-[16px] text-slate-900 leading-tight mb-1 font-bold">
-                      Số 7 · The Seeker
+                      {isVi ? "Số 7 · Người Tìm Kiếm" : "Number 7 · The Seeker"}
                     </h3>
                     <p className="text-[11px] text-slate-600 mb-2">
-                      Trí Tuệ & Chiêm Nghiệm • Archetype: <span className="font-medium text-slate-900">Mystic Analyst</span>
+                      {isVi ? "Trí Tuệ & Chiêm Nghiệm" : "Wisdom & Introspection"} • {isVi ? "Nguyên mẫu:" : "Archetype:"}{" "}
+                      <span className="font-medium text-slate-900">{isVi ? "Nhà Phân Tích Huyền Học" : "Mystic Analyst"}</span>
                     </p>
                   </div>
                   <div className="p-2 bg-[#FAF9F6] border border-[#E2E8F0] rounded text-[11px] text-slate-600 flex items-center justify-between">
-                    <span>Tarot Key: <strong className="text-slate-900 font-semibold">IX The Hermit</strong></span>
-                    <span className="text-primary font-bold">Inner Lantern</span>
+                    <span>{isVi ? "Lá Bài Chủ:" : "Tarot Key:"} <strong className="text-slate-900 font-semibold">{isVi ? "IX Ẩn Sĩ" : "IX The Hermit"}</strong></span>
+                    <span className="text-primary font-bold">{isVi ? "Ngọn Đèn Soi Sáng" : "Inner Lantern"}</span>
                   </div>
                 </div>
               </div>
@@ -444,25 +478,27 @@ export default function AuthOnboardingPage() {
               <div className="flex items-center justify-between mb-3">
                 <label className="text-xs font-mono font-semibold tracking-wider text-[#0F172A] uppercase flex items-center space-x-2">
                   <span className="material-symbols-outlined text-[16px] text-primary">filter_center_focus</span>
-                  <span>Primary Inquiry Focus (Select 1–3 Domains)</span>
+                  <span>{isVi ? "Lĩnh Vực Trọng Tâm Quan Tâm (Chọn 1–3 Lĩnh Vực)" : "Primary Inquiry Focus (Select 1–3 Domains)"}</span>
                 </label>
-                <span className="text-xs text-slate-400">Customizes Prompt Engine & Spreads</span>
+                <span className="text-xs text-slate-400">
+                  {isVi ? "Tùy biến AI và cấu trúc bài trải" : "Customizes Prompt Engine & Spreads"}
+                </span>
               </div>
               <div className="flex flex-wrap gap-2.5">
                 {domainOptions.map((domain) => {
-                  const active = focusAreas.includes(domain);
+                  const active = focusAreas.includes(domain.id);
                   return (
                     <button
-                      key={domain}
+                      key={domain.id}
                       type="button"
-                      onClick={() => toggleFocus(domain)}
+                      onClick={() => toggleFocus(domain.id)}
                       className={`py-2 px-3.5 rounded-lg text-xs font-medium flex items-center space-x-1.5 transition-all cursor-pointer ${
                         active
                           ? "bg-primary text-white shadow-xs"
                           : "bg-[#FAF9F6] border border-[#E2E8F0] text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                       }`}
                     >
-                      <span>{domain}</span>
+                      <span>{isVi ? domain.labelVi : domain.labelEn}</span>
                       {active && (
                         <span className="material-symbols-outlined text-[14px]">check</span>
                       )}
@@ -478,10 +514,12 @@ export default function AuthOnboardingPage() {
                 <span className="material-symbols-outlined text-primary text-[22px] mt-0.5">psychology</span>
                 <div>
                   <h4 className="text-xs font-semibold text-slate-900 font-mono uppercase tracking-wider">
-                    AI Mystic Context Memory (FR-1.3)
+                    {isVi ? "Ký Ức Ngữ Cảnh Huyền Học AI (FR-1.3)" : "AI Mystic Context Memory (FR-1.3)"}
                   </h4>
                   <p className="text-xs text-slate-600 leading-relaxed mt-0.5">
-                    Allow AI Tarot Master to weave your Zodiac (Aries) and Life Path (7) into spread syntheses and recurring &ldquo;stalker card&rdquo; alert patterns.
+                    {isVi
+                      ? "Cho phép AI Tarot hòa quyện Cung hoàng đạo (Bạch Dương) và Số Đường Đời (7) vào các bài luận giải và cảnh báo mẫu lá bài lặp lại."
+                      : "Allow AI Tarot Master to weave your Zodiac (Aries) and Life Path (7) into spread syntheses and recurring \"stalker card\" alert patterns."}
                   </p>
                 </div>
               </div>
@@ -508,7 +546,7 @@ export default function AuthOnboardingPage() {
           <div className="pt-6 mt-4 border-t border-[#E2E8F0] flex items-center justify-between text-xs text-slate-400 font-mono">
             <div className="flex items-center space-x-2">
               <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-              <span>Engine: GPT-4o & Claude 3.5 Sonnet RWS 1909 Hybrid Calibrator</span>
+              <span>{isVi ? "Mô hình AI: Gemini 3.5 Flash Lite & Claude Calibrator" : "Engine: GPT-4o & Claude 3.5 Sonnet RWS 1909 Hybrid Calibrator"}</span>
             </div>
             <div>
               SESSION_ID: <span className="text-slate-900 font-semibold">SANCTUARY-VN-980412</span>

@@ -234,6 +234,8 @@ function normalizeReadingSession(session: any, fallbackSpreadId = "S-02", fallba
     deck,
     drawnCards,
     aiInterpretation,
+    aiSynthesisResult: aiInterpretation,
+    dateKey: session.dateKey,
     messages: session.messages || [],
     createdAt
   };
@@ -445,6 +447,17 @@ export const apiClient = {
         return res;
       }
       return { code: 200, message: "OK", data: MOCK_JOURNAL_ENTRIES, timestamp: new Date().toISOString() };
+    },
+
+    async getDailyDraw(locale: string = "vi", force: boolean = false): Promise<ApiResponse<ReadingSessionDto>> {
+      const endpoint = `/api/v1/readings/daily?locale=${locale}${force ? "&force=true" : ""}`;
+      const res = await requestApi<any>(endpoint, {
+        method: force ? "POST" : "GET"
+      });
+      if (res.data) {
+        return { ...res, data: normalizeReadingSession(res.data, "S-01", "ED-01") };
+      }
+      return res;
     }
   },
 

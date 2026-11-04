@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import EditorialHeader from "@/components/EditorialHeader";
+import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
 import { JournalEntryDto, ReadingSessionDto } from "@/types/api";
 
 export default function JournalPatternLedgerPage() {
+  const { locale, t } = useLanguage();
   const [journals, setJournals] = useState<JournalEntryDto[]>([]);
   const [sessions, setSessions] = useState<ReadingSessionDto[]>([]);
   const [selectedEntry, setSelectedEntry] = useState<JournalEntryDto | null>(null);
@@ -68,28 +70,40 @@ export default function JournalPatternLedgerPage() {
         {/* Top Analytics KPI Bar */}
         <section className="p-6 bg-[#FAF9F6] border-b border-outline-variant grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="p-4 bg-white border border-outline-variant rounded-lg space-y-1">
-            <span className="font-mono text-[10px] uppercase text-slate-400">TOTAL SESSIONS LOGGED</span>
+            <span className="font-mono text-[10px] uppercase text-slate-400">
+              {locale === "vi" ? "TỔNG SỐ PHIÊN ĐÃ LƯU" : "TOTAL SESSIONS LOGGED"}
+            </span>
             <div className="font-headline font-bold text-2xl text-on-surface">
-              {sessions.length || 24} Readings
+              {sessions.length || 24} {locale === "vi" ? "Phiên Trải" : "Readings"}
             </div>
-            <div className="text-xs text-slate-500">Đã lưu trữ và đối chiếu năng lượng</div>
+            <div className="text-xs text-slate-500">
+              {locale === "vi" ? "Đã lưu trữ và đối chiếu năng lượng" : "Archived and energetically calibrated"}
+            </div>
           </div>
 
           <div className="p-4 bg-white border border-outline-variant rounded-lg space-y-1">
-            <span className="font-mono text-[10px] uppercase text-slate-400">STALKER CARD // RECURRING THEME</span>
+            <span className="font-mono text-[10px] uppercase text-slate-400">
+              {locale === "vi" ? "LÁ BÀI LẶP LẠI (STALKER CARD)" : "STALKER CARD · RECURRING THEME"}
+            </span>
             <div className="font-headline font-bold text-xl text-primary flex items-center gap-2">
-              <span>XIX The Sun</span>
+              <span>{locale === "vi" ? "XIX Mặt Trời (The Sun)" : "XIX The Sun"}</span>
               <span className="text-xs font-mono bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded">
-                Drawn 4 times
+                {locale === "vi" ? "Xuất hiện 4 lần" : "Drawn 4 times"}
               </span>
             </div>
-            <div className="text-xs text-slate-500">Khát vọng sáng tạo & Thức tỉnh rõ ràng</div>
+            <div className="text-xs text-slate-500">
+              {locale === "vi" ? "Khát vọng sáng tạo & Thức tỉnh rõ ràng" : "Creative manifestation & unclouded intellect"}
+            </div>
           </div>
 
           <div className="p-4 bg-white border border-outline-variant rounded-lg space-y-2">
             <div className="flex justify-between items-center text-xs font-mono">
-              <span className="text-slate-500 uppercase">30-DAY ELEMENTAL RATIO</span>
-              <span className="text-primary font-semibold">Fire & Air Heavy</span>
+              <span className="text-slate-500 uppercase">
+                {locale === "vi" ? "TỶ LỆ NGUYÊN TỐ 30 NGÀY" : "30-DAY ELEMENTAL RATIO"}
+              </span>
+              <span className="text-primary font-semibold">
+                {locale === "vi" ? "Thiên về Hỏa & Khí" : "Fire & Air Heavy"}
+              </span>
             </div>
             <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden flex">
               <div className="bg-amber-500 h-full w-[40%]" title="Fire 40%" />
@@ -98,10 +112,10 @@ export default function JournalPatternLedgerPage() {
               <div className="bg-cyan-500 h-full w-[10%]" title="Water 10%" />
             </div>
             <div className="flex justify-between text-[10px] font-mono text-slate-400">
-              <span>Fire 40%</span>
-              <span>Air 30%</span>
-              <span>Earth 20%</span>
-              <span>Water 10%</span>
+              <span>{locale === "vi" ? "Hỏa 40%" : "Fire 40%"}</span>
+              <span>{locale === "vi" ? "Khí 30%" : "Air 30%"}</span>
+              <span>{locale === "vi" ? "Địa 20%" : "Earth 20%"}</span>
+              <span>{locale === "vi" ? "Thủy 10%" : "Water 10%"}</span>
             </div>
           </div>
         </section>
@@ -112,41 +126,56 @@ export default function JournalPatternLedgerPage() {
           <div className="lg:col-span-5 p-6 bg-[#F8FAFC] space-y-3">
             <div className="flex justify-between items-center mb-3">
               <span className="font-mono text-xs uppercase tracking-wider text-slate-500 font-semibold">
-                READINGS CHRONICLE // {journals.length} ENTRIES
+                {t.journal.entriesTitle} · {journals.length}
               </span>
-              <span className="text-[10px] font-mono text-slate-400">NEWEST FIRST</span>
+              <span className="text-[10px] font-mono text-slate-400">
+                {locale === "vi" ? "MỚI NHẤT TRƯỚC" : "NEWEST FIRST"}
+              </span>
             </div>
 
-            {journals.map((entry) => {
-              const active = selectedEntry?.id === entry.id;
-              return (
-                <div
-                  key={entry.id}
-                  onClick={() => handleSelectEntry(entry)}
-                  className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                    active
-                      ? "bg-white border-2 border-primary shadow-sm"
-                      : "bg-white border-outline-variant hover:border-slate-300"
-                  }`}
+            {journals.length === 0 ? (
+              <div className="p-8 text-center bg-white rounded-lg border border-dashed border-slate-300 space-y-3">
+                <span className="material-symbols-outlined text-3xl text-slate-300">menu_book</span>
+                <p className="text-xs text-slate-500">{t.journal.noEntries}</p>
+                <Link
+                  href="/workbench/demo-session"
+                  className="inline-block px-3 py-1.5 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-hover shadow-xs"
                 >
-                  <div className="flex justify-between items-center text-[10px] font-mono text-slate-400">
-                    <span>{entry.sessionCode}</span>
-                    <span suppressHydrationWarning>{new Date(entry.createdAt).toLocaleDateString()}</span>
+                  {t.journal.newReadingBtn}
+                </Link>
+              </div>
+            ) : (
+              journals.map((entry) => {
+                const active = selectedEntry?.id === entry.id;
+                return (
+                  <div
+                    key={entry.id}
+                    onClick={() => handleSelectEntry(entry)}
+                    className={`p-4 rounded-lg border cursor-pointer transition-all ${
+                      active
+                        ? "bg-white border-2 border-primary shadow-sm"
+                        : "bg-white border-outline-variant hover:border-slate-300"
+                    }`}
+                  >
+                    <div className="flex justify-between items-center text-[10px] font-mono text-slate-400">
+                      <span>{entry.sessionCode}</span>
+                      <span suppressHydrationWarning>{new Date(entry.createdAt).toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US")}</span>
+                    </div>
+                    <h4 className="font-headline font-bold text-sm text-on-surface mt-1">
+                      {entry.title || entry.spreadNameVi}
+                    </h4>
+                    <div className="text-xs text-slate-500 mt-0.5 line-clamp-2">{entry.summary}</div>
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {entry.tags.map((tg, i) => (
+                        <span key={i} className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[9px] font-mono">
+                          #{tg}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <h4 className="font-headline font-bold text-sm text-on-surface mt-1">
-                    {entry.title || entry.spreadNameVi}
-                  </h4>
-                  <div className="text-xs text-slate-500 mt-0.5 line-clamp-2">{entry.summary}</div>
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {entry.tags.map((t, i) => (
-                      <span key={i} className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[9px] font-mono">
-                        #{t}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
 
           {/* Right: Reflection Editor & Detailed Synthesis (60% / 7 cols) */}
@@ -155,44 +184,48 @@ export default function JournalPatternLedgerPage() {
               <>
                 <div>
                   <span className="font-mono text-[10px] uppercase tracking-widest text-primary font-semibold block mb-1">
-                    JOURNAL DETAIL // {selectedEntry.sessionCode}
+                    {locale === "vi" ? `CHI TIẾT NHẬT KÝ · ${selectedEntry.sessionCode}` : `JOURNAL DETAIL · ${selectedEntry.sessionCode}`}
                   </span>
                   <h2 className="font-headline font-bold text-xl text-on-surface">
                     {selectedEntry.title}
                   </h2>
                   <p className="text-xs text-slate-500 mt-1">
-                    Trải bài: {selectedEntry.spreadNameVi} ({selectedEntry.cardCount} lá bài)
+                    {locale === "vi" ? "Trải bài:" : "Spread:"} {selectedEntry.spreadNameVi} ({selectedEntry.cardCount} {locale === "vi" ? "lá bài" : "cards"})
                   </p>
                 </div>
 
                 {/* Reflection Input */}
                 <div className="space-y-2">
                   <label className="font-mono text-xs text-slate-500 block uppercase">
-                    Personal Reflection & Empirical Evidence (Nghiệm Lý Thực Tế)
+                    {t.journal.reflectionLabel}
                   </label>
                   <textarea
                     rows={6}
                     value={reflectionText}
                     onChange={(e) => setReflectionText(e.target.value)}
+                    placeholder={t.journal.reflectionPlaceholder}
                     className="w-full p-4 text-xs border border-outline-variant rounded-lg bg-[#FAF9F6] focus:bg-white focus:outline-none focus:border-primary leading-relaxed"
                   />
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-outline-variant">
-                  <span className="font-mono text-[11px] text-slate-400">
-                    {saveSuccess ? "✓ Đã lưu thay đổi vào sổ nhật ký!" : "Autosave ready"}
+                <div className="flex justify-between items-center pt-2">
+                  <span className="text-xs text-emerald-600 font-medium">
+                    {saveSuccess && (locale === "vi" ? "✓ Đã lưu thành công vào Supabase!" : "✓ Saved to Supabase!")}
                   </span>
                   <button
                     onClick={handleSaveReflection}
-                    className="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-hover shadow-sm transition-all"
+                    className="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-hover shadow-sm transition-colors"
                   >
-                    Lưu Ghi Chép Nghiệm Lý
+                    {t.journal.saveReflection}
                   </button>
                 </div>
               </>
             ) : (
-              <div className="py-20 text-center text-slate-400 text-xs font-mono">
-                Chọn một mục nhật ký bên trái để xem và ghi chép.
+              <div className="h-full min-h-[300px] flex flex-col items-center justify-center text-center p-8 space-y-2 text-slate-400">
+                <span className="material-symbols-outlined text-4xl text-slate-300">auto_stories</span>
+                <p className="text-xs max-w-sm">
+                  {t.journal.selectPrompt}
+                </p>
               </div>
             )}
           </div>

@@ -8,6 +8,7 @@ import { useLanguage } from "@/context/LanguageContext";
 export default function MobileAuthOnboardingPage() {
   const router = useRouter();
   const { locale, setLocale } = useLanguage();
+  const isVi = locale === "vi";
 
   const [tab, setTab] = useState<"signin" | "register">("register");
   const [displayName, setDisplayName] = useState("Aria Nguyen");
@@ -36,10 +37,17 @@ export default function MobileAuthOnboardingPage() {
     router.push("/app/home");
   };
 
+  const domainLabels: Record<string, { en: string; vi: string }> = {
+    "Creative Ideation": { en: "Creative Ideation", vi: "Ý Tưởng Sáng Tạo" },
+    "Career & Strategy": { en: "Career & Strategy", vi: "Sự Nghiệp & Chiến Lược" },
+    "Relationships": { en: "Relationships", vi: "Mối Quan Hệ" },
+    "Personal Growth": { en: "Personal Growth", vi: "Phát Triển Bản Thân" },
+  };
+
   return (
     <div className="bg-[#FAF9F6] text-[#0F172A] font-body min-h-screen flex justify-center selection:bg-emerald-100 selection:text-emerald-900">
       <main className="w-full max-w-[412px] bg-[#FAF9F6] min-h-screen flex flex-col relative pb-32 border-x border-[#E2E8F0] shadow-sm">
-        {/* 1. Android Status Bar */}
+        {/* 1. Status Bar */}
         <header className="w-full pt-3 px-6 pb-2 flex justify-between items-center text-slate-800 select-none">
           <span className="font-mono text-xs font-bold">09:41</span>
           <div className="flex items-center gap-1.5 text-slate-700">
@@ -54,14 +62,14 @@ export default function MobileAuthOnboardingPage() {
           <div className="flex items-center space-x-2">
             <span className="material-symbols-outlined text-primary text-xl">auto_awesome</span>
             <span className="font-headline font-bold text-sm tracking-tight text-slate-900 uppercase">
-              AITAROT // SANCTUARY
+              {isVi ? "AITAROT · THÁNH ĐỊA" : "AITAROT · SANCTUARY"}
             </span>
           </div>
           <div className="flex items-center border border-[#E2E8F0] rounded text-[11px] font-mono overflow-hidden">
             <button
               onClick={() => setLocale("en")}
               className={`px-2 py-0.5 font-bold ${
-                locale === "en" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
+                !isVi ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
               }`}
             >
               EN
@@ -69,7 +77,7 @@ export default function MobileAuthOnboardingPage() {
             <button
               onClick={() => setLocale("vi")}
               className={`px-2 py-0.5 font-bold ${
-                locale === "vi" ? "bg-primary text-white" : "text-slate-600 hover:bg-slate-100"
+                isVi ? "bg-primary text-white" : "text-slate-600 hover:bg-slate-100"
               }`}
             >
               VI
@@ -82,17 +90,27 @@ export default function MobileAuthOnboardingPage() {
           <div className="w-16 h-22 bg-[#FAF9F6] border border-[#CBD5E1] rounded p-1 flex flex-col items-center justify-between shadow-2xs shrink-0">
             <span className="text-[9px] font-mono font-bold text-slate-500">I</span>
             <span className="material-symbols-outlined text-primary text-2xl">auto_fix_high</span>
-            <span className="text-[8px] font-mono text-primary font-bold uppercase">Magician</span>
+            <span className="text-[8px] font-mono text-primary font-bold uppercase">
+              {isVi ? "Ảo Thuật" : "Magician"}
+            </span>
           </div>
           <div>
             <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold block mb-0.5">
-              CANONICAL ORACLE (SCR-M09)
+              {isVi ? "TIÊN TRI CHUẨN MỰC (SCR-M09)" : "CANONICAL ORACLE (SCR-M09)"}
             </span>
             <h1 className="font-headline font-bold text-lg text-slate-900 leading-tight">
-              {tab === "register" ? "Awaken Your Seeker Vault" : "Return to the Sanctuary"}
+              {tab === "register"
+                ? isVi
+                  ? "Khai Mở Kho Tàng Người Tìm Kiếm"
+                  : "Awaken Your Seeker Vault"
+                : isVi
+                ? "Trở Lại Thánh Địa Huyền Bí"
+                : "Return to the Sanctuary"}
             </h1>
             <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-              Synchronize your readings, natal calibrations, and crystal ledger.
+              {isVi
+                ? "Đồng bộ hóa các phiên trải bài, hiệu chuẩn chiêm tinh và số dư crystal."
+                : "Synchronize your readings, natal calibrations, and crystal ledger."}
             </p>
           </div>
         </div>
@@ -109,7 +127,7 @@ export default function MobileAuthOnboardingPage() {
                   : "text-slate-500 hover:text-slate-900"
               }`}
             >
-              01 · Sign In
+              {isVi ? "01 · Đăng Nhập" : "01 · Sign In"}
             </button>
             <button
               type="button"
@@ -120,7 +138,7 @@ export default function MobileAuthOnboardingPage() {
                   : "text-slate-500 hover:text-slate-900"
               }`}
             >
-              02 · Create Account
+              {isVi ? "02 · Tạo Tài Khoản" : "02 · Create Account"}
             </button>
           </div>
         </div>
@@ -139,20 +157,20 @@ export default function MobileAuthOnboardingPage() {
               <path d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.15z" fill="#FBBC05" />
               <path d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z" fill="#EA4335" />
             </svg>
-            <span>Continue with Google</span>
+            <span>{isVi ? "Tiếp tục với Google" : "Continue with Google"}</span>
           </button>
 
           <div className="relative flex items-center justify-center my-3">
             <div className="w-full border-t border-[#E2E8F0]" />
             <span className="absolute bg-[#FAF9F6] px-2 text-[9px] font-mono uppercase tracking-widest text-slate-400">
-              Or continue with email
+              {isVi ? "Hoặc tiếp tục với email" : "Or continue with email"}
             </span>
           </div>
 
           {tab === "register" && (
             <div>
               <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-600 mb-1">
-                Display Name / Tên Hiển Thị
+                {isVi ? "Tên Hiển Thị" : "Display Name"}
               </label>
               <input
                 type="text"
@@ -165,7 +183,7 @@ export default function MobileAuthOnboardingPage() {
 
           <div>
             <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-600 mb-1">
-              Email Address
+              {isVi ? "Địa Chỉ Email" : "Email Address"}
             </label>
             <input
               type="email"
@@ -178,7 +196,7 @@ export default function MobileAuthOnboardingPage() {
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-600 mb-1">
-                Password
+                {isVi ? "Mật Khẩu" : "Password"}
               </label>
               <input
                 type="password"
@@ -189,7 +207,7 @@ export default function MobileAuthOnboardingPage() {
             </div>
             <div>
               <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-600 mb-1">
-                OTP Code
+                {isVi ? "Mã Xác Thực OTP" : "OTP Code"}
               </label>
               <input
                 type="text"
@@ -204,12 +222,14 @@ export default function MobileAuthOnboardingPage() {
           {tab === "register" && (
             <div className="pt-2 border-t border-[#E2E8F0] space-y-3">
               <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold block">
-                STEP 02 // NATAL CALIBRATION
+                {isVi ? "BƯỚC 02: HIỆU CHUẨN CHIÊM TINH HỌC" : "STEP 02: NATAL CALIBRATION"}
               </span>
 
               <div>
                 <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-600 mb-1">
-                  Date of Birth (Calculates Zodiac & Life Path)
+                  {isVi
+                    ? "Ngày Sinh (Tự động tính Cung Hoàng Đạo & Số Đường Đời)"
+                    : "Date of Birth (Calculates Zodiac & Life Path)"}
                 </label>
                 <input
                   type="date"
@@ -222,21 +242,33 @@ export default function MobileAuthOnboardingPage() {
               {/* Natal Specimen Badges */}
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="p-2 bg-white border border-[#E2E8F0] rounded-lg">
-                  <span className="text-[9px] font-mono text-primary font-bold block">SUN SIGN · ♈ ARIES</span>
-                  <span className="font-headline font-bold text-slate-900 block mt-0.5">IV The Emperor</span>
-                  <span className="text-[10px] text-slate-500 font-mono">Cardinal Will</span>
+                  <span className="text-[9px] font-mono text-primary font-bold block">
+                    {isVi ? "CUNG MẶT TRỜI · ♈ BẠCH DƯƠNG" : "SUN SIGN · ♈ ARIES"}
+                  </span>
+                  <span className="font-headline font-bold text-slate-900 block mt-0.5">
+                    {isVi ? "IV Hoàng Đế" : "IV The Emperor"}
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-mono">
+                    {isVi ? "Ý Chí Khai Phá" : "Cardinal Will"}
+                  </span>
                 </div>
                 <div className="p-2 bg-white border border-[#E2E8F0] rounded-lg">
-                  <span className="text-[9px] font-mono text-primary font-bold block">LIFE PATH · 07</span>
-                  <span className="font-headline font-bold text-slate-900 block mt-0.5">IX The Hermit</span>
-                  <span className="text-[10px] text-slate-500 font-mono">Inner Guidance</span>
+                  <span className="text-[9px] font-mono text-primary font-bold block">
+                    {isVi ? "SỐ ĐƯỜNG ĐỜI · 07" : "LIFE PATH · 07"}
+                  </span>
+                  <span className="font-headline font-bold text-slate-900 block mt-0.5">
+                    {isVi ? "IX Ẩn Sĩ" : "IX The Hermit"}
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-mono">
+                    {isVi ? "Ngọn Đèn Dẫn Lối" : "Inner Guidance"}
+                  </span>
                 </div>
               </div>
 
               {/* Focus Domains */}
               <div>
                 <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-600 mb-1">
-                  Inquiry Focus Domains
+                  {isVi ? "Lĩnh Vực Trọng Tâm Muốn Thấu Suốt" : "Inquiry Focus Domains"}
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   {[
@@ -246,6 +278,7 @@ export default function MobileAuthOnboardingPage() {
                     "Personal Growth",
                   ].map((domain) => {
                     const active = focusAreas.includes(domain);
+                    const label = isVi ? domainLabels[domain]?.vi || domain : domain;
                     return (
                       <button
                         key={domain}
@@ -257,7 +290,7 @@ export default function MobileAuthOnboardingPage() {
                             : "bg-white border border-[#E2E8F0] text-slate-600 hover:bg-slate-100"
                         }`}
                       >
-                        {domain} {active && "✓"}
+                        {label} {active && "✓"}
                       </button>
                     );
                   })}
@@ -267,9 +300,13 @@ export default function MobileAuthOnboardingPage() {
               {/* AI Context Switch */}
               <div className="p-3 bg-emerald-50/60 border border-emerald-200/60 rounded-lg flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-bold text-slate-900 block">AI Contextual Memory</span>
+                  <span className="text-xs font-bold text-slate-900 block">
+                    {isVi ? "Bộ Nhớ Ngữ Cảnh AI" : "AI Contextual Memory"}
+                  </span>
                   <span className="text-[10px] text-slate-500 leading-tight block">
-                    Infuse Aries Decan II & LP 7 into AI readings
+                    {isVi
+                      ? "Tích hợp Bạch Dương Decan II & LP 7 vào luận giải bài AI"
+                      : "Infuse Aries Decan II & LP 7 into AI readings"}
                   </span>
                 </div>
                 <button
@@ -295,7 +332,11 @@ export default function MobileAuthOnboardingPage() {
             className="w-full py-3 bg-primary hover:bg-[#047857] text-white rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all shadow-xs mt-2"
           >
             {tab === "register"
-              ? "Complete Enrollment & Claim +15 CR →"
+              ? isVi
+                ? "Hoàn Tất Đăng Ký & Nhận +15 CR →"
+                : "Complete Enrollment & Claim +15 CR →"
+              : isVi
+              ? "Đăng Nhập Vào Thánh Địa →"
               : "Sign In to Archival Sanctuary →"}
           </button>
         </form>
@@ -306,7 +347,7 @@ export default function MobileAuthOnboardingPage() {
             href="/app/home"
             className="text-xs text-slate-500 hover:text-primary transition-colors font-mono underline"
           >
-            Continue as Guest Seeker →
+            {isVi ? "Tiếp tục với tư cách Khách Vãng Lai →" : "Continue as Guest Seeker →"}
           </Link>
         </div>
       </main>

@@ -1,45 +1,61 @@
+"use client";
+
 import Link from "next/link";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function MobileDecksGalleryPage() {
+  const { locale, setLocale } = useLanguage();
+  const isVi = locale === "vi";
+
   const decks = [
     {
       id: "ED-01",
       name: "Rider-Waite-Smith 1909",
-      desc: "Original Pamela Colman Smith hand-drawn linework & watercolor.",
-      status: "DEFAULT · FREE",
-      badge: "CANONICAL",
+      desc: isVi
+        ? "Nét vẽ kinh điển & màu nước thủ công nguyên bản của Pamela Colman Smith."
+        : "Original Pamela Colman Smith hand-drawn linework & watercolor.",
+      status: isVi ? "MẶC ĐỊNH · MIỄN PHÍ" : "DEFAULT · FREE",
+      badge: isVi ? "CHUẨN MỰC" : "CANONICAL",
       active: false,
     },
     {
       id: "ED-02",
-      name: "Sunlit Botanical Herbarium",
-      desc: "Warm Alabaster press, medicinal flora, golden woodcut engraving.",
-      status: "ACTIVE SELECTION",
-      badge: "ACTIVE",
+      name: isVi ? "Thảo Dược Chiêm Tinh (Sunlit Botanical)" : "Sunlit Botanical Herbarium",
+      desc: isVi
+        ? "Giấy thạch cao ấm áp, thảo dược trị liệu học và nét khắc mộc bản thếp vàng."
+        : "Warm Alabaster press, medicinal flora, golden woodcut engraving.",
+      status: isVi ? "ĐANG SỬ DỤNG" : "ACTIVE SELECTION",
+      badge: isVi ? "HOẠT ĐỘNG" : "ACTIVE",
       active: true,
     },
     {
       id: "ED-03",
-      name: "Swiss Geometric Construct",
-      desc: "Minimalist Bauhaus typography, vector grids, chromatic modernism.",
-      status: "PRO (150 CR)",
+      name: isVi ? "Hình Học Tối Giản Thụy Sĩ" : "Swiss Geometric Construct",
+      desc: isVi
+        ? "Nghệ thuật chữ Bauhaus tối giản, lưới vector chuẩn xác và tính hiện đại biểu cảm."
+        : "Minimalist Bauhaus typography, vector grids, chromatic modernism.",
+      status: isVi ? "BẢN PRO (150 CR)" : "PRO (150 CR)",
       badge: "PRO",
       active: false,
     },
     {
       id: "ED-04",
-      name: "Marseille 1760 Heritage",
-      desc: "Nicolas Conver woodblock archive, pure primary heraldic inks.",
-      status: "PRO (150 CR)",
+      name: isVi ? "Di Sản Marseille 1760" : "Marseille 1760 Heritage",
+      desc: isVi
+        ? "Bản khắc gỗ lưu trữ Nicolas Conver, màu mực cổ điển nguyên thủy trung cổ."
+        : "Nicolas Conver woodblock archive, pure primary heraldic inks.",
+      status: isVi ? "BẢN PRO (150 CR)" : "PRO (150 CR)",
       badge: "PRO",
       active: false,
     },
     {
       id: "ED-05",
-      name: "Kyoto Sumi-e Ink Wash",
-      desc: "Atmospheric Japanese calligraphy ink, gold leaf dusting.",
-      status: "PRO (200 CR)",
+      name: isVi ? "Thủy Mặc Kyoto Sumi-e" : "Kyoto Sumi-e Ink Wash",
+      desc: isVi
+        ? "Mực mài thư họa Nhật Bản quyện khói mờ và bụi vàng thủ công tinh tế."
+        : "Atmospheric Japanese calligraphy ink, gold leaf dusting.",
+      status: isVi ? "BẢN PRO (200 CR)" : "PRO (200 CR)",
       badge: "PRO",
       active: false,
     },
@@ -51,10 +67,33 @@ export default function MobileDecksGalleryPage() {
       <header className="px-4 py-3 bg-white border-b border-outline-variant flex items-center justify-between sticky top-0 z-40">
         <Link href="/app/home" className="flex items-center gap-1 text-xs text-slate-500 hover:text-on-surface">
           <span className="material-symbols-outlined text-base">arrow_back</span>
-          <span>Sanctuary</span>
+          <span>{isVi ? "Thánh Địa" : "Sanctuary"}</span>
         </Link>
-        <span className="font-mono text-xs font-semibold text-on-surface">5 DECK EDITIONS</span>
-        <span className="text-xs font-mono text-primary font-semibold">ALL 78 CARDS</span>
+        <span className="font-mono text-xs font-semibold text-on-surface">
+          {isVi ? "5 PHIÊN BẢN BỘ BÀI" : "5 DECK EDITIONS"}
+        </span>
+
+        {/* Language Switcher */}
+        <div className="flex items-center border border-outline-variant rounded text-[10px] font-mono overflow-hidden shadow-xs">
+          <button
+            type="button"
+            onClick={() => setLocale("en")}
+            className={`px-2 py-0.5 transition-colors ${
+              !isVi ? "bg-slate-900 text-white font-bold" : "text-slate-500 hover:text-on-surface"
+            }`}
+          >
+            EN
+          </button>
+          <button
+            type="button"
+            onClick={() => setLocale("vi")}
+            className={`px-2 py-0.5 transition-colors ${
+              isVi ? "bg-primary text-white font-bold" : "text-slate-500 hover:text-on-surface"
+            }`}
+          >
+            VI
+          </button>
+        </div>
       </header>
 
       {/* Main Content */}
@@ -62,9 +101,11 @@ export default function MobileDecksGalleryPage() {
         {/* Active Hero Deck */}
         <div className="bg-white border-2 border-primary rounded-lg p-5 shadow-sm space-y-4">
           <div className="flex justify-between items-center text-[10px] font-mono border-b border-slate-100 pb-2">
-            <span className="text-primary font-bold">ACTIVE SELECTION // ED-02</span>
+            <span className="text-primary font-bold">
+              {isVi ? "LỰA CHỌN HIỆN TẠI · ED-02" : "ACTIVE SELECTION · ED-02"}
+            </span>
             <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded font-semibold">
-              IN USE
+              {isVi ? "ĐANG DÙNG" : "IN USE"}
             </span>
           </div>
 
@@ -75,13 +116,15 @@ export default function MobileDecksGalleryPage() {
             </div>
             <div className="flex-1 space-y-1">
               <h2 className="font-headline font-bold text-base text-on-surface">
-                Sunlit Botanical Herbarium
+                {isVi ? "Thảo Dược Chiêm Tinh (Sunlit Botanical)" : "Sunlit Botanical Herbarium"}
               </h2>
               <p className="text-xs text-[#475569] leading-relaxed">
-                78 cards printed on warm alabaster stock with medicinal herbs and gold foil accents.
+                {isVi
+                  ? "78 lá bài in trên nền giấy thạch cao ấm áp kết hợp thảo mộc chữa lành và họa tiết mạ vàng tinh xảo."
+                  : "78 cards printed on warm alabaster stock with medicinal herbs and gold foil accents."}
               </p>
               <div className="text-[10px] font-mono text-emerald-700 font-semibold pt-1">
-                78 Plates Generated & Verified
+                {isVi ? "Đã Tạo & Kiểm Định 78 Bản Khắc" : "78 Plates Generated & Verified"}
               </div>
             </div>
           </div>
@@ -91,10 +134,10 @@ export default function MobileDecksGalleryPage() {
               href="/catalog-picker"
               className="flex-1 py-2 text-center text-xs font-medium border border-outline-variant rounded-lg hover:bg-slate-50"
             >
-              Browse 78 Plates
+              {isVi ? "Khám Phá 78 Bản Khắc" : "Browse 78 Plates"}
             </Link>
             <button className="flex-1 py-2 text-center text-xs font-semibold bg-primary text-white rounded-lg hover:bg-primary-hover">
-              Selected ✓
+              {isVi ? "Đã Chọn ✓" : "Selected ✓"}
             </button>
           </div>
         </div>
@@ -102,7 +145,7 @@ export default function MobileDecksGalleryPage() {
         {/* Other 4 Editions */}
         <div className="space-y-3">
           <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400 font-semibold block">
-            AVAILABLE EDITIONS (SWITCH FREELY)
+            {isVi ? "CÁC PHIÊN BẢN KHẢ DỤNG (TÙY Ý CHUYỂN ĐỔI)" : "AVAILABLE EDITIONS (SWITCH FREELY)"}
           </span>
 
           {decks
@@ -130,15 +173,14 @@ export default function MobileDecksGalleryPage() {
                   </div>
                 </div>
                 <button className="px-3 py-1.5 text-xs font-medium border border-outline-variant rounded-lg hover:bg-slate-50 text-on-surface shrink-0">
-                  Switch
+                  {isVi ? "Chọn" : "Switch"}
                 </button>
               </div>
             ))}
         </div>
       </main>
 
-      <MobileBottomNav activeTab="journal" />
+      <MobileBottomNav activeTab="decks" />
     </div>
   );
 }
-

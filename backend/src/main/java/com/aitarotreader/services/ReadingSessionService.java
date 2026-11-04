@@ -205,11 +205,14 @@ public class ReadingSessionService {
 
         Instant past24Hours = Instant.now().minus(24, ChronoUnit.HOURS);
         List<ReadingSession> recentSessions = sessionRepository.findByUserIdAndCreatedAtAfter(user.getId(), past24Hours);
-        boolean hasDailyDrawToday = recentSessions.stream()
-                .anyMatch(s -> s.getSpread() != null && "S-01".equals(s.getSpread().getId()));
+        ReadingSession existingDaily = recentSessions.stream()
+                .filter(s -> s.getSpread() != null && "S-01".equals(s.getSpread().getId()))
+                .findFirst()
+                .orElse(null);
 
-        if (hasDailyDrawToday) {
-            log.info("User {} already completed their free daily draw today", user.getId());
+        if (existingDaily != null) {
+            log.info("Returning existing daily draw for user {}: {}", user.getId(), existingDaily.getId());
+            return toSessionDto(existingDaily);
         }
 
         List<TarotCard> allCards = cardRepository.findAll();

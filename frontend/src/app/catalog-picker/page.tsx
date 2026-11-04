@@ -3,9 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import EditorialHeader from "@/components/EditorialHeader";
+import { useLanguage } from "@/context/LanguageContext";
 import { TAROT_CARDS, TarotCard } from "@/data/tarotCards";
 
 export default function CatalogPickerPage() {
+  const { locale, t } = useLanguage();
   const [selectedSuit, setSelectedSuit] = useState<"ALL" | "MAJOR" | "WANDS" | "CUPS" | "SWORDS" | "PENTACLES">("ALL");
   const [search, setSearch] = useState("");
   const [activeSlot, setActiveSlot] = useState<1 | 2 | 3>(2);
@@ -20,12 +22,12 @@ export default function CatalogPickerPage() {
   });
 
   const suitsList: Array<{ id: "ALL" | "MAJOR" | "WANDS" | "CUPS" | "SWORDS" | "PENTACLES"; label: string; count: number }> = [
-    { id: "ALL", label: "ALL 78 CARDS", count: 78 },
-    { id: "MAJOR", label: "MAJOR ARCANA", count: 22 },
-    { id: "WANDS", label: "WANDS (HỎA)", count: 14 },
-    { id: "CUPS", label: "CUPS (THỦY)", count: 14 },
-    { id: "SWORDS", label: "SWORDS (KHÍ)", count: 14 },
-    { id: "PENTACLES", label: "PENTACLES (ĐỊA)", count: 14 },
+    { id: "ALL", label: t.catalog.allCards, count: 78 },
+    { id: "MAJOR", label: t.catalog.majorArcana, count: 22 },
+    { id: "WANDS", label: t.catalog.wands, count: 14 },
+    { id: "CUPS", label: t.catalog.cups, count: 14 },
+    { id: "SWORDS", label: t.catalog.swords, count: 14 },
+    { id: "PENTACLES", label: t.catalog.pentacles, count: 14 },
   ];
 
   const filteredCards = TAROT_CARDS.filter((card) => {
@@ -59,19 +61,19 @@ export default function CatalogPickerPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <span className="font-mono text-[10px] uppercase tracking-widest text-primary font-semibold block">
-                MANUAL INPUT MODE // DESK LOGGING · RIDER-WAITE 1909
+                {t.catalog.kicker}
               </span>
               <h2 className="font-headline font-bold text-lg text-on-surface">
-                Assign Real-World Drawn Cards to Spread Slots
+                {t.catalog.title}
               </h2>
             </div>
             <div className="flex items-center gap-3">
-              <span className="font-mono text-xs text-slate-500">Spread: 3-Card Trajectory</span>
+              <span className="font-mono text-xs text-slate-500">{t.catalog.spreadLabel}</span>
               <Link
                 href="/workbench/custom-draw"
                 className="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-hover shadow-sm flex items-center gap-1.5"
               >
-                <span>Proceed to Synthesis</span>
+                <span>{t.catalog.proceed}</span>
                 <span className="material-symbols-outlined text-sm">arrow_forward</span>
               </Link>
             </div>
@@ -102,18 +104,18 @@ export default function CatalogPickerPage() {
                 )}
                 <div>
                   <span className={`text-[10px] font-mono font-semibold uppercase ${activeSlot === 1 ? "text-primary" : "text-slate-400"}`}>
-                    01 Situation {activeSlot === 1 ? "[ACTIVE]" : ""}
+                    {t.catalog.slot1} {activeSlot === 1 ? "[ACTIVE]" : ""}
                   </span>
                   <div className="text-xs font-bold text-on-surface mt-0.5 truncate max-w-[150px]">
-                    {slots[1] ? `${slots[1].number}. ${slots[1].nameEn}` : "Click card to set"}
+                    {slots[1] ? `${slots[1].number}. ${locale === "vi" ? slots[1].nameVi : slots[1].nameEn}` : t.catalog.clickToSet}
                   </div>
                   <div className="text-[10px] text-slate-500 truncate max-w-[150px]">
-                    {slots[1] ? slots[1].nameVi : "Empty slot"}
+                    {slots[1] ? (locale === "vi" ? slots[1].nameEn : slots[1].nameVi) : t.catalog.emptySlot}
                   </div>
                 </div>
               </div>
               <span className={`text-xs font-mono px-2 py-0.5 rounded ${slots[1] ? "text-emerald-700 bg-emerald-50" : "text-slate-400"}`}>
-                {slots[1] ? "Set ✓" : "[Slot 1]"}
+                {slots[1] ? t.catalog.setDone : "[Slot 1]"}
               </span>
             </div>
 
@@ -140,18 +142,18 @@ export default function CatalogPickerPage() {
                 )}
                 <div>
                   <span className={`text-[10px] font-mono font-semibold uppercase ${activeSlot === 2 ? "text-primary" : "text-slate-400"}`}>
-                    02 Action {activeSlot === 2 ? "[Selecting]" : ""}
+                    {t.catalog.slot2} {activeSlot === 2 ? "[ACTIVE]" : ""}
                   </span>
                   <div className="text-xs font-bold text-on-surface mt-0.5 truncate max-w-[150px]">
-                    {slots[2] ? `${slots[2].number}. ${slots[2].nameEn}` : "Click card to set"}
+                    {slots[2] ? `${slots[2].number}. ${locale === "vi" ? slots[2].nameVi : slots[2].nameEn}` : t.catalog.clickToSet}
                   </div>
                   <div className="text-[10px] text-slate-500 truncate max-w-[150px]">
-                    {slots[2] ? slots[2].nameVi : "Empty slot"}
+                    {slots[2] ? (locale === "vi" ? slots[2].nameEn : slots[2].nameVi) : t.catalog.emptySlot}
                   </div>
                 </div>
               </div>
               <span className={`text-xs font-mono px-2 py-0.5 rounded ${slots[2] ? "text-emerald-700 bg-emerald-50" : "text-slate-400"}`}>
-                {slots[2] ? "Set ✓" : "[Slot 2]"}
+                {slots[2] ? t.catalog.setDone : "[Slot 2]"}
               </span>
             </div>
 
@@ -178,18 +180,18 @@ export default function CatalogPickerPage() {
                 )}
                 <div>
                   <span className={`text-[10px] font-mono font-semibold uppercase ${activeSlot === 3 ? "text-primary" : "text-slate-400"}`}>
-                    03 Outcome {activeSlot === 3 ? "[ACTIVE]" : ""}
+                    {t.catalog.slot3} {activeSlot === 3 ? "[ACTIVE]" : ""}
                   </span>
                   <div className="text-xs font-bold text-on-surface mt-0.5 truncate max-w-[150px]">
-                    {slots[3] ? `${slots[3].number}. ${slots[3].nameEn}` : "Click card to set"}
+                    {slots[3] ? `${slots[3].number}. ${locale === "vi" ? slots[3].nameVi : slots[3].nameEn}` : t.catalog.clickToSet}
                   </div>
                   <div className="text-[10px] text-slate-500 truncate max-w-[150px]">
-                    {slots[3] ? slots[3].nameVi : "Empty slot"}
+                    {slots[3] ? (locale === "vi" ? slots[3].nameEn : slots[3].nameVi) : t.catalog.emptySlot}
                   </div>
                 </div>
               </div>
               <span className={`text-xs font-mono px-2 py-0.5 rounded ${slots[3] ? "text-emerald-700 bg-emerald-50" : "text-slate-400"}`}>
-                {slots[3] ? "Set ✓" : "[Slot 3]"}
+                {slots[3] ? t.catalog.setDone : "[Slot 3]"}
               </span>
             </div>
           </div>
@@ -219,7 +221,7 @@ export default function CatalogPickerPage() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by card name, number, keywords..."
+              placeholder={t.catalog.searchPlaceholder}
               className="w-full pl-9 pr-3 py-2 text-xs border border-outline-variant rounded-lg bg-surface-subtle focus:bg-white focus:outline-none focus:border-primary font-body"
             />
           </div>
@@ -229,6 +231,10 @@ export default function CatalogPickerPage() {
         <section className="p-6 bg-[#FAF9F6] grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {filteredCards.map((card) => {
             const isAssigned = Object.values(slots).some((s) => s?.id === card.id);
+            const primaryName = locale === "vi" ? card.nameVi : card.nameEn;
+            const secondaryName = locale === "vi" ? card.nameEn : card.nameVi;
+            const keywords = locale === "vi" ? card.keywordsVi : card.keywordsEn;
+
             return (
               <div
                 key={card.id}
@@ -260,11 +266,11 @@ export default function CatalogPickerPage() {
 
                 <div className="border-t border-slate-100 pt-1.5">
                   <div className="font-headline font-bold text-xs text-on-surface group-hover:text-primary transition-colors truncate">
-                    {card.nameEn}
+                    {primaryName}
                   </div>
-                  <div className="text-[10px] text-slate-500 truncate mt-0.5">{card.nameVi}</div>
+                  <div className="text-[10px] text-slate-500 truncate mt-0.5">{secondaryName}</div>
                   <div className="text-[8px] font-mono text-slate-400 truncate mt-0.5">
-                    {card.keywordsVi}
+                    {keywords}
                   </div>
                 </div>
               </div>

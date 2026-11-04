@@ -17,7 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("local")
+@ActiveProfiles("supabase")
 class AuthControllerTest {
 
     @Autowired
@@ -28,8 +28,10 @@ class AuthControllerTest {
 
     @Test
     void testRegisterAndLoginFlow() throws Exception {
+        String testEmail = "testseeker_" + System.currentTimeMillis() + "@example.com";
+
         RegisterRequest registerRequest = RegisterRequest.builder()
-                .email("testseeker@example.com")
+                .email(testEmail)
                 .password("secretPassword123")
                 .fullName("Test Seeker")
                 .locale("vi")
@@ -41,11 +43,11 @@ class AuthControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.accessToken").isString())
-                .andExpect(jsonPath("$.data.user.email").value("testseeker@example.com"))
+                .andExpect(jsonPath("$.data.user.email").value(testEmail))
                 .andExpect(jsonPath("$.data.user.crystalBalance").value(20));
 
         LoginRequest loginRequest = LoginRequest.builder()
-                .email("testseeker@example.com")
+                .email(testEmail)
                 .password("secretPassword123")
                 .build();
 

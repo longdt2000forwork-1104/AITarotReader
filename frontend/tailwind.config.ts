@@ -34,10 +34,10 @@ const config: Config = {
         full: "9999px",
       },
       fontFamily: {
-        headline: ["Newsreader", "serif"],
-        display: ["Newsreader", "serif"],
-        body: ["Be Vietnam Pro", "sans-serif"],
-        label: ["Be Vietnam Pro", "sans-serif"],
+        headline: ["var(--font-newsreader)", "Newsreader", "serif"],
+        display: ["var(--font-newsreader)", "Newsreader", "serif"],
+        body: ["var(--font-be-vietnam-pro)", "Be Vietnam Pro", "sans-serif"],
+        label: ["var(--font-be-vietnam-pro)", "Be Vietnam Pro", "sans-serif"],
         mono: [
           "ui-monospace",
           "SFMono-Regular",
@@ -53,4 +53,3 @@ const config: Config = {
 };
 
 export default config;
-
