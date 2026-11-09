@@ -15,46 +15,62 @@ export default function EditorialPortalPage() {
 
   const [dailySession, setDailySession] = useState<ReadingSessionDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isRedrawing, setIsRedrawing] = useState(false);
+  const [isFlipping, setIsFlipping] = useState(false);
 
   const getTodayDateKey = (): string => {
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, "0");
-    const d = String(now.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
+    try {
+      return new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(new Date());
+    } catch {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
   };
 
-  const loadDailyCard = async (force: boolean = false) => {
-    if (force) {
-      setIsRedrawing(true);
-    } else {
+  // Only check if today's card (since 00:00) was already flipped in Supabase (never draws a new card)
+  const checkTodayDailyStatus = async (hasSyncCache: boolean = false) => {
+    if (!hasSyncCache) {
       setIsLoading(true);
     }
-
     try {
       const todayKey = getTodayDateKey();
-
-      // 1. Check local client cache for today's card if not force redrawing
-      if (!force && typeof window !== "undefined") {
-        const cached = localStorage.getItem("ai_tarot_daily_draw");
-        if (cached) {
-          try {
-            const parsed = JSON.parse(cached);
-            if (parsed && parsed.dateKey === todayKey && parsed.session) {
-              setDailySession(parsed.session);
-              setIsLoading(false);
-              return;
-            }
-          } catch {
-            // ignore cache parse error
-          }
+      const res = await apiClient.readings.checkDailyDraw(locale);
+      if (res.data && res.data.drawnCards && res.data.drawnCards.length > 0) {
+        setDailySession(res.data);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(
+            "ai_tarot_daily_draw",
+            JSON.stringify({ dateKey: todayKey, session: res.data })
+          );
+        }
+      } else {
+        setDailySession(null);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("ai_tarot_daily_draw");
         }
       }
+    } catch (err) {
+      console.warn("Failed to check daily tarot card status:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      // 2. Fetch or trigger new draw via API
-      const res = await apiClient.readings.getDailyDraw(locale, force);
-      if (res.data) {
+  // Called ONLY when the user explicitly clicks to flip the face-down card (or redraw)
+  const handleFlipCard = async (force: boolean = false) => {
+    if (isFlipping) return;
+    setIsFlipping(true);
+    try {
+      const todayKey = getTodayDateKey();
+      const res = await apiClient.readings.flipDailyDraw(locale, force);
+      if (res.data && res.data.drawnCards && res.data.drawnCards.length > 0) {
         setDailySession(res.data);
         if (typeof window !== "undefined") {
           localStorage.setItem(
@@ -64,25 +80,26 @@ export default function EditorialPortalPage() {
         }
       }
     } catch (err) {
-      console.warn("Failed to fetch daily tarot card:", err);
+      console.warn("Failed to flip daily tarot card:", err);
     } finally {
-      setIsLoading(false);
-      setIsRedrawing(false);
+      setIsFlipping(false);
     }
   };
 
   useEffect(() => {
-    // 1. Check local client cache for today's card synchronously on mount
     const todayKey = getTodayDateKey();
+    let hasSyncCache = false;
     if (typeof window !== "undefined") {
       try {
         const cached = localStorage.getItem("ai_tarot_daily_draw");
         if (cached) {
           const parsed = JSON.parse(cached);
-          if (parsed && parsed.dateKey === todayKey && parsed.session) {
+          if (parsed && parsed.dateKey === todayKey && parsed.session?.drawnCards?.length > 0) {
             setDailySession(parsed.session);
             setIsLoading(false);
-            return;
+            hasSyncCache = true;
+          } else {
+            localStorage.removeItem("ai_tarot_daily_draw");
           }
         }
       } catch {
@@ -90,7 +107,22 @@ export default function EditorialPortalPage() {
       }
     }
 
-    loadDailyCard(false);
+    checkTodayDailyStatus(hasSyncCache);
+
+    // Automatically reset to face-down at 00:00 midnight if page stays open
+    let currentKey = todayKey;
+    const interval = setInterval(() => {
+      const newKey = getTodayDateKey();
+      if (newKey !== currentKey) {
+        currentKey = newKey;
+        setDailySession(null);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("ai_tarot_daily_draw");
+        }
+      }
+    }, 15000);
+
+    return () => clearInterval(interval);
   }, [locale]);
 
   // Resolve current active card (only when drawnCardData is available from today's draw)
@@ -195,13 +227,6 @@ export default function EditorialPortalPage() {
                   <span>{t.portal.openWorkbench}</span>
                   <span className="material-symbols-outlined text-base">arrow_forward</span>
                 </Link>
-                <Link
-                  href="/catalog-picker"
-                  className="inline-flex items-center gap-2 bg-white border border-[#CBD5E1] hover:bg-slate-50 text-on-surface text-sm font-medium px-5 py-3.5 rounded-lg transition-all active:scale-[0.98]"
-                >
-                  <span className="material-symbols-outlined text-slate-500 text-base">edit_note</span>
-                  <span>{t.portal.logPhysical}</span>
-                </Link>
               </div>
             </div>
 
@@ -237,65 +262,53 @@ export default function EditorialPortalPage() {
               {/* Specimen Header Strip */}
               <div className="flex items-center justify-between pb-4 border-b border-outline-variant">
                 <div className="font-mono text-[11px] tracking-widest text-slate-500 uppercase flex items-center gap-2">
-                  <span className={`w-1.5 h-1.5 rounded-full ${isRedrawing ? "bg-amber-500 animate-ping" : "bg-slate-400"}`} />
+                  <span className={`w-1.5 h-1.5 rounded-full ${isFlipping || isLoading ? "bg-amber-500 animate-ping" : card ? "bg-emerald-500" : "bg-amber-500"}`} />
                   <span>{t.portal.specimenHeader}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => loadDailyCard(true)}
-                    disabled={isLoading || isRedrawing}
-                    className="inline-flex items-center gap-1 font-mono text-[10px] font-semibold px-2 py-0.5 rounded border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 hover:bg-emerald-50/50 transition-colors disabled:opacity-50"
-                    title={isVi ? "Bốc lại lá bài ngẫu nhiên cho hôm nay" : "Redraw a new random card"}
-                  >
-                    <span className={`material-symbols-outlined text-[13px] ${isRedrawing ? "animate-spin text-primary" : ""}`}>
-                      autorenew
+                  {isLoading && !card ? (
+                    <span className="inline-flex items-center gap-1 font-mono text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 animate-pulse">
+                      {isVi ? "ĐANG KIỂM TRA..." : "CHECKING..."}
                     </span>
-                    <span>{isRedrawing ? (isVi ? "Đang rút..." : "Drawing...") : (isVi ? "Rút lại" : "Redraw")}</span>
-                  </button>
-                  <span className="inline-flex items-center gap-1 font-mono text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    {t.portal.drawnBadge}
-                  </span>
+                  ) : card ? (
+                    <span className="inline-flex items-center gap-1 font-mono text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      {t.portal.drawnBadge}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 font-mono text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                      {isVi ? "BÀI ĐANG ÚP · CHƯA LẬT" : "FACE DOWN · UNFLIPPED"}
+                    </span>
+                  )}
                 </div>
               </div>
 
               {/* Specimen Card + Table Display Grid */}
-              {!card ? (
+              {isLoading && !card ? (
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-12 gap-6 items-start animate-pulse">
-                  {/* Tarot Card Visual Specimen Skeleton */}
-                  <div className="sm:col-span-5 bg-[#FAF9F6] border border-outline-variant rounded-lg p-3 text-center flex flex-col items-center justify-between min-h-[250px] shadow-sm relative overflow-hidden">
+                  <div className="sm:col-span-5 bg-[#FAF9F6] border border-outline-variant rounded-lg p-3 text-center flex flex-col items-center justify-between min-h-[250px] shadow-sm">
                     <div className="w-full flex justify-between items-center text-[10px] font-mono text-slate-400 border-b border-slate-200 pb-1">
                       <span>Rider-Waite 1909</span>
-                      <span className="w-16 h-2.5 bg-slate-200 rounded" />
+                      <span className="w-12 h-2.5 bg-slate-200 rounded" />
                     </div>
-
-                    {/* Shimmer Card Preview Frame */}
-                    <div className="my-2 relative w-28 h-48 rounded border border-slate-200 bg-slate-100/70 shadow-md flex flex-col items-center justify-center overflow-hidden linen-texture">
-                      <div className="w-22 h-42 border border-slate-300/70 rounded-sm flex flex-col items-center justify-center p-2 text-center">
-                        <span className="material-symbols-outlined text-primary/70 text-3xl animate-spin mb-2">
-                          progress_activity
-                        </span>
-                        <span className="text-[9px] font-mono tracking-wider text-slate-400 uppercase">
-                          {isVi ? "Đang rút quẻ..." : "Drawing..."}
-                        </span>
-                      </div>
+                    <div className="my-2 w-28 h-48 rounded-lg border border-slate-200 bg-slate-100 flex flex-col items-center justify-center p-2">
+                      <span className="material-symbols-outlined text-slate-400 text-2xl animate-spin mb-1">
+                        progress_activity
+                      </span>
+                      <span className="text-[9px] font-mono text-slate-400 uppercase">
+                        {isVi ? "Đang tải..." : "Loading..."}
+                      </span>
                     </div>
-
-                    <div className="w-full pt-2 border-t border-slate-200 flex flex-col items-center gap-1.5">
-                      <div className="h-2 w-8 bg-slate-200 rounded" />
-                      <div className="h-3.5 w-24 bg-slate-200 rounded" />
-                      <div className="h-2.5 w-16 bg-slate-100 rounded" />
+                    <div className="w-full pt-2 border-t border-slate-200 flex flex-col items-center gap-1">
+                      <div className="h-2.5 w-16 bg-slate-200 rounded" />
+                      <div className="h-3 w-24 bg-slate-100 rounded" />
                     </div>
                   </div>
-
-                  {/* Metadata Table Skeleton */}
                   <div className="sm:col-span-7 flex flex-col justify-between h-full pt-1">
                     <div>
                       <div className="h-6 w-44 bg-slate-200 rounded mb-2" />
                       <div className="h-3 w-full bg-slate-100 rounded mb-1.5" />
                       <div className="h-3 w-3/4 bg-slate-100 rounded" />
                     </div>
-
-                    {/* Metadata Table Matrix Skeleton */}
                     <div className="mt-4 border border-outline-variant rounded-lg divide-y divide-outline-variant text-xs">
                       <div className="p-2.5 flex items-center justify-between bg-surface-subtle">
                         <span className="text-slate-400 font-mono text-[11px]">{t.portal.primaryElement}</span>
@@ -310,7 +323,129 @@ export default function EditorialPortalPage() {
                         <div className="flex gap-1.5 mt-0.5">
                           <div className="h-5 w-16 bg-slate-100 rounded" />
                           <div className="h-5 w-20 bg-slate-100 rounded" />
-                          <div className="h-5 w-14 bg-slate-100 rounded" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : !card ? (
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
+                  {/* Interactive Face-Down Tarot Card */}
+                  <div className="sm:col-span-5 bg-[#FAF9F6] border border-outline-variant rounded-lg p-3 text-center flex flex-col items-center justify-between min-h-[250px] shadow-sm relative overflow-hidden">
+                    <div className="w-full flex justify-between items-center text-[10px] font-mono text-slate-400 border-b border-slate-200 pb-1">
+                      <span>Rider-Waite 1909</span>
+                      <span>{isVi ? "78 Lá" : "78 Cards"}</span>
+                    </div>
+
+                    {/* Mystical Face-Down Card Back (Click to Flip & Call API) */}
+                    <button
+                      type="button"
+                      onClick={() => handleFlipCard(false)}
+                      disabled={isFlipping || isLoading}
+                      className="my-2 relative w-28 h-48 rounded-lg border-2 border-amber-500/70 bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] shadow-lg flex flex-col items-center justify-center overflow-hidden group cursor-pointer hover:scale-105 hover:border-amber-400 hover:shadow-xl transition-all duration-300 disabled:opacity-75"
+                      title={isVi ? "Chạm để lật lá bài hôm nay" : "Click to flip today's card"}
+                    >
+                      {/* Inner Ornate Sacred Geometry Frame */}
+                      <div className="w-24 h-44 border border-amber-400/40 rounded flex flex-col items-center justify-between p-2.5 relative">
+                        <div className="w-full flex justify-between text-[9px] text-amber-400/70 font-serif">
+                          <span>✦</span>
+                          <span>✦</span>
+                        </div>
+
+                        {isFlipping ? (
+                          <div className="flex flex-col items-center justify-center gap-2">
+                            <span className="material-symbols-outlined text-amber-400 text-3xl animate-spin">
+                              progress_activity
+                            </span>
+                            <span className="text-[9px] font-mono tracking-wider text-amber-200 uppercase">
+                              {isVi ? "Đang lật bài..." : "Flipping..."}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center gap-1.5">
+                            <div className="w-11 h-11 rounded-full border border-amber-400/50 bg-amber-500/10 flex items-center justify-center group-hover:scale-110 group-hover:bg-amber-500/20 transition-all">
+                              <span className="material-symbols-outlined text-amber-300 text-xl">
+                                auto_awesome
+                              </span>
+                            </div>
+                            <span className="text-[9px] font-mono font-semibold tracking-widest text-amber-200/90 uppercase mt-1">
+                              {isVi ? "CHẠM ĐỂ LẬT" : "TAP TO FLIP"}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="w-full flex justify-between text-[9px] text-amber-400/70 font-serif">
+                          <span>✦</span>
+                          <span>✦</span>
+                        </div>
+                      </div>
+                    </button>
+
+                    <div className="w-full pt-2 border-t border-slate-200 flex flex-col items-center">
+                      <div className="font-mono text-[10px] font-semibold text-amber-700 uppercase tracking-widest">
+                        {isVi ? "BÀI ĐANG ÚP" : "FACE DOWN"}
+                      </div>
+                      <div className="text-[11px] font-medium text-slate-600">
+                        {isVi ? "Chưa rút cho hôm nay" : "Not drawn yet today"}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Unflipped Prompt & Locked Metadata Table */}
+                  <div className="sm:col-span-7 flex flex-col justify-between h-full pt-1">
+                    <div>
+                      <h2 className="font-headline text-lg font-bold text-on-surface leading-snug">
+                        {isVi ? "Lá Bài Hôm Nay Đang Úp" : "Today's Card is Face Down"}
+                      </h2>
+                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                        {isVi
+                          ? "Lá bài định hướng của ngày hôm nay chưa được rút khỏi bộ bài. Hãy tĩnh tâm và nhấn lật bài để rút lá bài dành riêng cho bạn."
+                          : "Today's daily card has not been drawn from the deck yet. Center your mind and flip the card to draw your guidance for today."}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => handleFlipCard(false)}
+                        disabled={isFlipping || isLoading}
+                        className="mt-3 inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-xs transition-all active:scale-[0.98] disabled:opacity-50"
+                      >
+                        <span className={`material-symbols-outlined text-sm ${isFlipping ? "animate-spin" : ""}`}>
+                          {isFlipping ? "progress_activity" : "touch_app"}
+                        </span>
+                        <span>
+                          {isFlipping
+                            ? isVi
+                              ? "Đang rút & lật lá bài..."
+                              : "Drawing & flipping card..."
+                            : isVi
+                            ? "Lật Mở Lá Bài Hôm Nay"
+                            : "Flip Today's Card"}
+                        </span>
+                      </button>
+                    </div>
+
+                    {/* Metadata Table Matrix (Unrevealed State) */}
+                    <div className="mt-4 border border-outline-variant rounded-lg divide-y divide-outline-variant text-xs">
+                      <div className="p-2.5 flex items-center justify-between bg-surface-subtle">
+                        <span className="text-slate-500 font-mono text-[11px]">{t.portal.primaryElement}</span>
+                        <span className="text-slate-400 font-mono text-[11px] italic">
+                          {isVi ? "Ẩn · Lật bài để mở" : "Hidden · Flip to reveal"}
+                        </span>
+                      </div>
+                      <div className="p-2.5 flex items-center justify-between">
+                        <span className="text-slate-500 font-mono text-[11px]">{t.portal.arcanaClass}</span>
+                        <span className="text-slate-400 font-mono text-[11px] italic">
+                          {isVi ? "78 Lá Rider-Waite" : "78 Rider-Waite Cards"}
+                        </span>
+                      </div>
+                      <div className="p-2.5 flex flex-col gap-1 bg-white">
+                        <span className="text-slate-500 font-mono text-[11px]">{t.portal.coreKeywords}</span>
+                        <div className="flex flex-wrap gap-1 mt-0.5">
+                          <span className="px-1.5 py-0.5 bg-amber-50 border border-amber-200/70 rounded text-[11px] text-amber-800 font-medium">
+                            {isVi ? "Chờ lật bài" : "Awaiting Flip"}
+                          </span>
+                          <span className="px-1.5 py-0.5 bg-slate-100 rounded text-[11px] text-slate-600 font-medium">
+                            {isVi ? "Reset 00:00 mỗi ngày" : "Resets 00:00 daily"}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -318,7 +453,7 @@ export default function EditorialPortalPage() {
                 </div>
               ) : (
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
-                  {/* Tarot Card Visual Specimen Frame */}
+                  {/* Tarot Card Visual Specimen Frame (Flipped / Face Up) */}
                   <div className="sm:col-span-5 bg-[#FAF9F6] border border-outline-variant rounded-lg p-3 text-center flex flex-col items-center justify-between min-h-[250px] shadow-sm relative overflow-hidden">
                     <div className="w-full flex justify-between items-center text-[10px] font-mono text-slate-400 border-b border-slate-200 pb-1">
                       <span>Rider-Waite 1909</span>
@@ -326,21 +461,14 @@ export default function EditorialPortalPage() {
                     </div>
 
                     {/* Real Tarot Card Artwork */}
-                    <div className="my-2 relative group cursor-pointer">
+                    <div className="my-2 relative group">
                       <img
                         src={card.image}
                         alt={`${card.number} ${isVi ? card.nameVi : card.nameEn}`}
-                        className={`w-28 h-48 object-cover rounded border border-slate-200 shadow-md group-hover:scale-105 transition-all duration-300 ${
+                        className={`w-28 h-48 object-cover rounded border border-slate-200 shadow-md transition-all duration-300 ${
                           isReversed ? "rotate-180" : ""
-                        } ${isRedrawing ? "opacity-40 blur-xs scale-95" : "opacity-100 scale-100"}`}
+                        }`}
                       />
-                      {isRedrawing && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="material-symbols-outlined text-primary text-3xl animate-spin">
-                            progress_activity
-                          </span>
-                        </div>
-                      )}
                     </div>
 
                     <div className="w-full pt-2 border-t border-slate-200">
@@ -430,12 +558,25 @@ export default function EditorialPortalPage() {
                   </span>
                 </div>
                 <blockquote className="font-headline italic text-sm md:text-[15px] text-on-surface leading-snug">
-                  {isLoading || isRedrawing || !dailySession ? (
+                  {isLoading && !dailySession ? (
                     <span className="text-slate-400 not-italic font-sans text-xs flex items-center gap-2 py-1">
                       <span className="material-symbols-outlined text-sm animate-spin text-primary">sync</span>
                       {isVi
-                        ? "Gemini AI đang lắng nghe trường năng lượng và khởi tạo thông điệp ngày mới..."
-                        : "Gemini AI is synthesizing today's mindful guidance..."}
+                        ? "Đang đồng bộ trạng thái lá bài hôm nay..."
+                        : "Syncing today's card status..."}
+                    </span>
+                  ) : isFlipping ? (
+                    <span className="text-slate-400 not-italic font-sans text-xs flex items-center gap-2 py-1">
+                      <span className="material-symbols-outlined text-sm animate-spin text-primary">sync</span>
+                      {isVi
+                        ? "Gemini AI đang rút lá bài từ cơ sở dữ liệu và khởi tạo thông điệp ngày mới..."
+                        : "Gemini AI is drawing your card and synthesizing today's mindful guidance..."}
+                    </span>
+                  ) : !dailySession ? (
+                    <span className="text-slate-500 not-italic font-sans text-xs block py-1">
+                      {isVi
+                        ? "Lá bài hôm nay đang ở trạng thái úp. Hãy chạm vào lá bài phía trên để rút bài từ cơ sở dữ liệu và mở thông điệp định hướng cho ngày hôm nay."
+                        : "Today's card is currently face down. Tap the card above to draw from the database and reveal your daily synthesis."}
                     </span>
                   ) : (
                     `“${aiMessage}”`

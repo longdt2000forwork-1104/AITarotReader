@@ -15,7 +15,8 @@ export default function MobileDailyHomePage() {
   const [profile, setProfile] = useState<MysticProfileDto | null>(null);
   const [wallet, setWallet] = useState<WalletBalanceDto | null>(null);
   const [dailySession, setDailySession] = useState<ReadingSessionDto | null>(null);
-  const [isRedrawing, setIsRedrawing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFlipping, setIsFlipping] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
   const [claimToast, setClaimToast] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -37,34 +38,59 @@ export default function MobileDailyHomePage() {
   };
 
   const getTodayDateKey = (): string => {
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, "0");
-    const d = String(now.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
+    try {
+      return new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(new Date());
+    } catch {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
   };
 
-  const loadDailyCard = async (force: boolean = false) => {
-    if (force) setIsRedrawing(true);
+  // Check if today's card has already been flipped in Supabase (never draws a card)
+  const checkTodayDailyStatus = async (hasSyncCache: boolean = false) => {
+    if (!hasSyncCache) {
+      setIsLoading(true);
+    }
     try {
       const todayKey = getTodayDateKey();
-      if (!force && typeof window !== "undefined") {
-        const cached = localStorage.getItem("ai_tarot_daily_draw");
-        if (cached) {
-          try {
-            const parsed = JSON.parse(cached);
-            if (parsed && parsed.dateKey === todayKey && parsed.session) {
-              setDailySession(parsed.session);
-              return;
-            }
-          } catch {
-            // ignore parse err
-          }
+      const res = await apiClient.readings.checkDailyDraw(locale);
+      if (res.data && res.data.drawnCards && res.data.drawnCards.length > 0) {
+        setDailySession(res.data);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(
+            "ai_tarot_daily_draw",
+            JSON.stringify({ dateKey: todayKey, session: res.data })
+          );
+        }
+      } else {
+        setDailySession(null);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("ai_tarot_daily_draw");
         }
       }
+    } catch (err) {
+      console.warn("Failed to check daily draw status in app/home:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      const res = await apiClient.readings.getDailyDraw(locale, force);
-      if (res.data) {
+  // Called ONLY when user explicitly taps to flip the face-down card
+  const handleFlipCard = async (force: boolean = false) => {
+    if (isFlipping) return;
+    setIsFlipping(true);
+    try {
+      const todayKey = getTodayDateKey();
+      const res = await apiClient.readings.flipDailyDraw(locale, force);
+      if (res.data && res.data.drawnCards && res.data.drawnCards.length > 0) {
         setDailySession(res.data);
         if (typeof window !== "undefined") {
           localStorage.setItem(
@@ -74,9 +100,9 @@ export default function MobileDailyHomePage() {
         }
       }
     } catch (err) {
-      console.warn("Failed to load daily draw in app/home:", err);
+      console.warn("Failed to flip daily draw in app/home:", err);
     } finally {
-      setIsRedrawing(false);
+      setIsFlipping(false);
     }
   };
 
@@ -96,15 +122,19 @@ export default function MobileDailyHomePage() {
   }, [isVi]);
 
   useEffect(() => {
-    // Check localStorage immediately on mount
     const todayKey = getTodayDateKey();
+    let hasSyncCache = false;
     if (typeof window !== "undefined") {
       try {
         const cached = localStorage.getItem("ai_tarot_daily_draw");
         if (cached) {
           const parsed = JSON.parse(cached);
-          if (parsed && parsed.dateKey === todayKey && parsed.session) {
+          if (parsed && parsed.dateKey === todayKey && parsed.session?.drawnCards?.length > 0) {
             setDailySession(parsed.session);
+            setIsLoading(false);
+            hasSyncCache = true;
+          } else {
+            localStorage.removeItem("ai_tarot_daily_draw");
           }
         }
       } catch {
@@ -125,7 +155,22 @@ export default function MobileDailyHomePage() {
       }
     }
     loadData();
-    loadDailyCard(false);
+    checkTodayDailyStatus(hasSyncCache);
+
+    // Automatically reset to face-down at 00:00 midnight if page stays open
+    let currentKey = todayKey;
+    const interval = setInterval(() => {
+      const newKey = getTodayDateKey();
+      if (newKey !== currentKey) {
+        currentKey = newKey;
+        setDailySession(null);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("ai_tarot_daily_draw");
+        }
+      }
+    }, 15000);
+
+    return () => clearInterval(interval);
   }, [locale]);
 
   const handleClaimReward = async () => {
@@ -185,21 +230,25 @@ export default function MobileDailyHomePage() {
     <div className="max-w-[430px] mx-auto min-h-screen bg-surface flex flex-col border-x border-outline-variant pb-20">
       {/* Top Hairline App Bar */}
       <header className="px-4 py-3 bg-white border-b border-outline-variant flex items-center justify-between sticky top-0 z-40">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-serif font-bold text-slate-800">
+        <Link
+          href="/app/profile"
+          className="flex items-center gap-2 group hover:opacity-90 transition-opacity"
+          title={isVi ? "Mở Hồ Sơ Cá Nhân" : "Open Seeker Profile"}
+        >
+          <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 group-hover:border-primary flex items-center justify-center text-xs font-serif font-bold text-slate-800 transition-colors">
             ✦
           </div>
           <div>
-            <div className="text-xs font-bold text-on-surface leading-tight">
+            <div className="text-xs font-bold text-on-surface group-hover:text-primary leading-tight transition-colors">
               Aria • {sunSignDisplay}
             </div>
             <div className="text-[10px] font-mono text-slate-400">
               {isVi ? "Số Đường Đời " : "Life Path "} {profile ? profile.lifePathNumber : "7"}
             </div>
           </div>
-        </div>
+        </Link>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {/* Mobile Language Switcher */}
           <div className="flex items-center border border-outline-variant rounded text-[10px] font-mono overflow-hidden shadow-xs">
             <button
@@ -224,10 +273,26 @@ export default function MobileDailyHomePage() {
 
           <Link
             href="/app/billing"
-            className="flex items-center gap-1 px-2.5 py-0.5 bg-[#FEF3C7] text-[#B45309] border border-amber-200 rounded text-xs font-mono font-semibold"
+            className="flex items-center gap-1 px-2 py-0.5 bg-[#FEF3C7] text-[#B45309] border border-amber-200 rounded text-xs font-mono font-semibold"
           >
             <span className="material-symbols-outlined text-[13px]">toll</span>
             <span>{wallet ? wallet.balance : 85} CR</span>
+          </Link>
+
+          <Link
+            href="/app/profile"
+            className="w-7 h-7 rounded border border-outline-variant bg-slate-50 hover:bg-emerald-50 hover:border-primary text-slate-700 hover:text-primary flex items-center justify-center transition-colors"
+            title={isVi ? "Hồ sơ cá nhân" : "Profile"}
+          >
+            <span className="material-symbols-outlined text-base">person</span>
+          </Link>
+
+          <Link
+            href="/login"
+            className="w-7 h-7 rounded border border-outline-variant bg-slate-50 hover:bg-emerald-50 hover:border-primary text-slate-700 hover:text-primary flex items-center justify-center transition-colors"
+            title={isVi ? "Đăng nhập / Tài khoản" : "Login / Account"}
+          >
+            <span className="material-symbols-outlined text-base">login</span>
           </Link>
         </div>
       </header>
@@ -251,33 +316,111 @@ export default function MobileDailyHomePage() {
         </div>
 
         {/* Drawn Card Specimen Card */}
-        {!card ? (
+        {isLoading && !card ? (
           <div className="bg-white border border-outline-variant rounded-lg p-5 text-center shadow-sm space-y-3 relative overflow-hidden animate-pulse">
             <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 border-b border-slate-100 pb-2">
               <span>Rider-Waite 1909</span>
-              <span className="w-16 h-2.5 bg-slate-200 rounded" />
+              <span className="w-20 h-3 bg-slate-200 rounded" />
             </div>
-
-            {/* Shimmer Card Preview */}
-            <div className="w-32 h-52 mx-auto rounded-lg overflow-hidden border border-slate-200 bg-slate-100/70 shadow-md flex flex-col items-center justify-center p-3 linen-texture">
-              <span className="material-symbols-outlined text-primary/70 text-3xl animate-spin mb-2">
+            <div className="w-32 h-52 mx-auto rounded-lg border border-slate-200 bg-slate-100 flex flex-col items-center justify-center p-3">
+              <span className="material-symbols-outlined text-slate-400 text-2xl animate-spin mb-1">
                 progress_activity
               </span>
-              <span className="text-[10px] font-mono tracking-wider text-slate-400 uppercase">
-                {isVi ? "Đang rút quẻ..." : "Drawing..."}
+              <span className="text-[9px] font-mono text-slate-400 uppercase">
+                {isVi ? "Đang tải..." : "Loading..."}
               </span>
             </div>
-
             <div className="space-y-1.5 flex flex-col items-center">
-              <div className="h-3 w-8 bg-slate-200 rounded" />
+              <div className="h-3 w-12 bg-slate-200 rounded" />
               <div className="h-5 w-32 bg-slate-200 rounded" />
               <div className="h-3 w-48 bg-slate-100 rounded" />
             </div>
+          </div>
+        ) : !card ? (
+          <div className="bg-white border border-outline-variant rounded-lg p-5 text-center shadow-sm space-y-3 relative overflow-hidden">
+            <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 border-b border-slate-100 pb-2">
+              <span>Rider-Waite 1909 · 78 {isVi ? "Lá" : "Cards"}</span>
+              <span className="px-2 py-0.5 rounded font-semibold border text-[10px] text-amber-800 bg-amber-50 border-amber-200">
+                {isVi ? "BÀI ĐANG ÚP · CHƯA LẬT" : "FACE DOWN · UNFLIPPED"}
+              </span>
+            </div>
 
-            <div className="flex justify-center gap-1.5 pt-1">
-              <div className="h-5 w-16 bg-slate-100 rounded" />
-              <div className="h-5 w-16 bg-slate-100 rounded" />
-              <div className="h-5 w-16 bg-slate-100 rounded" />
+            {/* Interactive Mystical Face-Down Card Back */}
+            <button
+              type="button"
+              onClick={() => handleFlipCard(false)}
+              disabled={isFlipping}
+              className="w-32 h-52 mx-auto rounded-lg overflow-hidden border-2 border-amber-500/70 bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] shadow-lg flex flex-col items-center justify-center p-2.5 cursor-pointer hover:scale-105 hover:border-amber-400 transition-all duration-300 disabled:opacity-75"
+            >
+              <div className="w-full h-full border border-amber-400/40 rounded flex flex-col items-center justify-between p-2">
+                <div className="w-full flex justify-between text-[9px] text-amber-400/70 font-serif">
+                  <span>✦</span>
+                  <span>✦</span>
+                </div>
+
+                {isFlipping ? (
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <span className="material-symbols-outlined text-amber-400 text-3xl animate-spin">
+                      progress_activity
+                    </span>
+                    <span className="text-[9px] font-mono tracking-wider text-amber-200 uppercase">
+                      {isVi ? "Đang lật bài..." : "Flipping..."}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-1.5">
+                    <div className="w-11 h-11 rounded-full border border-amber-400/50 bg-amber-500/10 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-amber-300 text-xl">
+                        auto_awesome
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono font-semibold tracking-widest text-amber-200 uppercase mt-1">
+                      {isVi ? "CHẠM ĐỂ LẬT" : "TAP TO FLIP"}
+                    </span>
+                  </div>
+                )}
+
+                <div className="w-full flex justify-between text-[9px] text-amber-400/70 font-serif">
+                  <span>✦</span>
+                  <span>✦</span>
+                </div>
+              </div>
+            </button>
+
+            <div>
+              <div className="font-mono text-xs font-semibold text-amber-700 uppercase">
+                {isVi ? "CHƯA LẬT BÀI HÔM NAY" : "TODAY'S CARD UNFLIPPED"}
+              </div>
+              <h1 className="font-headline font-bold text-lg text-on-surface mt-0.5">
+                {isVi ? "Chạm Vào Bài Để Mở Năng Lượng" : "Tap the Card to Reveal Energy"}
+              </h1>
+              <p className="text-xs text-[#475569] mt-1">
+                {isVi
+                  ? "Lá bài định hướng ngày hôm nay sẽ chỉ được rút từ cơ sở dữ liệu khi bạn chủ động lật mở."
+                  : "Today's daily card is only drawn from the database when you actively flip it."}
+              </p>
+            </div>
+
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => handleFlipCard(false)}
+                disabled={isFlipping}
+                className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary-hover text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-xs transition-all disabled:opacity-50"
+              >
+                <span className={`material-symbols-outlined text-sm ${isFlipping ? "animate-spin" : ""}`}>
+                  {isFlipping ? "progress_activity" : "touch_app"}
+                </span>
+                <span>
+                  {isFlipping
+                    ? isVi
+                      ? "Đang rút & lật bài..."
+                      : "Flipping card..."
+                    : isVi
+                    ? "Lật Bài Hôm Nay"
+                    : "Flip Today's Card"}
+                </span>
+              </button>
             </div>
           </div>
         ) : (
@@ -285,17 +428,6 @@ export default function MobileDailyHomePage() {
             <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 border-b border-slate-100 pb-2">
               <span>Rider-Waite 1909 · {card.suit === "MAJOR" || (card as any).arcana === "MAJOR" || !card.suit ? (isVi ? "Bộ Ẩn Chính" : "Major Arcana") : card.suit}</span>
               <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => loadDailyCard(true)}
-                  disabled={isRedrawing}
-                  className="text-[10px] font-mono text-slate-500 hover:text-primary flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-slate-200 disabled:opacity-50"
-                  title={isVi ? "Rút lại lá bài khác" : "Redraw card"}
-                >
-                  <span className={`material-symbols-outlined text-[11px] ${isRedrawing ? "animate-spin text-primary" : ""}`}>
-                    autorenew
-                  </span>
-                  <span>{isRedrawing ? "..." : (isVi ? "Đổi" : "New")}</span>
-                </button>
                 <span className={`px-2 py-0.5 rounded font-semibold border text-[10px] ${
                   isReversed ? "text-amber-800 bg-amber-50 border-amber-200" : "text-emerald-700 bg-emerald-50 border-emerald-200"
                 }`}>
@@ -309,17 +441,10 @@ export default function MobileDailyHomePage() {
               <img
                 src={card.image}
                 alt={`${card.number} ${isVi ? card.nameVi : card.nameEn}`}
-                className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-300 ${
+                className={`w-full h-full object-cover transition-all duration-300 ${
                   isReversed ? "rotate-180" : ""
-                } ${isRedrawing ? "opacity-40 blur-xs" : "opacity-100"}`}
+                }`}
               />
-              {isRedrawing && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-primary text-2xl animate-spin">
-                    progress_activity
-                  </span>
-                </div>
-              )}
             </div>
 
             <div>
@@ -360,10 +485,21 @@ export default function MobileDailyHomePage() {
             </button>
           </div>
           <p className="font-headline italic text-sm text-on-surface leading-snug">
-            {isRedrawing ? (
+            {isLoading && !dailySession ? (
               <span className="text-slate-400 not-italic font-sans text-xs flex items-center gap-1.5 py-1">
                 <span className="material-symbols-outlined text-xs animate-spin text-primary">sync</span>
-                {isVi ? "Đang thỉnh thông điệp từ Gemini AI..." : "Synthesizing with Gemini AI..."}
+                {isVi ? "Đang đồng bộ trạng thái lá bài..." : "Syncing daily card status..."}
+              </span>
+            ) : isFlipping ? (
+              <span className="text-slate-400 not-italic font-sans text-xs flex items-center gap-1.5 py-1">
+                <span className="material-symbols-outlined text-xs animate-spin text-primary">sync</span>
+                {isVi ? "Đang rút bài và thỉnh thông điệp từ Gemini AI..." : "Drawing card & synthesizing with Gemini AI..."}
+              </span>
+            ) : !dailySession ? (
+              <span className="text-slate-500 not-italic font-sans text-xs block py-1">
+                {isVi
+                  ? "Lá bài hôm nay vẫn đang úp. Hãy chạm lật bài phía trên để rút lá bài từ cơ sở dữ liệu và mở thông điệp ngày mới."
+                  : "Today's card is still face down. Flip the card above to draw from the database and reveal your daily message."}
               </span>
             ) : (
               `“${aiMessage}”`
@@ -381,11 +517,11 @@ export default function MobileDailyHomePage() {
             <span>{isVi ? "Bắt Đầu Trải Bài Mới (3 Lá)" : "Begin New Reading (3-Card)"}</span>
           </Link>
           <Link
-            href="/app/readings/manual"
+            href={`/app/readings/${dailySession?.id || "demo-session"}`}
             className="w-full py-2.5 bg-white border border-outline-variant text-on-surface text-xs font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-slate-50"
           >
-            <span className="material-symbols-outlined text-sm text-slate-500">menu_book</span>
-            <span>{isVi ? "Nhập Bài Đã Rút Ngoài Đời" : "Log Physical Spread"}</span>
+            <span className="material-symbols-outlined text-sm text-primary">space_dashboard</span>
+            <span>{isVi ? "Mở Bàn Trải Bài & Hỏi Đáp AI (Workbench)" : "Open Reading Workbench & AI Chat"}</span>
           </Link>
         </div>
       </main>

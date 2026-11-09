@@ -17,16 +17,87 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
   const isVi = locale === "vi";
 
   const [session, setSession] = useState<ReadingSessionDto | null>(null);
+  const [historyList, setHistoryList] = useState<ReadingSessionDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPersona, setSelectedPersona] = useState<"MYSTIC_SAGE" | "IDEA_SPARK" | "GENTLE_FRIEND">("IDEA_SPARK");
   const [selectedCardDetail, setSelectedCardDetail] = useState<DrawnCardDto | null>(null);
   const [isDrawingClarifier, setIsDrawingClarifier] = useState(false);
   const [clarifierSuccess, setClarifierSuccess] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [completedToast, setCompletedToast] = useState(false);
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
 
   // Follow-up chat state
   const [chatInput, setChatInput] = useState("");
   const [isSendingChat, setIsSendingChat] = useState(false);
   const [chatMessages, setChatMessages] = useState<Array<{ sender: "user" | "ai"; text: string; time: string }>>([]);
+
+  const refreshHistoryList = async () => {
+    try {
+      const hRes = await apiClient.readings.getHistory();
+      if (hRes.data && Array.isArray(hRes.data)) {
+        setHistoryList(hRes.data.filter((s) => s.drawnCards && s.drawnCards.length > 0));
+      }
+    } catch (e) {
+      console.warn("Failed to load history list:", e);
+    }
+  };
+
+  const handleCompleteReading = async () => {
+    if (!session || isCompleting) return;
+    setIsCompleting(true);
+    try {
+      const cardTags = (session.drawnCards || [])
+        .map((dc) => (isVi ? dc.card?.nameVi : dc.card?.nameEn) || "Tarot")
+        .slice(0, 5);
+      const summaryNote =
+        session.aiInterpretation ||
+        session.aiSynthesisResult ||
+        (isVi ? "Phiên trải bài đã hoàn tất và lưu vào Nhật Ký." : "Reading session completed and archived.");
+      await apiClient.readings.saveJournal(session.id, summaryNote, cardTags);
+      await refreshHistoryList();
+      setCompletedToast(true);
+      setTimeout(() => setCompletedToast(false), 5000);
+    } catch (err) {
+      console.error("Failed to complete & save reading:", err);
+    } finally {
+      setIsCompleting(false);
+    }
+  };
+
+  const handleStartNewReading = async () => {
+    if (isCreatingNew) return;
+    setIsCreatingNew(true);
+    setIsLoading(true);
+    try {
+      const createRes = await apiClient.readings.create({
+        spreadId: "S-02",
+        deckId: "ED-01",
+        inputMode: "VIRTUAL",
+        persona: selectedPersona,
+        question: isVi
+          ? "Định hướng phát triển và chuyển hóa năng lượng cá nhân trong chu kỳ mới"
+          : "Creative Direction & Energy Realignment for the current cycle",
+      });
+      if (createRes.data) {
+        const created = createRes.data;
+        const drawnRes = await apiClient.readings.drawCards(created.id);
+        const interpretedRes = await apiClient.readings.interpret(created.id);
+        const finalSession = interpretedRes.data || drawnRes.data || created;
+        setSession(finalSession);
+        initMessages(finalSession);
+        await refreshHistoryList();
+        if (typeof window !== "undefined" && window.history) {
+          window.history.replaceState(null, "", `/workbench/${finalSession.id}`);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to start new reading:", err);
+    } finally {
+      setIsCreatingNew(false);
+      setIsLoading(false);
+    }
+  };
 
   // Load reading session
   useEffect(() => {
@@ -36,6 +107,7 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
       setIsLoading(true);
       try {
         const id = params.id;
+        refreshHistoryList();
 
         // If specific session UUID is requested
         if (id && id !== "demo-session") {
@@ -48,11 +120,13 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
           }
         }
 
-        // Handle "demo-session" or fallback: attempt to load user's real latest session
+        // Handle "demo-session" or fallback: attempt to load user's real latest session with drawn cards
         const historyRes = await apiClient.readings.getHistory();
         if (historyRes.data && historyRes.data.length > 0 && isSubscribed) {
-          const latest = historyRes.data[0];
-          if (latest.drawnCards && latest.drawnCards.length > 0) {
+          const validSessions = historyRes.data.filter((s) => s.drawnCards && s.drawnCards.length > 0);
+          setHistoryList(validSessions);
+          const latest = validSessions[0];
+          if (latest) {
             setSession(latest);
             initMessages(latest);
             setIsLoading(false);
@@ -65,6 +139,7 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
         if (dailyRes.data && dailyRes.data.drawnCards && dailyRes.data.drawnCards.length > 0 && isSubscribed) {
           setSession(dailyRes.data);
           initMessages(dailyRes.data);
+          refreshHistoryList();
           setIsLoading(false);
           return;
         }
@@ -80,15 +155,18 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
             : "Creative Direction & Energy Realignment for the current cycle",
         });
 
-        if (createRes.data && isSubscribed) {
+        if (createRes.data) {
           const created = createRes.data;
           const drawnRes = await apiClient.readings.drawCards(created.id);
           const interpretedRes = await apiClient.readings.interpret(created.id);
           const finalSession = interpretedRes.data || drawnRes.data || created;
-          setSession(finalSession);
-          initMessages(finalSession);
-          if (typeof window !== "undefined" && window.history && id === "demo-session") {
-            window.history.replaceState(null, "", `/workbench/${finalSession.id}`);
+          if (isSubscribed) {
+            setSession(finalSession);
+            initMessages(finalSession);
+            refreshHistoryList();
+            if (typeof window !== "undefined" && window.history && id === "demo-session") {
+              window.history.replaceState(null, "", `/workbench/${finalSession.id}`);
+            }
           }
         }
       } catch (err) {
@@ -219,13 +297,40 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
     }
   };
 
+  const MAX_TOTAL_CARDS = 10;
+
   // Draw Clarifier card
   const handleDrawClarifier = async () => {
-    if (!session || isDrawingClarifier) return;
+    if (!session || isDrawingClarifier || (session.drawnCards?.length || 0) >= MAX_TOTAL_CARDS) return;
     setIsDrawingClarifier(true);
 
     try {
-      // Pick a random unused card from catalog as clarifier
+      // 1. Try Backend API to draw & persist Clarifier card into Supabase + generate AI message
+      try {
+        const res = await apiClient.readings.drawClarifier(session.id);
+        if (res.data && res.data.drawnCards && res.data.drawnCards.length > 0) {
+          setSession(res.data);
+          setClarifierSuccess(true);
+          setTimeout(() => setClarifierSuccess(false), 4000);
+
+          if (res.data.messages && res.data.messages.length > 0) {
+            setChatMessages(
+              res.data.messages.map((m) => ({
+                sender: m.sender === "USER" ? "user" : "ai",
+                text: m.content,
+                time: m.createdAt
+                  ? new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                  : new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+              }))
+            );
+          }
+          return;
+        }
+      } catch (apiErr) {
+        console.warn("Clarifier backend endpoint fallback to client draw:", apiErr);
+      }
+
+      // 2. Fallback: Pick a random unused card from catalog as clarifier
       const usedIds = new Set((session.drawnCards || []).map((dc) => Number((dc.card as any)?.id)));
       const availableCards = TAROT_CARDS.filter((c) => !usedIds.has(c.id));
       const clarifierCard = availableCards[Math.floor(Math.random() * availableCards.length)] || TAROT_CARDS[0];
@@ -344,10 +449,38 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="hidden sm:inline-block font-mono text-[11px] text-slate-500 bg-slate-100 px-2.5 py-1 rounded border border-slate-200">
+          <div className="flex items-center gap-2.5">
+            <span className="hidden md:inline-block font-mono text-[11px] text-slate-500 bg-slate-100 px-2.5 py-1 rounded border border-slate-200">
               {locale === "vi" ? `GIỌNG ĐỌC: ${selectedPersona}` : `READER: ${selectedPersona}`}
             </span>
+            <button
+              type="button"
+              onClick={handleStartNewReading}
+              disabled={isCreatingNew || isLoading}
+              className="px-3 py-1 bg-white border border-outline-variant hover:border-primary hover:text-primary rounded text-xs font-medium text-on-surface transition-colors shadow-2xs disabled:opacity-50"
+            >
+              {isCreatingNew
+                ? locale === "vi"
+                  ? "Đang tạo..."
+                  : "Creating..."
+                : locale === "vi"
+                ? "+ Trải Bài Mới"
+                : "+ New Reading"}
+            </button>
+            <button
+              type="button"
+              onClick={handleCompleteReading}
+              disabled={isCompleting || !session}
+              className="px-3 py-1 bg-primary hover:bg-primary-hover text-white rounded text-xs font-medium transition-colors shadow-2xs disabled:opacity-50"
+            >
+              {isCompleting
+                ? locale === "vi"
+                  ? "Đang lưu..."
+                  : "Saving..."
+                : locale === "vi"
+                ? "Hoàn Tất & Lưu Lịch Sử"
+                : "Complete & Save"}
+            </button>
             <Link
               href={session?.id ? `/app/readings/${session.id}/share` : "/pricing"}
               className="px-3 py-1 bg-white border border-outline-variant rounded text-xs font-medium text-on-surface hover:bg-slate-50 flex items-center gap-1 transition-colors shadow-2xs"
@@ -357,6 +490,23 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
             </Link>
           </div>
         </div>
+
+        {/* Completion Confirmation Banner */}
+        {completedToast && (
+          <div className="px-6 py-2.5 bg-emerald-50 border-b border-emerald-200 flex items-center justify-between text-xs text-emerald-900">
+            <span className="font-medium">
+              {locale === "vi"
+                ? "✓ Đã xác nhận hoàn tất trải bài và lưu vào Lịch Sử & Nhật Ký!"
+                : "✓ Reading session completed and saved to History & Journal!"}
+            </span>
+            <Link
+              href="/journal"
+              className="font-mono font-bold text-primary hover:underline"
+            >
+              {locale === "vi" ? "Xem Nhật Ký →" : "View Journal →"}
+            </Link>
+          </div>
+        )}
 
         {/* 3 Columns Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[calc(100vh-120px)] divide-y lg:divide-y-0 lg:divide-x divide-outline-variant">
@@ -463,6 +613,65 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
                   </button>
                 </div>
               </div>
+
+              {/* Recent Reading History List */}
+              <div className="space-y-2 pt-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-slate-400">
+                    {locale === "vi"
+                      ? `03. LỊCH SỬ TRẢI BÀI (${historyList.length})`
+                      : `03. READING HISTORY (${historyList.length})`}
+                  </span>
+                  <Link
+                    href="/journal"
+                    className="text-[10px] font-mono text-primary hover:underline font-semibold"
+                  >
+                    {locale === "vi" ? "Xem Tất Cả →" : "View All →"}
+                  </Link>
+                </div>
+
+                {historyList.length === 0 ? (
+                  <div className="p-3 bg-white border border-outline-variant rounded-lg text-[11px] text-slate-400 text-center">
+                    {locale === "vi" ? "Chưa có lịch sử phiên trải bài." : "No past sessions yet."}
+                  </div>
+                ) : (
+                  <div className="max-h-56 overflow-y-auto space-y-2 pr-1">
+                    {historyList.slice(0, 8).map((hSession) => {
+                      const isCurrent = session?.id === hSession.id;
+                      const hCardNames = (hSession.drawnCards || [])
+                        .map((dc) => (isVi ? dc.card?.nameVi : dc.card?.nameEn))
+                        .filter(Boolean)
+                        .slice(0, 3)
+                        .join(", ");
+                      const hDate = hSession.createdAt
+                        ? new Date(hSession.createdAt).toLocaleDateString(isVi ? "vi-VN" : "en-US")
+                        : "";
+                      return (
+                        <Link
+                          key={hSession.id}
+                          href={`/workbench/${hSession.id}`}
+                          className={`block p-2.5 rounded-lg border text-xs transition-all ${
+                            isCurrent
+                              ? "bg-emerald-50/80 border-primary font-semibold text-slate-900"
+                              : "bg-white border-outline-variant hover:border-slate-300 text-slate-700"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
+                            <span>#{hSession.id.slice(0, 8).toUpperCase()}</span>
+                            <span>{hDate}</span>
+                          </div>
+                          <div className="truncate font-medium mt-0.5 text-slate-800">
+                            {hCardNames || (isVi ? hSession.spreadNameVi : hSession.spreadNameEn) || "Tarot"}
+                          </div>
+                          <div className="text-[10px] font-mono text-primary mt-0.5">
+                            {hSession.drawnCards?.length || 1} {isVi ? "lá bài" : "cards"}
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="pt-6 border-t border-outline-variant">
@@ -564,27 +773,40 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
               )}
 
               {/* Clarifier Slot */}
-              <div className="mt-6 p-4 bg-white border border-dashed border-outline-variant rounded-lg flex items-center justify-between shadow-2xs">
-                <div>
+              <div className="mt-6 p-4 bg-white border border-dashed border-outline-variant rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                <div className="flex-1 min-w-0">
                   <div className="font-mono text-xs font-semibold text-slate-700">
-                    {locale === "vi" ? "Cần Đào Sâu Thêm?" : "Need More Depth?"}
+                    {locale === "vi"
+                      ? `Cần Đào Sâu Thêm? (${drawnCards.length}/${MAX_TOTAL_CARDS} lá)`
+                      : `Need More Depth? (${drawnCards.length}/${MAX_TOTAL_CARDS} cards)`}
                   </div>
-                  <div className="text-[11px] text-slate-500">
-                    {clarifierSuccess
+                  <div className="text-[11px] text-slate-500 leading-snug mt-0.5">
+                    {drawnCards.length >= MAX_TOTAL_CARDS
+                      ? (isVi ? "Đã đạt giới hạn tối đa 10 lá bài trong một phiên trải bài." : "Maximum limit of 10 cards per session reached.")
+                      : clarifierSuccess
                       ? (isVi ? "✓ Đã rút thành công thêm 1 lá Làm Rõ vào bàn trải!" : "✓ Clarifier card added to your spread!")
-                      : (isVi ? "Rút thêm 1 lá Làm Rõ (Clarifier) bổ trợ trực tiếp vào bàn trải" : "Draw 1 Clarifier card into this active spread matrix")}
+                      : (isVi ? "Rút thêm 1 lá Làm Rõ bổ trợ trực tiếp vào bàn trải (tối đa 10 lá)" : "Draw 1 Clarifier card into this spread matrix (max 10 cards)")}
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={handleDrawClarifier}
-                  disabled={isDrawingClarifier}
-                  className="px-3.5 py-1.5 bg-primary text-white text-xs font-medium rounded-lg hover:bg-primary-hover flex items-center gap-1 transition-all disabled:opacity-50"
+                  disabled={isDrawingClarifier || drawnCards.length >= MAX_TOTAL_CARDS}
+                  className="shrink-0 whitespace-nowrap px-4 py-2 bg-primary text-white text-xs font-medium rounded-lg hover:bg-primary-hover flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <span className="material-symbols-outlined text-sm">
-                    {isDrawingClarifier ? "progress_activity" : "add"}
+                  <span>
+                    {drawnCards.length >= MAX_TOTAL_CARDS
+                      ? isVi
+                        ? "Tối đa 10/10 lá"
+                        : "Max 10/10 Cards"
+                      : isDrawingClarifier
+                      ? isVi
+                        ? "Đang rút..."
+                        : "Drawing..."
+                      : isVi
+                      ? "Rút Lá Làm Rõ"
+                      : "Draw Clarifier"}
                   </span>
-                  <span>{isDrawingClarifier ? (isVi ? "Đang rút..." : "Drawing...") : (isVi ? "+ Rút Lá Làm Rõ" : "+ Draw Clarifier")}</span>
                 </button>
               </div>
             </div>

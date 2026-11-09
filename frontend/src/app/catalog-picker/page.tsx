@@ -9,24 +9,13 @@ import { apiClient } from "@/services/apiClient";
 import { TAROT_CARDS, TarotCard } from "@/data/tarotCards";
 
 export default function CatalogPickerPage() {
-  const router = useRouter();
   const { locale, t } = useLanguage();
   const isVi = locale === "vi";
 
   const [cardsList, setCardsList] = useState<TarotCard[]>(TAROT_CARDS);
   const [selectedSuit, setSelectedSuit] = useState<"ALL" | "MAJOR" | "WANDS" | "CUPS" | "SWORDS" | "PENTACLES">("ALL");
   const [search, setSearch] = useState("");
-  const [activeSlot, setActiveSlot] = useState<1 | 2 | 3>(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [slots, setSlots] = useState<{
-    1: TarotCard | null;
-    2: TarotCard | null;
-    3: TarotCard | null;
-  }>({
-    1: null,
-    2: null,
-    3: null,
-  });
+  const [selectedCard, setSelectedCard] = useState<TarotCard | null>(null);
 
   // Load cards directly from Supabase backend
   useEffect(() => {
@@ -80,196 +69,67 @@ export default function CatalogPickerPage() {
     return matchSuit && matchSearch;
   });
 
-  const handleCardClick = (card: TarotCard) => {
-    setSlots((prev) => ({
-      ...prev,
-      [activeSlot]: card,
-    }));
-    if (activeSlot === 1) setActiveSlot(2);
-    else if (activeSlot === 2) setActiveSlot(3);
-  };
-
-  const handleProceedToWorkbench = async () => {
-    setIsSubmitting(true);
-    try {
-      const selectedCards = [slots[1], slots[2], slots[3]].filter(Boolean);
-      const cardsPayload = selectedCards.map((c, idx) => ({
-        cardId: c!.id,
-        positionIndex: idx,
-        positionNameEn: idx === 0 ? "Situation" : idx === 1 ? "Action" : "Outcome",
-        positionNameVi: idx === 0 ? "Hiện Trạng" : idx === 1 ? "Hành Động" : "Kết Quả",
-        isReversed: false,
-        isClarifier: false,
-      }));
-
-      const res = await apiClient.readings.create({
-        spreadId: "S-02",
-        deckId: "ED-01",
-        inputMode: "MANUAL",
-        persona: "IDEA_SPARK",
-        question: isVi ? "Ghi chép trải bài thủ công 3 lá từ bộ bài vật lý" : "Manual 3-card spread observation",
-        cards: cardsPayload,
-      });
-
-      if (res.data?.id) {
-        router.push(`/workbench/${res.data.id}`);
-        return;
-      }
-    } catch (err) {
-      console.error("Failed to create manual reading session:", err);
-    } finally {
-      setIsSubmitting(false);
-    }
-    router.push("/workbench/demo-session");
-  };
-
   return (
     <>
       <EditorialHeader activeTab="catalog" />
 
-      {/* WEB — 78-CARD REFERENCE & MANUAL INPUT (SCR-W03) */}
+      {/* WEB — 78-CARD REFERENCE ENCYCLOPEDIA */}
       <main className="flex-1 max-w-[1440px] w-full mx-auto border-x border-outline-variant flex flex-col bg-white">
-        {/* Pinned Assignment Bar for 3 Cards */}
-        <section className="px-6 py-4 bg-[#FAF9F6] border-b border-outline-variant sticky top-[57px] z-30 shadow-xs">
+        {/* Encyclopedia Header */}
+        <section className="px-6 py-5 bg-[#FAF9F6] border-b border-outline-variant">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <span className="font-mono text-[10px] uppercase tracking-widest text-primary font-semibold block">
                 {t.catalog.kicker}
               </span>
-              <h2 className="font-headline font-bold text-lg text-on-surface">
+              <h2 className="font-headline font-bold text-xl text-on-surface mt-0.5">
                 {t.catalog.title}
               </h2>
             </div>
             <div className="flex items-center gap-3">
-              <span className="font-mono text-xs text-slate-500">{t.catalog.spreadLabel}</span>
+              <Link
+                href="/workbench/demo-session"
+                className="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-hover shadow-sm flex items-center gap-1.5 transition-all"
+              >
+                <span>{t.catalog.proceed}</span>
+                <span className="material-symbols-outlined text-sm">arrow_forward</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Selected Card Inspection Drawer */}
+          {selectedCard && (
+            <div className="mt-4 p-4 bg-white border border-outline-variant rounded-lg shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <img
+                  src={selectedCard.image}
+                  alt={selectedCard.nameEn}
+                  className="w-14 h-24 object-cover rounded border border-slate-200 shrink-0 shadow-xs"
+                />
+                <div>
+                  <div className="font-mono text-[10px] font-semibold text-primary uppercase">
+                    #{selectedCard.number} · {selectedCard.suit} · {selectedCard.element}
+                  </div>
+                  <h3 className="font-headline font-bold text-base text-on-surface">
+                    {isVi ? `${selectedCard.nameVi} (${selectedCard.nameEn})` : `${selectedCard.nameEn} (${selectedCard.nameVi})`}
+                  </h3>
+                  <p className="text-xs text-slate-600 mt-1 max-w-2xl leading-relaxed">
+                    {isVi ? selectedCard.meaningUprightVi : selectedCard.meaningUprightEn}
+                  </p>
+                  <div className="text-[11px] font-mono text-slate-500 mt-1.5">
+                    {isVi ? selectedCard.keywordsVi : selectedCard.keywordsEn}
+                  </div>
+                </div>
+              </div>
               <button
                 type="button"
-                onClick={handleProceedToWorkbench}
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-hover shadow-sm flex items-center gap-1.5 transition-all disabled:opacity-50"
+                onClick={() => setSelectedCard(null)}
+                className="text-xs font-mono text-slate-400 hover:text-on-surface px-2.5 py-1 border border-slate-200 rounded self-end sm:self-center"
               >
-                <span>{isSubmitting ? (isVi ? "Đang tạo phiên..." : "Creating...") : t.catalog.proceed}</span>
-                <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                {isVi ? "Đóng ✕" : "Close ✕"}
               </button>
             </div>
-          </div>
-
-          {/* 3 Slot Bar */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
-            {/* Slot 1 */}
-            <div
-              onClick={() => setActiveSlot(1)}
-              className={`p-3 bg-white rounded-lg flex items-center justify-between cursor-pointer transition-all ${
-                activeSlot === 1
-                  ? "border-2 border-primary shadow-sm bg-emerald-50/10"
-                  : "border border-outline-variant hover:border-slate-400"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                {slots[1] ? (
-                  <img
-                    src={slots[1].image}
-                    alt={slots[1].nameEn}
-                    className="w-9 h-14 object-cover rounded border border-slate-200 shrink-0"
-                  />
-                ) : (
-                  <div className="w-9 h-14 rounded border border-dashed border-slate-300 flex items-center justify-center text-slate-300">
-                    <span className="material-symbols-outlined text-sm">add</span>
-                  </div>
-                )}
-                <div>
-                  <span className={`text-[10px] font-mono font-semibold uppercase ${activeSlot === 1 ? "text-primary" : "text-slate-400"}`}>
-                    {t.catalog.slot1} {activeSlot === 1 ? "[ACTIVE]" : ""}
-                  </span>
-                  <div className="text-xs font-bold text-on-surface mt-0.5 truncate max-w-[150px]">
-                    {slots[1] ? `${slots[1].number}. ${locale === "vi" ? slots[1].nameVi : slots[1].nameEn}` : t.catalog.clickToSet}
-                  </div>
-                  <div className="text-[10px] text-slate-500 truncate max-w-[150px]">
-                    {slots[1] ? (locale === "vi" ? slots[1].nameEn : slots[1].nameVi) : t.catalog.emptySlot}
-                  </div>
-                </div>
-              </div>
-              <span className={`text-xs font-mono px-2 py-0.5 rounded ${slots[1] ? "text-emerald-700 bg-emerald-50 font-semibold" : "text-slate-400"}`}>
-                {slots[1] ? t.catalog.setDone : "[Slot 1]"}
-              </span>
-            </div>
-
-            {/* Slot 2 */}
-            <div
-              onClick={() => setActiveSlot(2)}
-              className={`p-3 bg-white rounded-lg flex items-center justify-between cursor-pointer transition-all ${
-                activeSlot === 2
-                  ? "border-2 border-primary shadow-sm bg-emerald-50/10"
-                  : "border border-outline-variant hover:border-slate-400"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                {slots[2] ? (
-                  <img
-                    src={slots[2].image}
-                    alt={slots[2].nameEn}
-                    className="w-9 h-14 object-cover rounded border border-slate-200 shrink-0"
-                  />
-                ) : (
-                  <div className="w-9 h-14 rounded border border-dashed border-slate-300 flex items-center justify-center text-slate-300">
-                    <span className="material-symbols-outlined text-sm">add</span>
-                  </div>
-                )}
-                <div>
-                  <span className={`text-[10px] font-mono font-semibold uppercase ${activeSlot === 2 ? "text-primary" : "text-slate-400"}`}>
-                    {t.catalog.slot2} {activeSlot === 2 ? "[ACTIVE]" : ""}
-                  </span>
-                  <div className="text-xs font-bold text-on-surface mt-0.5 truncate max-w-[150px]">
-                    {slots[2] ? `${slots[2].number}. ${locale === "vi" ? slots[2].nameVi : slots[2].nameEn}` : t.catalog.clickToSet}
-                  </div>
-                  <div className="text-[10px] text-slate-500 truncate max-w-[150px]">
-                    {slots[2] ? (locale === "vi" ? slots[2].nameEn : slots[2].nameVi) : t.catalog.emptySlot}
-                  </div>
-                </div>
-              </div>
-              <span className={`text-xs font-mono px-2 py-0.5 rounded ${slots[2] ? "text-emerald-700 bg-emerald-50 font-semibold" : "text-slate-400"}`}>
-                {slots[2] ? t.catalog.setDone : "[Slot 2]"}
-              </span>
-            </div>
-
-            {/* Slot 3 */}
-            <div
-              onClick={() => setActiveSlot(3)}
-              className={`p-3 bg-white rounded-lg flex items-center justify-between cursor-pointer transition-all ${
-                activeSlot === 3
-                  ? "border-2 border-primary shadow-sm bg-emerald-50/10"
-                  : "border border-outline-variant hover:border-slate-400"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                {slots[3] ? (
-                  <img
-                    src={slots[3].image}
-                    alt={slots[3].nameEn}
-                    className="w-9 h-14 object-cover rounded border border-slate-200 shrink-0"
-                  />
-                ) : (
-                  <div className="w-9 h-14 rounded border border-dashed border-slate-300 flex items-center justify-center text-slate-300">
-                    <span className="material-symbols-outlined text-sm">add</span>
-                  </div>
-                )}
-                <div>
-                  <span className={`text-[10px] font-mono font-semibold uppercase ${activeSlot === 3 ? "text-primary" : "text-slate-400"}`}>
-                    {t.catalog.slot3} {activeSlot === 3 ? "[ACTIVE]" : ""}
-                  </span>
-                  <div className="text-xs font-bold text-on-surface mt-0.5 truncate max-w-[150px]">
-                    {slots[3] ? `${slots[3].number}. ${locale === "vi" ? slots[3].nameVi : slots[3].nameEn}` : t.catalog.clickToSet}
-                  </div>
-                  <div className="text-[10px] text-slate-500 truncate max-w-[150px]">
-                    {slots[3] ? (locale === "vi" ? slots[3].nameEn : slots[3].nameVi) : t.catalog.emptySlot}
-                  </div>
-                </div>
-              </div>
-              <span className={`text-xs font-mono px-2 py-0.5 rounded ${slots[3] ? "text-emerald-700 bg-emerald-50 font-semibold" : "text-slate-400"}`}>
-                {slots[3] ? t.catalog.setDone : "[Slot 3]"}
-              </span>
-            </div>
-          </div>
+          )}
         </section>
 
         {/* Filter & Search Bar */}
@@ -311,11 +171,7 @@ export default function CatalogPickerPage() {
         {/* 78-Card Contact Sheet Visual Grid */}
         <section className="p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5 bg-[#FAF9F6]">
           {filteredCards.map((card) => {
-            const isAssigned =
-              slots[1]?.id === card.id ||
-              slots[2]?.id === card.id ||
-              slots[3]?.id === card.id;
-
+            const isSelected = selectedCard?.id === card.id;
             const primaryName = isVi ? card.nameVi : card.nameEn;
             const secondaryName = isVi ? card.nameEn : card.nameVi;
             const keywords = isVi ? card.keywordsVi : card.keywordsEn;
@@ -323,9 +179,9 @@ export default function CatalogPickerPage() {
             return (
               <div
                 key={card.id}
-                onClick={() => handleCardClick(card)}
+                onClick={() => setSelectedCard(card)}
                 className={`bg-white border rounded-lg p-2.5 text-center cursor-pointer flex flex-col justify-between group transition-all hover:shadow-md hover:-translate-y-0.5 ${
-                  isAssigned
+                  isSelected
                     ? "border-primary ring-2 ring-emerald-200 bg-emerald-50/15"
                     : "border-outline-variant hover:border-primary"
                 }`}

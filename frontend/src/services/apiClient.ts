@@ -25,6 +25,7 @@ import {
   MOCK_SESSIONS,
   MOCK_JOURNAL_ENTRIES
 } from "./mockData";
+import { TAROT_CARDS } from "@/data/tarotCards";
 
 // USE_MOCK defaults to FALSE: always connect to real backend & Supabase database
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_API === "true";
@@ -219,9 +220,122 @@ function normalizeReadingSession(session: any, fallbackSpreadId = "S-02", fallba
       positionNameEn: dc.positionNameEn || pos.name_en,
       positionNameVi: dc.positionNameVi || pos.name_vi,
       isReversed: dc.isReversed ?? false,
+      isClarifier: dc.isClarifier ?? false,
       card: dc.card || MOCK_CARDS[idx % MOCK_CARDS.length]
     };
   });
+
+  const normalizedMessages: SessionMessageDto[] = (session.messages || []).map((m: any, idx: number) => ({
+    id: m.id ? m.id.toString() : `MSG-${idx}`,
+    sender: (m.sender || m.role || "AI_READER") as "USER" | "AI_READER",
+    content: m.content || "",
+    createdAt: m.createdAt || new Date().toISOString()
+  }));
+
+  // Reconcile any Clarifier cards mentioned in chat messages that were not persisted in drawnCards
+  const existingNamesVi = new Set(
+    drawnCards.map((dc) => (dc.card?.nameVi || "").toLowerCase()).filter(Boolean)
+  );
+  const existingNamesEn = new Set(
+    drawnCards.map((dc) => (dc.card?.nameEn || "").toLowerCase()).filter(Boolean)
+  );
+
+  // Track chronological order of clarifier cards from chat messages (oldest message -> newest message)
+  const clarifierOrderMap = new Map<number, number>();
+  let orderCounter = 0;
+
+  for (const msg of normalizedMessages) {
+    const text = msg.content || "";
+    const lowerText = text.toLowerCase();
+    const isClarifierMsg =
+      lowerText.includes("vừa rút thêm lá bài làm rõ") ||
+      lowerText.includes("just drew a clarifier") ||
+      lowerText.includes("lá bài bổ sung (clarifier)");
+    if (!isClarifierMsg) continue;
+
+    for (const tc of TAROT_CARDS) {
+      const viLower = tc.nameVi.toLowerCase();
+      const enLower = tc.nameEn.toLowerCase();
+      const mentioned =
+        (viLower && lowerText.includes(viLower)) || (enLower && lowerText.includes(enLower));
+      if (!mentioned) continue;
+
+      // Ignore if it is an initial/base card
+      const isBaseCard = drawnCards.some(
+        (dc) =>
+          !dc.isClarifier &&
+          (Number((dc.card as any)?.id) === tc.id ||
+            (dc.card?.nameVi || "").toLowerCase() === viLower ||
+            (dc.card?.nameEn || "").toLowerCase() === enLower)
+      );
+      if (isBaseCard) continue;
+
+      if (!clarifierOrderMap.has(tc.id)) {
+        clarifierOrderMap.set(tc.id, orderCounter++);
+      }
+
+      if (!existingNamesVi.has(viLower) && !existingNamesEn.has(enLower) && drawnCards.length < 10) {
+        const isRev = new RegExp(`${tc.nameVi}[^\\n)]*ngược|${tc.nameEn}[^\\n)]*reversed`, "i").test(text);
+        existingNamesVi.add(viLower);
+        existingNamesEn.add(enLower);
+        drawnCards.push({
+          id: `DC-CLARIFIER-${tc.id}`,
+          positionIndex: drawnCards.length,
+          positionNameEn: "Clarifier Insight",
+          positionNameVi: "Lá Làm Rõ (Clarifier)",
+          isReversed: isRev,
+          isClarifier: true,
+          card: {
+            id: tc.id,
+            slug: tc.slug,
+            cardOrder: tc.id,
+            number: tc.number,
+            nameVi: tc.nameVi,
+            nameEn: tc.nameEn,
+            arcana: tc.suit === "MAJOR" ? "MAJOR" : "MINOR",
+            suit: tc.suit === "MAJOR" ? null : tc.suit,
+            element: tc.element,
+            imageUrl: tc.image,
+            meaningUprightVi: tc.meaningUprightVi,
+            meaningUprightEn: tc.meaningUprightEn,
+            meaningReversedVi: tc.meaningUprightVi,
+            meaningReversedEn: tc.meaningUprightEn,
+            keywordsUprightVi: tc.keywordsVi,
+            keywordsUprightEn: tc.keywordsEn,
+            keywordsReversedVi: tc.keywordsVi,
+            keywordsReversedEn: tc.keywordsEn,
+            archetypeEn: tc.nameEn,
+            archetypeVi: tc.nameVi
+          }
+        });
+      }
+    }
+  }
+
+  // Sort drawnCards: base cards first (by positionIndex), then clarifier cards in strict chronological order (newest at the bottom)
+  const baseCards = drawnCards
+    .filter((dc) => !dc.isClarifier)
+    .sort((a, b) => (a.positionIndex ?? 0) - (b.positionIndex ?? 0));
+  const clarifierCards = drawnCards
+    .filter((dc) => dc.isClarifier)
+    .sort((a, b) => {
+      const idA = Number((a.card as any)?.id ?? -1);
+      const idB = Number((b.card as any)?.id ?? -1);
+      const orderA = clarifierOrderMap.has(idA)
+        ? clarifierOrderMap.get(idA)!
+        : 1000 + (a.positionIndex ?? 0);
+      const orderB = clarifierOrderMap.has(idB)
+        ? clarifierOrderMap.get(idB)!
+        : 1000 + (b.positionIndex ?? 0);
+      return orderA - orderB;
+    });
+
+  const sortedDrawnCards = [...baseCards, ...clarifierCards]
+    .slice(0, 10)
+    .map((dc, idx) => ({
+      ...dc,
+      positionIndex: idx
+    }));
 
   return {
     id,
@@ -232,11 +346,11 @@ function normalizeReadingSession(session: any, fallbackSpreadId = "S-02", fallba
     persona,
     spreadTemplate,
     deck,
-    drawnCards,
+    drawnCards: sortedDrawnCards,
     aiInterpretation,
     aiSynthesisResult: aiInterpretation,
     dateKey: session.dateKey,
-    messages: session.messages || [],
+    messages: normalizedMessages,
     createdAt
   };
 }
@@ -394,6 +508,14 @@ export const apiClient = {
       return { code: 200, message: "Interpretation generated", data: session, timestamp: new Date().toISOString() };
     },
 
+    async drawClarifier(sessionId: string): Promise<ApiResponse<ReadingSessionDto>> {
+      const res = await requestApi<any>(`/api/v1/readings/sessions/${sessionId}/clarifier`, { method: "POST" });
+      if (res.data) {
+        return { ...res, data: normalizeReadingSession(res.data) };
+      }
+      return res;
+    },
+
     async sendChat(sessionId: string, userMessage: string): Promise<ApiResponse<SessionMessageDto>> {
       const res = await requestApi<any>(`/api/v1/readings/sessions/${sessionId}/chat`, {
         method: "POST",
@@ -481,15 +603,33 @@ export const apiClient = {
       return { code: 200, message: "OK", data: MOCK_JOURNAL_ENTRIES, timestamp: new Date().toISOString() };
     },
 
+    async checkDailyDraw(locale: string = "vi"): Promise<ApiResponse<ReadingSessionDto | null>> {
+      const endpoint = `/api/v1/readings/daily?locale=${locale}`;
+      const res = await requestApi<any>(endpoint, { method: "GET" });
+      if (res.data && res.data.id) {
+        return { ...res, data: normalizeReadingSession(res.data, "S-01", "ED-01") };
+      }
+      return { ...res, data: null };
+    },
+
+    async flipDailyDraw(locale: string = "vi", force: boolean = false): Promise<ApiResponse<ReadingSessionDto>> {
+      const endpoint = `/api/v1/readings/daily?locale=${locale}${force ? "&force=true" : ""}`;
+      const res = await requestApi<any>(endpoint, { method: "POST" });
+      if (res.data) {
+        return { ...res, data: normalizeReadingSession(res.data, "S-01", "ED-01") };
+      }
+      return res;
+    },
+
     async getDailyDraw(locale: string = "vi", force: boolean = false): Promise<ApiResponse<ReadingSessionDto>> {
       const endpoint = `/api/v1/readings/daily?locale=${locale}${force ? "&force=true" : ""}`;
       const res = await requestApi<any>(endpoint, {
         method: force ? "POST" : "GET"
       });
-      if (res.data) {
+      if (res.data && res.data.id) {
         return { ...res, data: normalizeReadingSession(res.data, "S-01", "ED-01") };
       }
-      return res;
+      return { ...res, data: null as unknown as ReadingSessionDto };
     }
   },
 

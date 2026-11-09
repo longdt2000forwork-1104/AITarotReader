@@ -11,29 +11,60 @@ export default function JournalPatternLedgerPage() {
   const { locale, t } = useLanguage();
   const [journals, setJournals] = useState<JournalEntryDto[]>([]);
   const [sessions, setSessions] = useState<ReadingSessionDto[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedEntry, setSelectedEntry] = useState<JournalEntryDto | null>(null);
   const [reflectionText, setReflectionText] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   useEffect(() => {
     async function loadJournalData() {
+      setIsLoading(true);
       try {
         const [journalRes, historyRes] = await Promise.all([
           apiClient.readings.getJournal(),
           apiClient.readings.getHistory()
         ]);
-        if (journalRes.code === 200) {
-          setJournals(journalRes.data);
-          if (journalRes.data.length > 0) {
-            setSelectedEntry(journalRes.data[0]);
-            setReflectionText(journalRes.data[0].userNotes);
+        const historySessions = Array.isArray(historyRes.data)
+          ? historyRes.data.filter((s) => s.drawnCards && s.drawnCards.length > 0)
+          : [];
+        setSessions(historySessions);
+
+        let mergedJournals: JournalEntryDto[] = Array.isArray(journalRes.data) ? [...journalRes.data] : [];
+        const existingSessionIds = new Set(mergedJournals.map((j) => j.readingSessionId));
+
+        for (const s of historySessions) {
+          if (!existingSessionIds.has(s.id)) {
+            const cardNames = (s.drawnCards || [])
+              .map((dc) => dc.card?.nameVi || dc.card?.nameEn)
+              .filter(Boolean) as string[];
+            mergedJournals.push({
+              id: `JN-${s.id.slice(0, 8)}`,
+              readingSessionId: s.id,
+              sessionCode: `SESSION-${s.id.slice(0, 8).toUpperCase()}`,
+              title:
+                s.question && s.question !== "Daily Energetic Guidance & Reflection"
+                  ? s.question
+                  : `${s.spreadNameVi || "Trải Bài Tarot"}${cardNames.length ? " · " + cardNames.slice(0, 3).join(", ") : ""}`,
+              summary: (s.aiInterpretation || s.aiSynthesisResult || "Nghiệm lý trải bài Tarot").slice(0, 160),
+              userNotes: s.aiInterpretation || s.aiSynthesisResult || "",
+              tags: cardNames.length ? cardNames : ["Trải Bài Tarot"],
+              spreadNameEn: s.spreadNameEn || "Tarot Spread",
+              spreadNameVi: s.spreadNameVi || "Trải bài Tarot",
+              cardCount: s.drawnCards?.length || 1,
+              createdAt: s.createdAt
+            });
           }
         }
-        if (historyRes.code === 200) {
-          setSessions(historyRes.data);
+
+        setJournals(mergedJournals);
+        if (mergedJournals.length > 0) {
+          setSelectedEntry(mergedJournals[0]);
+          setReflectionText(mergedJournals[0].userNotes || "");
         }
       } catch (err) {
         console.error("Failed to load journal ledger:", err);
+      } finally {
+        setIsLoading(false);
       }
     }
     loadJournalData();
@@ -133,7 +164,14 @@ export default function JournalPatternLedgerPage() {
               </span>
             </div>
 
-            {journals.length === 0 ? (
+            {isLoading ? (
+              <div className="p-8 text-center bg-white rounded-lg border border-outline-variant space-y-2">
+                <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+                <p className="text-xs text-slate-500 font-mono">
+                  {locale === "vi" ? "Đang tải lịch sử trải bài từ Supabase..." : "Loading reading history from Supabase..."}
+                </p>
+              </div>
+            ) : journals.length === 0 ? (
               <div className="p-8 text-center bg-white rounded-lg border border-dashed border-slate-300 space-y-3">
                 <span className="material-symbols-outlined text-3xl text-slate-300">menu_book</span>
                 <p className="text-xs text-slate-500">{t.journal.noEntries}</p>
@@ -182,16 +220,35 @@ export default function JournalPatternLedgerPage() {
           <div className="lg:col-span-7 p-6 bg-white space-y-6">
             {selectedEntry ? (
               <>
-                <div>
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-primary font-semibold block mb-1">
-                    {locale === "vi" ? `CHI TIẾT NHẬT KÝ · ${selectedEntry.sessionCode}` : `JOURNAL DETAIL · ${selectedEntry.sessionCode}`}
-                  </span>
-                  <h2 className="font-headline font-bold text-xl text-on-surface">
-                    {selectedEntry.title}
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-1">
-                    {locale === "vi" ? "Trải bài:" : "Spread:"} {selectedEntry.spreadNameVi} ({selectedEntry.cardCount} {locale === "vi" ? "lá bài" : "cards"})
-                  </p>
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                  <div>
+                    <span className="font-mono text-[10px] uppercase tracking-widest text-primary font-semibold block mb-1">
+                      {locale === "vi" ? `CHI TIẾT NHẬT KÝ · ${selectedEntry.sessionCode}` : `JOURNAL DETAIL · ${selectedEntry.sessionCode}`}
+                    </span>
+                    <h2 className="font-headline font-bold text-xl text-on-surface">
+                      {selectedEntry.title}
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {locale === "vi" ? "Trải bài:" : "Spread:"} {selectedEntry.spreadNameVi} ({selectedEntry.cardCount} {locale === "vi" ? "lá bài" : "cards"})
+                    </p>
+                  </div>
+
+                  {selectedEntry.readingSessionId && (
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Link
+                        href={`/workbench/${selectedEntry.readingSessionId}`}
+                        className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-primary border border-emerald-200 rounded-lg text-xs font-mono font-semibold transition-colors"
+                      >
+                        {locale === "vi" ? "Mở trên Workbench →" : "Open Workbench →"}
+                      </Link>
+                      <Link
+                        href={`/app/readings/${selectedEntry.readingSessionId}`}
+                        className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-outline-variant rounded-lg text-xs font-mono font-semibold transition-colors"
+                      >
+                        {locale === "vi" ? "Xem Báo Cáo →" : "View Report →"}
+                      </Link>
+                    </div>
+                  )}
                 </div>
 
                 {/* Reflection Input */}

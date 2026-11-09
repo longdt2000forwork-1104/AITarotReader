@@ -380,6 +380,23 @@ export default function MobileSeekerProfilePage() {
                     {isVi ? "Xuất JSON" : "Export JSON"}
                   </button>
                 </div>
+
+                <div className="pt-3 border-t border-[#E2E8F0] grid grid-cols-2 gap-2">
+                  <Link
+                    href="/profile"
+                    className="px-3 py-2 border border-[#E2E8F0] bg-[#FAF9F6] hover:bg-slate-100 rounded-lg text-xs font-mono font-semibold text-slate-800 flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-sm text-primary">badge</span>
+                    <span>{isVi ? "Hồ Sơ Đầy Đủ" : "Full Profile"}</span>
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="px-3 py-2 bg-primary hover:bg-[#047857] text-white rounded-lg text-xs font-mono font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                  >
+                    <span className="material-symbols-outlined text-sm">login</span>
+                    <span>{isVi ? "Đăng Nhập / Đổi TK" : "Login / Switch"}</span>
+                  </Link>
+                </div>
               </section>
             </>
           )}

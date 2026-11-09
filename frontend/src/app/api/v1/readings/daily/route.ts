@@ -125,12 +125,20 @@ export async function GET(request: Request) {
     // Backend offline, fallback to standalone local generator
   }
 
-  // 2. Return cached daily draw if same date and not forced
-  if (!force && dailyCache && dailyCache.dateKey === dateKey) {
+  // 2. Return cached daily draw if same date and not forced; otherwise return null (unflipped)
+  if (!force) {
+    if (dailyCache && dailyCache.dateKey === dateKey) {
+      return NextResponse.json({
+        code: 200,
+        message: "Daily card retrieved from cache",
+        data: dailyCache.session,
+        timestamp: new Date().toISOString(),
+      });
+    }
     return NextResponse.json({
       code: 200,
-      message: "Daily card retrieved from cache",
-      data: dailyCache.session,
+      message: "Daily card not flipped yet today",
+      data: null,
       timestamp: new Date().toISOString(),
     });
   }

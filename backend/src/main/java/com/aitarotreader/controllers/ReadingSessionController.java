@@ -58,10 +58,22 @@ public class ReadingSessionController {
         return ResponseEntity.ok(ApiResponse.ok("Interpretation generated", session));
     }
 
-    @Operation(summary = "Perform Daily Card Draw (1 free per 24 hours)")
-    @RequestMapping(value = "/daily", method = {RequestMethod.GET, RequestMethod.POST})
-    public ResponseEntity<ApiResponse<ReadingSessionDto>> performDailyDraw(@AuthenticationPrincipal UUID userId) {
-        ReadingSessionDto session = readingSessionService.performDailyDraw(userId);
+    @Operation(summary = "Check if today's Daily Card has already been flipped (resets at 00:00 daily, does not draw)")
+    @GetMapping("/daily")
+    public ResponseEntity<ApiResponse<ReadingSessionDto>> getTodayDailyDraw(@AuthenticationPrincipal UUID userId) {
+        ReadingSessionDto session = readingSessionService.getTodayDailyDraw(userId);
+        if (session == null) {
+            return ResponseEntity.ok(ApiResponse.ok("Daily card not flipped yet today", null));
+        }
+        return ResponseEntity.ok(ApiResponse.ok("Daily card already flipped today", session));
+    }
+
+    @Operation(summary = "Flip and draw Today's Daily Card (resets at 00:00 daily)")
+    @PostMapping("/daily")
+    public ResponseEntity<ApiResponse<ReadingSessionDto>> performDailyDraw(
+            @AuthenticationPrincipal UUID userId,
+            @RequestParam(defaultValue = "false") boolean force) {
+        ReadingSessionDto session = readingSessionService.performDailyDraw(userId, force);
         return ResponseEntity.ok(ApiResponse.ok("Daily draw completed", session));
     }
 
@@ -90,7 +102,7 @@ public class ReadingSessionController {
         return ResponseEntity.ok(ApiResponse.ok(session));
     }
 
-    @Operation(summary = "Ask a follow-up question to the AI Reader persona (up to 2 per session)")
+    @Operation(summary = "Ask a follow-up question to the AI Reader persona (up to 10 per session)")
     @PostMapping({"/sessions/{id}/chat", "/{id}/chat"})
     public ResponseEntity<ApiResponse<ReadingSessionDto>> askFollowUpQuestion(
             @PathVariable UUID id,
@@ -98,6 +110,15 @@ public class ReadingSessionController {
             @Valid @RequestBody FollowUpChatRequest request) {
         ReadingSessionDto session = readingSessionService.askFollowUpQuestion(id, userId, request);
         return ResponseEntity.ok(ApiResponse.ok("Follow-up response generated", session));
+    }
+
+    @Operation(summary = "Draw a Clarifier card for an existing reading session and persist to Supabase")
+    @PostMapping({"/sessions/{id}/clarifier", "/{id}/clarifier"})
+    public ResponseEntity<ApiResponse<ReadingSessionDto>> drawClarifierCard(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UUID userId) {
+        ReadingSessionDto session = readingSessionService.drawClarifierCard(id, userId);
+        return ResponseEntity.ok(ApiResponse.ok("Clarifier card drawn", session));
     }
 
     @Operation(summary = "Save or update seeker journal reflection notes and mood tags")
