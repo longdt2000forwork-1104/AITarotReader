@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import EditorialHeader from "@/components/EditorialHeader";
 import { useLanguage } from "@/context/LanguageContext";
+import { apiClient } from "@/services/apiClient";
 
 export default function PricingPlansStorePage() {
   const { locale } = useLanguage();
+  const isVi = locale === "vi";
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("annual");
   const [selectedProduct, setSelectedProduct] = useState<{
     id: string;
@@ -28,11 +30,34 @@ export default function PricingPlansStorePage() {
   const [claimedDaily, setClaimedDaily] = useState(false);
   const [currentBalance, setCurrentBalance] = useState(45);
   const [transferSuccess, setTransferSuccess] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const handleClaimDaily = () => {
-    if (!claimedDaily) {
-      setCurrentBalance(currentBalance + 5);
-      setClaimedDaily(true);
+  useEffect(() => {
+    async function fetchBalance() {
+      try {
+        const res = await apiClient.wallet.getBalance();
+        if (res.data) {
+          setCurrentBalance(res.data.balance);
+        }
+      } catch (err) {
+        console.error("Failed to load wallet balance:", err);
+      }
+    }
+    fetchBalance();
+  }, []);
+
+  const handleClaimDaily = async () => {
+    if (claimedDaily) return;
+    try {
+      const res = await apiClient.wallet.claimDailyReward();
+      if (res.code === 200 && res.data) {
+        setCurrentBalance(res.data.balance);
+        setClaimedDaily(true);
+        setToastMessage(isVi ? "+10 CR Phước lành hàng ngày đã cộng vào tài khoản Supabase!" : "+10 CR Daily reward deposited to Supabase account!");
+        setTimeout(() => setToastMessage(null), 3000);
+      }
+    } catch (err) {
+      console.error("Error claiming daily reward:", err);
     }
   };
 
@@ -86,6 +111,13 @@ export default function PricingPlansStorePage() {
     <div className="bg-[#FAF9F6] text-[#0F172A] antialiased min-h-screen flex flex-col font-body selection:bg-emerald-100 selection:text-emerald-900">
       <EditorialHeader activeTab="pricing" credits={currentBalance} />
 
+      {toastMessage && (
+        <div className="bg-emerald-600 text-white text-xs font-mono font-medium px-4 py-2.5 text-center flex items-center justify-center gap-2 sticky top-16 z-50 shadow-md">
+          <span className="material-symbols-outlined text-sm">check_circle</span>
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* Main Container */}
       <div className="flex-1 flex w-full max-w-[1600px] mx-auto border-x border-[#E2E8F0] bg-white">
         {/* ZONE 1: LEFT RAIL NAVIGATION */}
@@ -93,7 +125,7 @@ export default function PricingPlansStorePage() {
           <div>
             <div className="pb-4 mb-4 border-b border-[#E2E8F0]">
               <div className="font-headline font-bold text-sm tracking-tight text-slate-900 uppercase">
-                ✦ AITAROT // STORE
+                ✦ AITAROT · STORE
               </div>
               <div className="text-[10px] font-mono tracking-wider uppercase text-slate-500 mt-0.5">
                 Pricing & Ledger · SCR-W09
@@ -111,7 +143,7 @@ export default function PricingPlansStorePage() {
               >
                 <span className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-[17px] text-slate-400">spa</span>
-                  <span>Daily Index</span>
+                  <span>{locale === "vi" ? "Chỉ Số Ngày" : "Daily Index"}</span>
                 </span>
                 <span className="text-[10px] text-slate-400">24h</span>
               </Link>
@@ -121,7 +153,7 @@ export default function PricingPlansStorePage() {
               >
                 <span className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-[17px] text-slate-400">style</span>
-                  <span>Workbench</span>
+                  <span>{locale === "vi" ? "Bàn Trải Bài" : "Workbench"}</span>
                 </span>
               </Link>
               <Link
@@ -130,7 +162,7 @@ export default function PricingPlansStorePage() {
               >
                 <span className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-[17px] text-slate-400">collections_bookmark</span>
-                  <span>5 Decks Archive</span>
+                  <span>{locale === "vi" ? "Kho 5 Bộ Bài" : "5 Decks Archive"}</span>
                 </span>
                 <span className="text-[10px] text-primary bg-emerald-50 px-1.5 py-0.5 rounded font-semibold">5 ED</span>
               </Link>
@@ -140,14 +172,14 @@ export default function PricingPlansStorePage() {
               >
                 <span className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-[17px] text-slate-400">menu_book</span>
-                  <span>Archive Journal</span>
+                  <span>{locale === "vi" ? "Nhật Ký Nghiệm Lý" : "Archive Journal"}</span>
                 </span>
                 <span className="text-[10px] text-slate-400">42</span>
               </Link>
               <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-emerald-50 text-primary font-semibold border-l-2 border-primary pl-2.5">
                 <span className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-[17px] text-primary">store</span>
-                  <span>Pricing & Store</span>
+                  <span>{locale === "vi" ? "Bảng Giá & Gói Phí" : "Pricing & Store"}</span>
                 </span>
                 <span className="w-1.5 h-1.5 rounded-full bg-primary" />
               </div>
@@ -157,7 +189,7 @@ export default function PricingPlansStorePage() {
               >
                 <span className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-[17px] text-slate-400">person</span>
-                  <span>Seeker Profile</span>
+                  <span>{locale === "vi" ? "Hồ Sơ Của Bạn" : "Seeker Profile"}</span>
                 </span>
               </Link>
             </nav>
@@ -166,16 +198,16 @@ export default function PricingPlansStorePage() {
           {/* Bottom Wallet Status Box */}
           <div className="p-3 bg-[#FAF9F6] border border-[#E2E8F0] rounded-xl">
             <div className="flex items-center justify-between mb-1 text-[11px] font-mono uppercase text-slate-500">
-              <span>Available Balance</span>
+              <span>{locale === "vi" ? "Số Dư Khả Dụng" : "Available Balance"}</span>
               <span className="material-symbols-outlined text-amber-600 text-base">toll</span>
             </div>
             <div className="flex items-baseline space-x-1.5">
               <span className="font-headline font-bold text-2xl text-slate-900">{currentBalance}</span>
               <span className="text-xs font-mono font-bold text-primary">CR</span>
-              <span className="text-[10px] text-slate-400 font-mono ml-auto">Free Seeker</span>
+              <span className="text-[10px] text-slate-400 font-mono ml-auto">{locale === "vi" ? "Khởi Đầu" : "Free Seeker"}</span>
             </div>
             <div className="mt-2.5 pt-2 border-t border-dashed border-slate-200 flex items-center justify-between">
-              <span className="text-[11px] text-slate-600 font-medium">+5 CR Daily Login</span>
+              <span className="text-[11px] text-slate-600 font-medium">{locale === "vi" ? "+5 CR Điểm Danh" : "+5 CR Daily Login"}</span>
               <button
                 type="button"
                 onClick={handleClaimDaily}
@@ -186,7 +218,7 @@ export default function PricingPlansStorePage() {
                     : "bg-primary text-white hover:bg-emerald-700"
                 }`}
               >
-                {claimedDaily ? "Claimed" : "Claim"}
+                {claimedDaily ? (locale === "vi" ? "Đã nhận" : "Claimed") : (locale === "vi" ? "Nhận" : "Claim")}
               </button>
             </div>
           </div>
@@ -199,15 +231,15 @@ export default function PricingPlansStorePage() {
             <div>
               <div className="flex items-center space-x-2 text-[11px] font-mono text-primary uppercase tracking-wider mb-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                <span>HYBRID MEMBERSHIP & CREDIT STORE (FR-6.1 – FR-6.3)</span>
+                <span>{locale === "vi" ? "CÁC GÓI TRUY CẬP & NẠP TINH THỂ" : "HYBRID MEMBERSHIP & CREDIT STORE"}</span>
               </div>
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
                 <div>
                   <h1 className="font-headline text-3xl md:text-4xl text-slate-900 font-bold tracking-tight">
-                    Sanctuary Passes & Resonances
+                    {locale === "vi" ? "Thẻ Hội Viên & Gói Năng Lượng" : "Sanctuary Passes & Resonances"}
                   </h1>
                   <p className="text-xs md:text-sm text-slate-600 mt-1 leading-relaxed max-w-lg">
-                    Choose predictable daily archival allowances with Archival Pro, or acquire non-expiring credit pouches for disciplined tactical inquiries.
+                    {locale === "vi" ? "Chọn thẻ Archival Pro để trải bài không giới hạn mỗi ngày, hoặc nạp các túi tinh thể không thời hạn cho các phiên trải bài chuyên sâu." : "Choose predictable daily archival allowances with Archival Pro, or acquire non-expiring credit pouches for disciplined tactical inquiries."}
                   </p>
                 </div>
 
@@ -232,7 +264,7 @@ export default function PricingPlansStorePage() {
                         : "text-slate-600 hover:text-slate-900"
                     }`}
                   >
-                    Monthly Billing
+                    {locale === "vi" ? "Gói Theo Tháng" : "Monthly Billing"}
                   </button>
                   <button
                     type="button"
@@ -253,9 +285,9 @@ export default function PricingPlansStorePage() {
                         : "text-slate-600 hover:text-slate-900"
                     }`}
                   >
-                    <span>Annual Billing</span>
+                    <span>{locale === "vi" ? "Gói Theo Năm" : "Annual Billing"}</span>
                     <span className="bg-emerald-100 text-emerald-900 text-[10px] px-1.5 py-0.2 rounded font-mono font-bold uppercase">
-                      Save 30%
+                      {locale === "vi" ? "Tiết kiệm 30%" : "Save 30%"}
                     </span>
                   </button>
                 </div>
@@ -266,7 +298,7 @@ export default function PricingPlansStorePage() {
             <section className="space-y-3">
               <div className="flex items-center justify-between">
                 <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-slate-500">
-                  01 // MEMBERSHIP TIER COMPARISON
+                  {locale === "vi" ? "01. SO SÁNH CÁC HẠNG HỘI VIÊN" : "01. MEMBERSHIP TIER COMPARISON"}
                 </h2>
                 <span className="text-[11px] font-mono text-slate-400">Recurring Hermetic Protocol</span>
               </div>
@@ -404,7 +436,7 @@ export default function PricingPlansStorePage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-slate-500">
-                    02 // NON-EXPIRING RESONANCE POUCHES (CREDITS)
+                    {locale === "vi" ? "02. CÁC GÓI TINH THỂ KHÔNG THỜI HẠN (CREDITS)" : "02. NON-EXPIRING RESONANCE POUCHES (CREDITS)"}
                   </h2>
                   <p className="text-xs text-slate-600 mt-0.5">
                     Credits never expire. Top up and deploy on complex spreads (5-card, 10-card), clarifiers, or poster prints.
@@ -477,7 +509,7 @@ export default function PricingPlansStorePage() {
             <section className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xs font-mono font-semibold uppercase tracking-wider text-slate-500">
-                  03 // TRANSPARENT CREDIT COST SCHEDULE (FR-6.1)
+                  {locale === "vi" ? "03. BIỂU PHÍ BẬC THANG MINH BẠCH" : "03. TRANSPARENT CREDIT COST SCHEDULE"}
                 </h3>
                 <span className="text-[11px] font-mono text-slate-400">Zero Hidden Deductions</span>
               </div>
@@ -547,9 +579,9 @@ export default function PricingPlansStorePage() {
           <div className="space-y-6">
             <div className="border-b border-[#E2E8F0] pb-3">
               <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold block mb-1">
-                CHECKOUT TERMINAL // PAYOS & STRIPE
+                CHECKOUT TERMINAL · PAYOS & STRIPE
               </span>
-              <h2 className="font-headline font-bold text-xl text-slate-900">Order Summary</h2>
+              <h2 className="font-headline font-bold text-xl text-slate-900">{locale === "vi" ? "Tóm Tắt Đơn Hàng" : "Order Summary"}</h2>
             </div>
 
             {/* Selected Item Summary Card */}
@@ -571,7 +603,7 @@ export default function PricingPlansStorePage() {
             {/* Payment Method Tabs */}
             <div>
               <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-2">
-                Choose Payment Instrument
+                {locale === "vi" ? "Chọn Phương Thức Thanh Toán" : "Choose Payment Instrument"}
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -684,7 +716,7 @@ export default function PricingPlansStorePage() {
             {transferSuccess ? (
               <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-xl text-center space-y-1">
                 <span className="material-symbols-outlined text-primary text-2xl">check_circle</span>
-                <h4 className="font-headline font-bold text-base text-emerald-950">Payment Confirmed!</h4>
+                <h4 className="font-headline font-bold text-base text-emerald-950">{locale === "vi" ? "Thanh Toán Thành Công!" : "Payment Confirmed!"}</h4>
                 <p className="text-xs text-emerald-800">
                   +{selectedProduct.credits} CR credited instantly to your vault.
                 </p>
@@ -695,7 +727,7 @@ export default function PricingPlansStorePage() {
                 onClick={handleCompleteOrder}
                 className="w-full py-3.5 bg-primary hover:bg-[#047857] text-white rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all shadow-sm flex items-center justify-center space-x-2"
               >
-                <span>Complete Order ({selectedProduct.priceVnd})</span>
+                <span>{locale === "vi" ? "Hoàn Tất Đơn Hàng" : "Complete Order"} ({selectedProduct.priceVnd})</span>
                 <span className="material-symbols-outlined text-base">arrow_forward</span>
               </button>
             )}

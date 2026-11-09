@@ -1,34 +1,64 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import EditorialHeader from "@/components/EditorialHeader";
+import { useLanguage } from "@/context/LanguageContext";
+import { apiClient } from "@/services/apiClient";
 import { TAROT_CARDS, TarotCard } from "@/data/tarotCards";
 
 export default function CatalogPickerPage() {
+  const { locale, t } = useLanguage();
+  const isVi = locale === "vi";
+
+  const [cardsList, setCardsList] = useState<TarotCard[]>(TAROT_CARDS);
   const [selectedSuit, setSelectedSuit] = useState<"ALL" | "MAJOR" | "WANDS" | "CUPS" | "SWORDS" | "PENTACLES">("ALL");
   const [search, setSearch] = useState("");
-  const [activeSlot, setActiveSlot] = useState<1 | 2 | 3>(2);
-  const [slots, setSlots] = useState<{
-    1: TarotCard | null;
-    2: TarotCard | null;
-    3: TarotCard | null;
-  }>({
-    1: TAROT_CARDS.find((c) => c.id === 19) || null, // XIX The Sun default
-    2: null,
-    3: null,
-  });
+  const [selectedCard, setSelectedCard] = useState<TarotCard | null>(null);
+
+  // Load cards directly from Supabase backend
+  useEffect(() => {
+    async function loadCatalog() {
+      try {
+        const res = await apiClient.tarot.getCards();
+        if (res.data && res.data.length > 0) {
+          const mapped: TarotCard[] = res.data.map((c) => {
+            const staticMatch = TAROT_CARDS.find((sc) => sc.id === c.id);
+            return {
+              id: c.id,
+              slug: c.slug || staticMatch?.slug || `card_${c.id}`,
+              number: staticMatch?.number || String(c.cardOrder ?? c.id),
+              nameEn: c.nameEn,
+              nameVi: c.nameVi,
+              suit: (staticMatch?.suit || (c.arcana === "MAJOR" ? "MAJOR" : c.suit) || "MAJOR") as any,
+              element: (c.element || staticMatch?.element || "Fire") as any,
+              image: c.imageUrl || staticMatch?.image || "/decks/rider-waite-1909/cards/00_the_fool.webp",
+              meaningUprightVi: c.meaningUprightVi || staticMatch?.meaningUprightVi || "",
+              meaningUprightEn: c.meaningUprightEn || staticMatch?.meaningUprightEn || "",
+              keywordsVi: c.keywordsUprightVi || staticMatch?.keywordsVi || "",
+              keywordsEn: c.keywordsUprightEn || staticMatch?.keywordsEn || "",
+            };
+          });
+          setCardsList(mapped);
+        }
+      } catch (err) {
+        console.warn("Using local card catalog fallback:", err);
+      }
+    }
+    loadCatalog();
+  }, []);
 
   const suitsList: Array<{ id: "ALL" | "MAJOR" | "WANDS" | "CUPS" | "SWORDS" | "PENTACLES"; label: string; count: number }> = [
-    { id: "ALL", label: "ALL 78 CARDS", count: 78 },
-    { id: "MAJOR", label: "MAJOR ARCANA", count: 22 },
-    { id: "WANDS", label: "WANDS (HỎA)", count: 14 },
-    { id: "CUPS", label: "CUPS (THỦY)", count: 14 },
-    { id: "SWORDS", label: "SWORDS (KHÍ)", count: 14 },
-    { id: "PENTACLES", label: "PENTACLES (ĐỊA)", count: 14 },
+    { id: "ALL", label: t.catalog.allCards, count: 78 },
+    { id: "MAJOR", label: t.catalog.majorArcana, count: 22 },
+    { id: "WANDS", label: t.catalog.wands, count: 14 },
+    { id: "CUPS", label: t.catalog.cups, count: 14 },
+    { id: "SWORDS", label: t.catalog.swords, count: 14 },
+    { id: "PENTACLES", label: t.catalog.pentacles, count: 14 },
   ];
 
-  const filteredCards = TAROT_CARDS.filter((card) => {
+  const filteredCards = cardsList.filter((card) => {
     const matchSuit = selectedSuit === "ALL" || card.suit === selectedSuit;
     const matchSearch =
       card.nameEn.toLowerCase().includes(search.toLowerCase()) ||
@@ -39,202 +69,119 @@ export default function CatalogPickerPage() {
     return matchSuit && matchSearch;
   });
 
-  const handleCardClick = (card: TarotCard) => {
-    setSlots((prev) => ({
-      ...prev,
-      [activeSlot]: card,
-    }));
-    if (activeSlot === 1) setActiveSlot(2);
-    else if (activeSlot === 2) setActiveSlot(3);
-  };
-
   return (
     <>
       <EditorialHeader activeTab="catalog" />
 
-      {/* WEB — 78-CARD REFERENCE & MANUAL INPUT (SCR-W03) */}
+      {/* WEB — 78-CARD REFERENCE ENCYCLOPEDIA */}
       <main className="flex-1 max-w-[1440px] w-full mx-auto border-x border-outline-variant flex flex-col bg-white">
-        {/* Pinned Assignment Bar for 3 Cards */}
-        <section className="px-6 py-4 bg-[#FAF9F6] border-b border-outline-variant sticky top-[57px] z-30 shadow-xs">
+        {/* Encyclopedia Header */}
+        <section className="px-6 py-5 bg-[#FAF9F6] border-b border-outline-variant">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <span className="font-mono text-[10px] uppercase tracking-widest text-primary font-semibold block">
-                MANUAL INPUT MODE // DESK LOGGING · RIDER-WAITE 1909
+                {t.catalog.kicker}
               </span>
-              <h2 className="font-headline font-bold text-lg text-on-surface">
-                Assign Real-World Drawn Cards to Spread Slots
+              <h2 className="font-headline font-bold text-xl text-on-surface mt-0.5">
+                {t.catalog.title}
               </h2>
             </div>
             <div className="flex items-center gap-3">
-              <span className="font-mono text-xs text-slate-500">Spread: 3-Card Trajectory</span>
               <Link
-                href="/workbench/custom-draw"
-                className="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-hover shadow-sm flex items-center gap-1.5"
+                href="/workbench/demo-session"
+                className="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-hover shadow-sm flex items-center gap-1.5 transition-all"
               >
-                <span>Proceed to Synthesis</span>
+                <span>{t.catalog.proceed}</span>
                 <span className="material-symbols-outlined text-sm">arrow_forward</span>
               </Link>
             </div>
           </div>
 
-          {/* 3 Slot Bar */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
-            {/* Slot 1 */}
-            <div
-              onClick={() => setActiveSlot(1)}
-              className={`p-3 bg-white rounded-lg flex items-center justify-between cursor-pointer transition-all ${
-                activeSlot === 1
-                  ? "border-2 border-primary shadow-sm"
-                  : "border border-outline-variant hover:border-slate-400"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                {slots[1] ? (
-                  <img
-                    src={slots[1].image}
-                    alt={slots[1].nameEn}
-                    className="w-9 h-14 object-cover rounded border border-slate-200 shrink-0"
-                  />
-                ) : (
-                  <div className="w-9 h-14 rounded border border-dashed border-slate-300 flex items-center justify-center text-slate-300">
-                    <span className="material-symbols-outlined text-sm">add</span>
-                  </div>
-                )}
+          {/* Selected Card Inspection Drawer */}
+          {selectedCard && (
+            <div className="mt-4 p-4 bg-white border border-outline-variant rounded-lg shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <img
+                  src={selectedCard.image}
+                  alt={selectedCard.nameEn}
+                  className="w-14 h-24 object-cover rounded border border-slate-200 shrink-0 shadow-xs"
+                />
                 <div>
-                  <span className={`text-[10px] font-mono font-semibold uppercase ${activeSlot === 1 ? "text-primary" : "text-slate-400"}`}>
-                    01 Situation {activeSlot === 1 ? "[ACTIVE]" : ""}
-                  </span>
-                  <div className="text-xs font-bold text-on-surface mt-0.5 truncate max-w-[150px]">
-                    {slots[1] ? `${slots[1].number}. ${slots[1].nameEn}` : "Click card to set"}
+                  <div className="font-mono text-[10px] font-semibold text-primary uppercase">
+                    #{selectedCard.number} · {selectedCard.suit} · {selectedCard.element}
                   </div>
-                  <div className="text-[10px] text-slate-500 truncate max-w-[150px]">
-                    {slots[1] ? slots[1].nameVi : "Empty slot"}
+                  <h3 className="font-headline font-bold text-base text-on-surface">
+                    {isVi ? `${selectedCard.nameVi} (${selectedCard.nameEn})` : `${selectedCard.nameEn} (${selectedCard.nameVi})`}
+                  </h3>
+                  <p className="text-xs text-slate-600 mt-1 max-w-2xl leading-relaxed">
+                    {isVi ? selectedCard.meaningUprightVi : selectedCard.meaningUprightEn}
+                  </p>
+                  <div className="text-[11px] font-mono text-slate-500 mt-1.5">
+                    {isVi ? selectedCard.keywordsVi : selectedCard.keywordsEn}
                   </div>
                 </div>
               </div>
-              <span className={`text-xs font-mono px-2 py-0.5 rounded ${slots[1] ? "text-emerald-700 bg-emerald-50" : "text-slate-400"}`}>
-                {slots[1] ? "Set ✓" : "[Slot 1]"}
-              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedCard(null)}
+                className="text-xs font-mono text-slate-400 hover:text-on-surface px-2.5 py-1 border border-slate-200 rounded self-end sm:self-center"
+              >
+                {isVi ? "Đóng ✕" : "Close ✕"}
+              </button>
             </div>
-
-            {/* Slot 2 */}
-            <div
-              onClick={() => setActiveSlot(2)}
-              className={`p-3 bg-white rounded-lg flex items-center justify-between cursor-pointer transition-all ${
-                activeSlot === 2
-                  ? "border-2 border-primary shadow-sm bg-emerald-50/10"
-                  : "border border-outline-variant hover:border-slate-400"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                {slots[2] ? (
-                  <img
-                    src={slots[2].image}
-                    alt={slots[2].nameEn}
-                    className="w-9 h-14 object-cover rounded border border-slate-200 shrink-0"
-                  />
-                ) : (
-                  <div className="w-9 h-14 rounded border border-dashed border-slate-300 flex items-center justify-center text-slate-300">
-                    <span className="material-symbols-outlined text-sm">add</span>
-                  </div>
-                )}
-                <div>
-                  <span className={`text-[10px] font-mono font-semibold uppercase ${activeSlot === 2 ? "text-primary" : "text-slate-400"}`}>
-                    02 Action {activeSlot === 2 ? "[Selecting]" : ""}
-                  </span>
-                  <div className="text-xs font-bold text-on-surface mt-0.5 truncate max-w-[150px]">
-                    {slots[2] ? `${slots[2].number}. ${slots[2].nameEn}` : "Click card to set"}
-                  </div>
-                  <div className="text-[10px] text-slate-500 truncate max-w-[150px]">
-                    {slots[2] ? slots[2].nameVi : "Empty slot"}
-                  </div>
-                </div>
-              </div>
-              <span className={`text-xs font-mono px-2 py-0.5 rounded ${slots[2] ? "text-emerald-700 bg-emerald-50" : "text-slate-400"}`}>
-                {slots[2] ? "Set ✓" : "[Slot 2]"}
-              </span>
-            </div>
-
-            {/* Slot 3 */}
-            <div
-              onClick={() => setActiveSlot(3)}
-              className={`p-3 bg-white rounded-lg flex items-center justify-between cursor-pointer transition-all ${
-                activeSlot === 3
-                  ? "border-2 border-primary shadow-sm"
-                  : "border border-outline-variant hover:border-slate-400"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                {slots[3] ? (
-                  <img
-                    src={slots[3].image}
-                    alt={slots[3].nameEn}
-                    className="w-9 h-14 object-cover rounded border border-slate-200 shrink-0"
-                  />
-                ) : (
-                  <div className="w-9 h-14 rounded border border-dashed border-slate-300 flex items-center justify-center text-slate-300">
-                    <span className="material-symbols-outlined text-sm">add</span>
-                  </div>
-                )}
-                <div>
-                  <span className={`text-[10px] font-mono font-semibold uppercase ${activeSlot === 3 ? "text-primary" : "text-slate-400"}`}>
-                    03 Outcome {activeSlot === 3 ? "[ACTIVE]" : ""}
-                  </span>
-                  <div className="text-xs font-bold text-on-surface mt-0.5 truncate max-w-[150px]">
-                    {slots[3] ? `${slots[3].number}. ${slots[3].nameEn}` : "Click card to set"}
-                  </div>
-                  <div className="text-[10px] text-slate-500 truncate max-w-[150px]">
-                    {slots[3] ? slots[3].nameVi : "Empty slot"}
-                  </div>
-                </div>
-              </div>
-              <span className={`text-xs font-mono px-2 py-0.5 rounded ${slots[3] ? "text-emerald-700 bg-emerald-50" : "text-slate-400"}`}>
-                {slots[3] ? "Set ✓" : "[Slot 3]"}
-              </span>
-            </div>
-          </div>
+          )}
         </section>
 
-        {/* Search & Filter Toolbar */}
-        <section className="px-6 py-3 bg-white border-b border-outline-variant flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2 overflow-x-auto py-1">
-            {suitsList.map((suit) => (
+        {/* Filter & Search Bar */}
+        <section className="px-6 py-3.5 bg-white border-b border-outline-variant flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {/* Segmented Suits Tab */}
+          <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0 text-xs font-mono">
+            {suitsList.map((st) => (
               <button
-                key={suit.id}
-                onClick={() => setSelectedSuit(suit.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium whitespace-nowrap transition-colors ${
-                  selectedSuit === suit.id
-                    ? "bg-primary text-white font-semibold shadow-xs"
-                    : "bg-surface-variant text-on-surface-variant hover:text-on-surface hover:bg-slate-200"
+                key={st.id}
+                type="button"
+                onClick={() => setSelectedSuit(st.id)}
+                className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors ${
+                  selectedSuit === st.id
+                    ? "bg-slate-900 text-white font-bold"
+                    : "text-slate-600 hover:bg-slate-100"
                 }`}
               >
-                {suit.label} ({suit.count})
+                <span>{st.label}</span>
+                <span className="ml-1 opacity-60">({st.count})</span>
               </button>
             ))}
           </div>
 
-          <div className="relative min-w-[280px]">
-            <span className="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-sm">search</span>
+          {/* Search Box */}
+          <div className="relative w-full sm:w-64">
+            <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+              search
+            </span>
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by card name, number, keywords..."
-              className="w-full pl-9 pr-3 py-2 text-xs border border-outline-variant rounded-lg bg-surface-subtle focus:bg-white focus:outline-none focus:border-primary font-body"
+              placeholder={t.catalog.searchPlaceholder}
+              className="w-full pl-8 pr-3 py-1.5 text-xs bg-surface-subtle border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:bg-white transition-colors"
             />
           </div>
         </section>
 
-        {/* 78-Card Specimen Grid */}
-        <section className="p-6 bg-[#FAF9F6] grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        {/* 78-Card Contact Sheet Visual Grid */}
+        <section className="p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5 bg-[#FAF9F6]">
           {filteredCards.map((card) => {
-            const isAssigned = Object.values(slots).some((s) => s?.id === card.id);
+            const isSelected = selectedCard?.id === card.id;
+            const primaryName = isVi ? card.nameVi : card.nameEn;
+            const secondaryName = isVi ? card.nameEn : card.nameVi;
+            const keywords = isVi ? card.keywordsVi : card.keywordsEn;
+
             return (
               <div
                 key={card.id}
-                onClick={() => handleCardClick(card)}
+                onClick={() => setSelectedCard(card)}
                 className={`bg-white border rounded-lg p-2.5 text-center cursor-pointer flex flex-col justify-between group transition-all hover:shadow-md hover:-translate-y-0.5 ${
-                  isAssigned
+                  isSelected
                     ? "border-primary ring-2 ring-emerald-200 bg-emerald-50/15"
                     : "border-outline-variant hover:border-primary"
                 }`}
@@ -260,11 +207,11 @@ export default function CatalogPickerPage() {
 
                 <div className="border-t border-slate-100 pt-1.5">
                   <div className="font-headline font-bold text-xs text-on-surface group-hover:text-primary transition-colors truncate">
-                    {card.nameEn}
+                    {primaryName}
                   </div>
-                  <div className="text-[10px] text-slate-500 truncate mt-0.5">{card.nameVi}</div>
+                  <div className="text-[10px] text-slate-500 truncate mt-0.5">{secondaryName}</div>
                   <div className="text-[8px] font-mono text-slate-400 truncate mt-0.5">
-                    {card.keywordsVi}
+                    {keywords}
                   </div>
                 </div>
               </div>

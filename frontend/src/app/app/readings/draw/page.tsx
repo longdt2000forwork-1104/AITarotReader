@@ -4,12 +4,15 @@ import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
 import { ReadingSessionDto, DrawnCardDto } from "@/types/api";
 
 function TactileDrawContent() {
   const searchParams = useSearchParams();
   const sessionIdParam = searchParams.get("sessionId");
+  const { locale, setLocale } = useLanguage();
+  const isVi = locale === "vi";
 
   const [session, setSession] = useState<ReadingSessionDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -73,7 +76,7 @@ function TactileDrawContent() {
   const handleSaveJournal = async () => {
     if (!session || journalSaved) return;
     try {
-      await apiClient.readings.saveJournal(session.id, userNote || "Empirical reflection on reading");
+      await apiClient.readings.saveJournal(session.id, userNote || (isVi ? "Ghi chép chiêm nghiệm trải bài" : "Empirical reflection on reading"));
       setJournalSaved(true);
     } catch (err) {
       console.error("Error saving to journal:", err);
@@ -85,7 +88,9 @@ function TactileDrawContent() {
       <div className="max-w-[430px] mx-auto min-h-screen bg-surface flex items-center justify-center border-x border-outline-variant">
         <div className="text-center space-y-2">
           <div className="w-8 h-8 mx-auto border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <span className="font-mono text-xs text-slate-500">Khai mở không gian huyền bí...</span>
+          <span className="font-mono text-xs text-slate-500">
+            {isVi ? "Khai mở không gian huyền bí..." : "Opening the mystic sanctuary..."}
+          </span>
         </div>
       </div>
     );
@@ -93,6 +98,9 @@ function TactileDrawContent() {
 
   const hasDrawn = session.drawnCards && session.drawnCards.length > 0;
   const spreadCount = session.spreadTemplate.cardCount;
+  const spreadName = isVi
+    ? session.spreadTemplate.nameVi || session.spreadTemplate.nameEn
+    : session.spreadTemplate.nameEn;
 
   return (
     <div className="max-w-[430px] mx-auto min-h-screen bg-surface flex flex-col border-x border-outline-variant pb-20">
@@ -100,23 +108,55 @@ function TactileDrawContent() {
       <header className="px-4 py-3 bg-white border-b border-outline-variant flex items-center justify-between sticky top-0 z-40">
         <Link href="/app/readings/new" className="flex items-center gap-1 text-xs text-slate-500 hover:text-on-surface">
           <span className="material-symbols-outlined text-base">arrow_back</span>
-          <span>Config</span>
+          <span>{isVi ? "Cấu hình" : "Config"}</span>
         </Link>
-        <span className="font-mono text-xs font-semibold text-on-surface uppercase truncate max-w-[200px]">
-          {session.spreadTemplate.nameVi || session.spreadTemplate.nameEn}
+        <span className="font-mono text-xs font-semibold text-on-surface uppercase truncate max-w-[170px]">
+          {spreadName}
         </span>
-        <span className="text-xs font-mono text-primary font-semibold">
-          {hasDrawn ? "COMPLETED" : "AWAITING DRAW"}
-        </span>
+
+        {/* Language Switcher */}
+        <div className="flex items-center border border-outline-variant rounded text-[10px] font-mono overflow-hidden shadow-xs">
+          <button
+            type="button"
+            onClick={() => setLocale("en")}
+            className={`px-2 py-0.5 transition-colors ${
+              !isVi ? "bg-slate-900 text-white font-bold" : "text-slate-500 hover:text-on-surface"
+            }`}
+          >
+            EN
+          </button>
+          <button
+            type="button"
+            onClick={() => setLocale("vi")}
+            className={`px-2 py-0.5 transition-colors ${
+              isVi ? "bg-primary text-white font-bold" : "text-slate-500 hover:text-on-surface"
+            }`}
+          >
+            VI
+          </button>
+        </div>
       </header>
 
       {/* Main Draw Surface */}
       <main className="p-4 flex-1 flex flex-col space-y-5">
         {/* Question Banner */}
         <div className="p-3 bg-white border border-outline-variant rounded-lg space-y-0.5">
-          <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">INQUIRY QUESTION</span>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
+              {isVi ? "CÂU HỎI TRẢI BÀI" : "INQUIRY QUESTION"}
+            </span>
+            <span className="text-[10px] font-mono text-primary font-semibold">
+              {hasDrawn
+                ? isVi
+                  ? "ĐÃ RÚT BÀI"
+                  : "COMPLETED"
+                : isVi
+                ? "CHỜ RÚT BÀI"
+                : "AWAITING DRAW"}
+            </span>
+          </div>
           <p className="text-xs text-on-surface font-headline font-semibold italic">
-            "{session.question}"
+            &ldquo;{session.question}&rdquo;
           </p>
         </div>
 
@@ -129,6 +169,7 @@ function TactileDrawContent() {
               name_en: `Position ${idx + 1}`,
               name_vi: `Vị trí ${idx + 1}`
             };
+            const posName = isVi ? pos.name_vi || pos.name_en : pos.name_en;
 
             return (
               <div
@@ -138,7 +179,7 @@ function TactileDrawContent() {
                 }`}
               >
                 <span className="text-[9px] font-mono text-slate-500 uppercase tracking-tight block truncate w-full">
-                  {pos.name_vi}
+                  {posName}
                 </span>
 
                 {drawn ? (
@@ -151,12 +192,12 @@ function TactileDrawContent() {
                       />
                     </div>
                     <div className="text-[10px] font-headline font-bold text-on-surface mt-1 truncate max-w-[100px]">
-                      {drawn.card.nameVi}
+                      {isVi ? drawn.card.nameVi || drawn.card.nameEn : drawn.card.nameEn}
                     </div>
                     <span className={`text-[8px] font-mono font-semibold px-1 py-0.2 rounded mt-0.5 ${
                       drawn.isReversed ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
                     }`}>
-                      {drawn.isReversed ? "Ngược" : "Xuôi"}
+                      {drawn.isReversed ? (isVi ? "Ngược" : "Reversed") : (isVi ? "Xuôi" : "Upright")}
                     </span>
                   </div>
                 ) : (
@@ -164,7 +205,9 @@ function TactileDrawContent() {
                     <div className="w-10 h-16 rounded border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center">
                       <span className="text-xs font-mono font-bold text-slate-400">?</span>
                     </div>
-                    <span className="text-[9px] font-mono text-slate-400 mt-1">Chờ rút</span>
+                    <span className="text-[9px] font-mono text-slate-400 mt-1">
+                      {isVi ? "Chờ rút" : "Waiting"}
+                    </span>
                   </div>
                 )}
               </div>
@@ -175,13 +218,16 @@ function TactileDrawContent() {
         {/* Tactile Action Button */}
         {!hasDrawn && (
           <div className="text-center py-6 space-y-4">
-            <div className="w-24 h-36 mx-auto rounded-lg bg-slate-900 border-2 border-amber-400/80 shadow-lg flex flex-col items-center justify-center cursor-pointer hover:scale-105 transition-transform"
+            <div
+              className="w-24 h-36 mx-auto rounded-lg bg-slate-900 border-2 border-amber-400/80 shadow-lg flex flex-col items-center justify-center cursor-pointer hover:scale-105 transition-transform"
               onClick={handleDrawCards}
             >
               <div className="w-8 h-8 rounded-full border border-amber-300/40 flex items-center justify-center text-amber-300 text-xs">
                 ✦
               </div>
-              <span className="text-[10px] font-mono text-amber-200 uppercase mt-2">TAP TO DRAW</span>
+              <span className="text-[10px] font-mono text-amber-200 uppercase mt-2">
+                {isVi ? "CHẠM ĐỂ RÚT" : "TAP TO DRAW"}
+              </span>
             </div>
 
             <button
@@ -189,7 +235,13 @@ function TactileDrawContent() {
               disabled={isDrawing}
               className="w-full py-3 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-hover shadow-sm transition-all"
             >
-              {isDrawing ? "Đang xáo bài và rút năng lượng..." : "Rút Toàn Bộ Trải Bài Ngay ✨"}
+              {isDrawing
+                ? isVi
+                  ? "Đang xáo bài và rút năng lượng..."
+                  : "Shuffling deck & drawing cards..."
+                : isVi
+                ? "Rút Toàn Bộ Trải Bài Ngay ✨"
+                : "Draw Full Spread Now ✨"}
             </button>
           </div>
         )}
@@ -200,17 +252,27 @@ function TactileDrawContent() {
             <div className="p-4 bg-white border border-outline-variant rounded-lg space-y-3 shadow-xs">
               <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                 <span className="font-mono text-[10px] uppercase text-primary font-bold">
-                  AI SYNTHESIS // {session.persona}
+                  {isVi ? "TỔNG HỢP AI" : "AI SYNTHESIS"} · {session.persona}
                 </span>
                 <span className="text-[10px] font-mono text-slate-400">
-                  {isInterpreting ? "Đang phân tích..." : "GIẢI NGHĨA HOÀN TẤT"}
+                  {isInterpreting
+                    ? isVi
+                      ? "Đang phân tích..."
+                      : "Analyzing..."
+                    : isVi
+                    ? "GIẢI NGHĨA HOÀN TẤT"
+                    : "INTERPRETATION COMPLETE"}
                 </span>
               </div>
 
               {isInterpreting ? (
                 <div className="py-6 text-center space-y-2">
                   <div className="w-6 h-6 mx-auto border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                  <p className="text-xs text-slate-500 font-mono">Đang giải mã thông điệp và biểu tượng các lá bài...</p>
+                  <p className="text-xs text-slate-500 font-mono">
+                    {isVi
+                      ? "Đang giải mã thông điệp và biểu tượng các lá bài..."
+                      : "Decoding card archetypes and metaphysical message..."}
+                  </p>
                 </div>
               ) : (
                 <div className="text-xs text-slate-700 leading-relaxed whitespace-pre-line font-body">
@@ -222,19 +284,25 @@ function TactileDrawContent() {
             {/* Reflection & Journal Note */}
             <div className="p-4 bg-white border border-outline-variant rounded-lg space-y-3">
               <span className="font-mono text-[10px] uppercase text-slate-400 font-bold block">
-                NHẬT KÝ & SUY NGẪM CÁ NHÂN (JOURNAL REFLECTION)
+                {isVi
+                  ? "NHẬT KÝ & SUY NGẪM CÁ NHÂN"
+                  : "PERSONAL JOURNAL & REFLECTION"}
               </span>
               <textarea
                 rows={3}
                 value={userNote}
                 onChange={(e) => setUserNote(e.target.value)}
-                placeholder="Ghi lại cảm nhận hoặc bài học nghiệm ra từ trải bài này..."
+                placeholder={
+                  isVi
+                    ? "Ghi lại cảm nhận hoặc bài học nghiệm ra từ trải bài này..."
+                    : "Record your reflections and observations from this reading..."
+                }
                 className="w-full p-3 text-xs border border-outline-variant rounded-lg bg-[#FAF9F6] focus:bg-white focus:outline-none focus:border-primary leading-relaxed"
               />
 
               <div className="flex justify-between items-center pt-1">
                 <Link href="/journal" className="text-xs font-mono text-primary hover:underline">
-                  Xem Toàn Bộ Sổ Nhật Ký →
+                  {isVi ? "Xem Toàn Bộ Sổ Nhật Ký →" : "View Complete Journal →"}
                 </Link>
                 <button
                   onClick={handleSaveJournal}
@@ -245,7 +313,13 @@ function TactileDrawContent() {
                       : "bg-slate-900 text-white hover:bg-slate-800"
                   }`}
                 >
-                  {journalSaved ? "✓ Đã Lưu Vào Sổ" : "Lưu Nhật Ký"}
+                  {journalSaved
+                    ? isVi
+                      ? "✓ Đã Lưu Vào Sổ"
+                      : "✓ Saved to Journal"
+                    : isVi
+                    ? "Lưu Nhật Ký"
+                    : "Save Journal"}
                 </button>
               </div>
             </div>

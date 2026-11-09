@@ -10,10 +10,11 @@ interface MobileBottomNavProps {
 export default function MobileBottomNav({
   activeTab = "home",
 }: MobileBottomNavProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const isVi = locale === "vi";
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-4 py-2 bg-surface/95 backdrop-blur-md border-t border-outline-variant max-w-screen-md mx-auto shadow-sm">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-3 py-2 bg-white/95 backdrop-blur-md border-t border-x border-outline-variant max-w-[430px] mx-auto shadow-sm">
       <Link
         href="/app/home"
         className={`flex flex-col items-center justify-center py-1 transition-colors ${
@@ -49,6 +50,15 @@ export default function MobileBottomNav({
       >
         <span className="material-symbols-outlined text-xl">person</span>
         <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">{t.mobileNav.profile}</span>
+      </Link>
+      <Link
+        href="/login"
+        className="flex flex-col items-center justify-center py-1 text-on-surface-variant font-normal hover:text-primary transition-colors"
+      >
+        <span className="material-symbols-outlined text-xl">login</span>
+        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">
+          {isVi ? "Đăng Nhập" : "Login"}
+        </span>
       </Link>
     </nav>
   );

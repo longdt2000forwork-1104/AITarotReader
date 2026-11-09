@@ -4,11 +4,15 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
 import { SpreadTemplate, TarotDeck, Persona } from "@/types/api";
 
 export default function MobileSpreadConfigPage() {
   const router = useRouter();
+  const { locale, setLocale } = useLanguage();
+  const isVi = locale === "vi";
+
   const [spreads, setSpreads] = useState<SpreadTemplate[]>([]);
   const [decks, setDecks] = useState<TarotDeck[]>([]);
   const [selectedSpreadId, setSelectedSpreadId] = useState<string>("S-02");
@@ -53,19 +57,57 @@ export default function MobileSpreadConfigPage() {
     }
   };
 
+  const personaOptions = [
+    {
+      id: "MYSTIC_SAGE" as Persona,
+      title: isVi ? "Nhà Hiền Triết" : "Mystic Sage",
+      desc: isVi ? "Tri thức cổ điển & thấu thị" : "Classical wisdom & insight",
+    },
+    {
+      id: "PRACTICAL_COACH" as Persona,
+      title: isVi ? "Cố Vấn Thực Tiễn" : "Action Coach",
+      desc: isVi ? "Định hướng hành động cụ thể" : "Pragmatic actions & steps",
+    },
+    {
+      id: "SHADOW_EXPLORER" as Persona,
+      title: isVi ? "Khai Phá Tiềm Thức" : "Shadow Work",
+      desc: isVi ? "Soi rọi góc khuất & nội tâm" : "Subconscious & hidden layers",
+    },
+  ];
+
   return (
     <div className="max-w-[430px] mx-auto min-h-screen bg-surface flex flex-col border-x border-outline-variant pb-20">
       {/* Top Header */}
       <header className="px-4 py-3 bg-white border-b border-outline-variant flex items-center justify-between sticky top-0 z-40">
         <Link href="/app/home" className="flex items-center gap-1 text-xs text-slate-500 hover:text-on-surface">
           <span className="material-symbols-outlined text-base">arrow_back</span>
-          <span>Back</span>
+          <span>{isVi ? "Quay lại" : "Back"}</span>
         </Link>
-        <span className="font-mono text-xs font-semibold text-on-surface">NEW READING CONFIG</span>
-        <span className="text-xs font-mono text-emerald-600 font-semibold flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          SUPABASE LIVE
+        <span className="font-mono text-xs font-semibold text-on-surface">
+          {isVi ? "THIẾT LẬP TRẢI BÀI" : "NEW READING CONFIG"}
         </span>
+
+        {/* Language Switcher */}
+        <div className="flex items-center border border-outline-variant rounded text-[10px] font-mono overflow-hidden shadow-xs">
+          <button
+            type="button"
+            onClick={() => setLocale("en")}
+            className={`px-2 py-0.5 transition-colors ${
+              !isVi ? "bg-slate-900 text-white font-bold" : "text-slate-500 hover:text-on-surface"
+            }`}
+          >
+            EN
+          </button>
+          <button
+            type="button"
+            onClick={() => setLocale("vi")}
+            className={`px-2 py-0.5 transition-colors ${
+              isVi ? "bg-primary text-white font-bold" : "text-slate-500 hover:text-on-surface"
+            }`}
+          >
+            VI
+          </button>
+        </div>
       </header>
 
       {/* 4-Step Form */}
@@ -74,13 +116,17 @@ export default function MobileSpreadConfigPage() {
         <div className="space-y-2">
           <div className="flex justify-between items-center">
             <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
-              01 // SPREAD ARCHITECTURE
+              {isVi ? "01. SƠ ĐỒ TRẢI BÀI" : "01. SPREAD ARCHITECTURE"}
             </span>
-            <span className="text-[10px] font-mono text-primary">SELECT 1 SPREAD</span>
+            <span className="text-[10px] font-mono text-primary font-semibold">
+              {isVi ? "CHỌN 1 SƠ ĐỒ" : "SELECT 1 SPREAD"}
+            </span>
           </div>
           <div className="space-y-2">
             {spreads.map((spread) => {
               const active = spread.id === selectedSpreadId;
+              const name = isVi ? spread.nameVi || spread.nameEn : spread.nameEn;
+              const desc = isVi ? spread.descriptionVi || spread.descriptionEn : spread.descriptionEn;
               return (
                 <div
                   key={spread.id}
@@ -94,12 +140,12 @@ export default function MobileSpreadConfigPage() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-headline font-bold text-sm text-on-surface">
-                        {spread.nameVi || spread.nameEn}
+                        {name}
                       </span>
                       {active && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
                     </div>
                     <p className="text-[11px] text-[#475569] mt-0.5">
-                      {spread.cardCount} Cards • {spread.descriptionVi || spread.descriptionEn}
+                      {spread.cardCount} {isVi ? "Lá Bài" : "Cards"} • {desc}
                     </p>
                   </div>
                   <span
@@ -107,7 +153,7 @@ export default function MobileSpreadConfigPage() {
                       active ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-600"
                     }`}
                   >
-                    {spread.crystalCost === 0 ? "FREE" : `${spread.crystalCost} CR`}
+                    {spread.crystalCost === 0 ? (isVi ? "MIỄN PHÍ" : "FREE") : `${spread.crystalCost} CR`}
                   </span>
                 </div>
               );
@@ -119,13 +165,16 @@ export default function MobileSpreadConfigPage() {
         <div className="space-y-2">
           <div className="flex justify-between items-center">
             <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
-              02 // TAROT DECK EDITION
+              {isVi ? "02. PHIÊN BẢN BỘ BÀI TAROT" : "02. TAROT DECK EDITION"}
             </span>
-            <span className="text-[10px] font-mono text-slate-400">{decks.length} DECKS ACTIVE</span>
+            <span className="text-[10px] font-mono text-slate-400">
+              {decks.length} {isVi ? "BỘ BÀI KHẢ DỤNG" : "DECKS ACTIVE"}
+            </span>
           </div>
           <div className="space-y-2">
             {decks.map((deck) => {
               const active = deck.id === selectedDeckId;
+              const name = isVi ? deck.nameVi || deck.nameEn : deck.nameEn;
               return (
                 <div
                   key={deck.id}
@@ -139,12 +188,12 @@ export default function MobileSpreadConfigPage() {
                       <img src={deck.coverImageUrl} alt={deck.nameEn} className="w-full h-full object-cover" />
                     </div>
                     <div>
-                      <div className="font-headline font-bold text-xs text-on-surface">{deck.nameVi || deck.nameEn}</div>
+                      <div className="font-headline font-bold text-xs text-on-surface">{name}</div>
                       <div className="text-[10px] text-slate-500 font-mono">{deck.artist} • {deck.unlockTier}</div>
                     </div>
                   </div>
                   <span className="text-[10px] font-mono text-slate-400">
-                    {deck.creditCost === 0 ? "Default" : `${deck.creditCost} CR`}
+                    {deck.creditCost === 0 ? (isVi ? "Mặc định" : "Default") : `${deck.creditCost} CR`}
                   </span>
                 </div>
               );
@@ -156,15 +205,11 @@ export default function MobileSpreadConfigPage() {
         <div className="space-y-2">
           <div className="flex justify-between items-center">
             <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
-              03 // AI READER PERSONA
+              {isVi ? "03. HÌNH TƯỢNG GIỌNG ĐỌC AI" : "03. AI READER PERSONA"}
             </span>
           </div>
           <div className="grid grid-cols-3 gap-2">
-            {[
-              { id: "MYSTIC_SAGE" as Persona, title: "Mystic Sage", desc: "Tri thức cổ điển & thấu thị" },
-              { id: "PRACTICAL_COACH" as Persona, title: "Action Coach", desc: "Định hướng hành động thực tiễn" },
-              { id: "SHADOW_EXPLORER" as Persona, title: "Shadow Work", desc: "Soi rọi tiềm thức & góc khuất" }
-            ].map((p) => {
+            {personaOptions.map((p) => {
               const active = p.id === selectedPersona;
               return (
                 <div
@@ -185,13 +230,17 @@ export default function MobileSpreadConfigPage() {
         {/* Step 4: Inquiry Prompt */}
         <div className="space-y-2">
           <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
-            04 // INQUIRY & QUESTION (OPTIONAL)
+            {isVi ? "04. CÂU HỎI & VẤN ĐỀ (TÙY CHỌN)" : "04. INQUIRY & QUESTION (OPTIONAL)"}
           </span>
           <textarea
             rows={3}
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            placeholder="Nhập câu hỏi hoặc chủ đề bạn muốn thấu suốt (ví dụ: Định hướng sự nghiệp hoặc phát triển bản thân)..."
+            placeholder={
+              isVi
+                ? "Nhập câu hỏi hoặc chủ đề bạn muốn thấu suốt (ví dụ: Định hướng sự nghiệp hoặc phát triển bản thân)..."
+                : "Enter the question or theme you wish to gain clarity on (e.g. Career direction or creative focus)..."
+            }
             className="w-full p-3 text-xs border border-outline-variant rounded-lg bg-white focus:outline-none focus:border-primary leading-relaxed"
           />
         </div>
@@ -203,10 +252,10 @@ export default function MobileSpreadConfigPage() {
           className="w-full py-3.5 bg-primary text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-primary-hover shadow-sm transition-all"
         >
           {isSubmitting ? (
-            <span>Đang khởi tạo phiên đọc...</span>
+            <span>{isVi ? "Đang khởi tạo phiên đọc..." : "Initializing session..."}</span>
           ) : (
             <>
-              <span>Tiến Hành Rút Bài (Tactile Draw)</span>
+              <span>{isVi ? "Tiến Hành Rút Bài (Tactile Draw)" : "Proceed to Card Draw (Tactile Draw)"}</span>
               <span>→</span>
             </>
           )}

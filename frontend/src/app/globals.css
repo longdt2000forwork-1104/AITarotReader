@@ -12,7 +12,7 @@
 body {
   background-color: #FAF9F6;
   color: #0F172A;
-  font-family: 'Be Vietnam Pro', sans-serif;
+  font-family: var(--font-be-vietnam-pro), 'Be Vietnam Pro', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -26,4 +26,3 @@ body {
   background-image: radial-gradient(rgba(15, 23, 42, 0.05) 1px, transparent 0);
   background-size: 8px 8px;
 }
-

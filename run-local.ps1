@@ -2,7 +2,7 @@
 Write-Host "==============================================================================" -ForegroundColor Cyan
 Write-Host " STARTING AI TAROT READER (FULL STACK)" -ForegroundColor Cyan
 Write-Host "   * Backend:  Spring Boot 3 (Port 8080)" -ForegroundColor Yellow
-Write-Host "   * Database: Supabase Cloud PostgreSQL 17" -ForegroundColor Green
+Write-Host "   * Database: Supabase Cloud PostgreSQL 17 (Exclusively Enforced)" -ForegroundColor Green
 Write-Host "   * AI Model: Google Gemini 3.5 Flash Lite" -ForegroundColor Magenta
 Write-Host "   * Frontend: Next.js 14 App Router (Port 3000)" -ForegroundColor Yellow
 Write-Host "==============================================================================" -ForegroundColor Cyan
@@ -10,13 +10,13 @@ Write-Host "====================================================================
 $env:JAVA_HOME = "C:\Program Files\Java\jdk-17"
 $env:Path = "$env:JAVA_HOME\bin;" + $env:Path
 
-Write-Host "`n[1/2] Starting Spring Boot Backend in background window..." -ForegroundColor White
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd backend; `$env:JAVA_HOME='C:\Program Files\Java\jdk-17'; .\mvnw.cmd spring-boot:run"
+Write-Host "`n[1/2] Starting Spring Boot Backend (Connected to Supabase)..." -ForegroundColor White
+Start-Process cmd -ArgumentList "/k", "call `"$PSScriptRoot\backend\run.bat`""
 
 Start-Sleep -Seconds 5
 
 Write-Host "[2/2] Starting Next.js Frontend in background window..." -ForegroundColor White
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd frontend; npm run dev"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd `"$PSScriptRoot\frontend`"; npm run dev"
 
 Write-Host "`nServices are launching!" -ForegroundColor Green
 Write-Host "  -> Frontend App:    http://localhost:3000/app/home" -ForegroundColor Cyan
