@@ -25,11 +25,32 @@ import {
   MOCK_SESSIONS,
   MOCK_JOURNAL_ENTRIES
 } from "./mockData";
-import { TAROT_CARDS } from "@/data/tarotCards";
 
-// USE_MOCK defaults to FALSE: always connect to real backend & Supabase database
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_API === "true";
+import {
+  getMockSessions,
+  getMockSessionById,
+  createMockSession,
+  drawCardsForMockSession,
+  interpretMockSession,
+  drawClarifierForMockSession,
+  sendChatForMockSession,
+  getMockJournals,
+  saveMockJournal,
+  checkMockDailyDraw,
+  flipMockDailyDraw,
+  getMockProfile,
+  updateMockProfile,
+  getMockWallet,
+  claimMockDailyReward
+} from "./mockStorage";
+
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
+// Mock Mode strictly controlled by environment variable
+export const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_API === "true";
+export function isMockMode(): boolean {
+  return USE_MOCK;
+}
 
 // Helper for local storage persistence
 function getStorageItem<T>(key: string, defaultValue: T): T {
@@ -101,7 +122,7 @@ async function requestApi<T>(
   options: RequestInit = {},
   fallbackData?: T
 ): Promise<ApiResponse<T>> {
-  if (USE_MOCK && fallbackData !== undefined) {
+  if (isMockMode() && fallbackData !== undefined) {
     return {
       code: 200,
       message: "OK (Mock)",
@@ -248,94 +269,54 @@ function normalizeReadingSession(session: any, fallbackSpreadId = "S-02", fallba
     const text = msg.content || "";
     const lowerText = text.toLowerCase();
     const isClarifierMsg =
-      lowerText.includes("vừa rút thêm lá bài làm rõ") ||
-      lowerText.includes("just drew a clarifier") ||
-      lowerText.includes("lá bài bổ sung (clarifier)");
-    if (!isClarifierMsg) continue;
+      lowerText.includes("clarifier") ||
+      lowerText.includes("bổ trợ") ||
+      lowerText.includes("rút thêm");
 
-    for (const tc of TAROT_CARDS) {
-      const viLower = tc.nameVi.toLowerCase();
-      const enLower = tc.nameEn.toLowerCase();
-      const mentioned =
-        (viLower && lowerText.includes(viLower)) || (enLower && lowerText.includes(enLower));
-      if (!mentioned) continue;
+    if (isClarifierMsg) {
+      for (const card of MOCK_CARDS) {
+        const viName = (card.nameVi || "").toLowerCase();
+        const enName = (card.nameEn || "").toLowerCase();
+        if (
+          (lowerText.includes(viName) && !existingNamesVi.has(viName)) ||
+          (lowerText.includes(enName) && !existingNamesEn.has(enName))
+        ) {
+          const isReversed =
+            lowerText.includes(`${viName} (ngược)`) ||
+            lowerText.includes(`${enName} (reversed)`) ||
+            lowerText.includes("ngược hướng") ||
+            lowerText.includes("reversed");
 
-      // Ignore if it is an initial/base card
-      const isBaseCard = drawnCards.some(
-        (dc) =>
-          !dc.isClarifier &&
-          (Number((dc.card as any)?.id) === tc.id ||
-            (dc.card?.nameVi || "").toLowerCase() === viLower ||
-            (dc.card?.nameEn || "").toLowerCase() === enLower)
-      );
-      if (isBaseCard) continue;
+          const newIndex = drawnCards.length;
+          drawnCards.push({
+            id: `DC-CLARIFIER-${card.id}`,
+            positionIndex: newIndex,
+            positionNameEn: "Clarifier Card",
+            positionNameVi: "Thẻ Bổ Trợ",
+            isReversed,
+            isClarifier: true,
+            card
+          });
 
-      if (!clarifierOrderMap.has(tc.id)) {
-        clarifierOrderMap.set(tc.id, orderCounter++);
-      }
-
-      if (!existingNamesVi.has(viLower) && !existingNamesEn.has(enLower) && drawnCards.length < 10) {
-        const isRev = new RegExp(`${tc.nameVi}[^\\n)]*ngược|${tc.nameEn}[^\\n)]*reversed`, "i").test(text);
-        existingNamesVi.add(viLower);
-        existingNamesEn.add(enLower);
-        drawnCards.push({
-          id: `DC-CLARIFIER-${tc.id}`,
-          positionIndex: drawnCards.length,
-          positionNameEn: "Clarifier Insight",
-          positionNameVi: "Lá Làm Rõ (Clarifier)",
-          isReversed: isRev,
-          isClarifier: true,
-          card: {
-            id: tc.id,
-            slug: tc.slug,
-            cardOrder: tc.id,
-            number: tc.number,
-            nameVi: tc.nameVi,
-            nameEn: tc.nameEn,
-            arcana: tc.suit === "MAJOR" ? "MAJOR" : "MINOR",
-            suit: tc.suit === "MAJOR" ? null : tc.suit,
-            element: tc.element,
-            imageUrl: tc.image,
-            meaningUprightVi: tc.meaningUprightVi,
-            meaningUprightEn: tc.meaningUprightEn,
-            meaningReversedVi: tc.meaningUprightVi,
-            meaningReversedEn: tc.meaningUprightEn,
-            keywordsUprightVi: tc.keywordsVi,
-            keywordsUprightEn: tc.keywordsEn,
-            keywordsReversedVi: tc.keywordsVi,
-            keywordsReversedEn: tc.keywordsEn,
-            archetypeEn: tc.nameEn,
-            archetypeVi: tc.nameVi
-          }
-        });
+          existingNamesVi.add(viName);
+          existingNamesEn.add(enName);
+          clarifierOrderMap.set(newIndex, orderCounter++);
+        }
       }
     }
   }
 
-  // Sort drawnCards: base cards first (by positionIndex), then clarifier cards in strict chronological order (newest at the bottom)
-  const baseCards = drawnCards
-    .filter((dc) => !dc.isClarifier)
-    .sort((a, b) => (a.positionIndex ?? 0) - (b.positionIndex ?? 0));
-  const clarifierCards = drawnCards
-    .filter((dc) => dc.isClarifier)
-    .sort((a, b) => {
-      const idA = Number((a.card as any)?.id ?? -1);
-      const idB = Number((b.card as any)?.id ?? -1);
-      const orderA = clarifierOrderMap.has(idA)
-        ? clarifierOrderMap.get(idA)!
-        : 1000 + (a.positionIndex ?? 0);
-      const orderB = clarifierOrderMap.has(idB)
-        ? clarifierOrderMap.get(idB)!
-        : 1000 + (b.positionIndex ?? 0);
-      return orderA - orderB;
-    });
-
-  const sortedDrawnCards = [...baseCards, ...clarifierCards]
-    .slice(0, 10)
-    .map((dc, idx) => ({
-      ...dc,
-      positionIndex: idx
-    }));
+  // Sort drawnCards: spread layout cards first, then clarifier cards in order of drawing
+  drawnCards.sort((a, b) => {
+    if (!a.isClarifier && !b.isClarifier) {
+      return a.positionIndex - b.positionIndex;
+    }
+    if (!a.isClarifier && b.isClarifier) return -1;
+    if (a.isClarifier && !b.isClarifier) return 1;
+    const orderA = clarifierOrderMap.get(a.positionIndex) ?? a.positionIndex;
+    const orderB = clarifierOrderMap.get(b.positionIndex) ?? b.positionIndex;
+    return orderA - orderB;
+  });
 
   return {
     id,
@@ -346,26 +327,44 @@ function normalizeReadingSession(session: any, fallbackSpreadId = "S-02", fallba
     persona,
     spreadTemplate,
     deck,
-    drawnCards: sortedDrawnCards,
+    drawnCards,
     aiInterpretation,
-    aiSynthesisResult: aiInterpretation,
-    dateKey: session.dateKey,
     messages: normalizedMessages,
     createdAt
   };
 }
 
-// ----------------------------------------------------------------------
-// Unified Live API Client Connected Directly to Supabase
-// ----------------------------------------------------------------------
+// -------------------------------------------------------------
+// Unified API Client
+// -------------------------------------------------------------
 export const apiClient = {
+  isMockMode,
+
   // 1. Auth Module
   auth: {
     async getCurrentUser(): Promise<ApiResponse<UserDto>> {
+      if (isMockMode()) {
+        const user = getStorageItem<UserDto>("tarot_user", MOCK_USER);
+        return { code: 200, message: "OK (Mock)", data: user, timestamp: new Date().toISOString() };
+      }
       return requestApi<UserDto>("/api/v1/auth/me", {}, MOCK_USER);
     },
 
     async login(email: string, password = "secretPassword123"): Promise<ApiResponse<AuthResponse>> {
+      if (isMockMode()) {
+        const user: UserDto = { ...MOCK_USER, email, fullName: email.split("@")[0] };
+        const mockAuth: AuthResponse = {
+          accessToken: "mock_jwt_token_sample",
+          tokenType: "Bearer",
+          user
+        };
+        if (typeof window !== "undefined") {
+          localStorage.setItem("tarot_access_token", mockAuth.accessToken);
+          setStorageItem("tarot_user", user);
+        }
+        return { code: 200, message: "Logged in (Mock)", data: mockAuth, timestamp: new Date().toISOString() };
+      }
+
       const res = await requestApi<AuthResponse>(
         "/api/v1/auth/google",
         {
@@ -401,9 +400,15 @@ export const apiClient = {
     }
   },
 
-  // 2. Tarot Catalog Module (Direct from Supabase PostgreSQL Database)
+  // 2. Tarot Catalog Module (Direct from Supabase PostgreSQL Database or Mock)
   tarot: {
     async getCards(arcana?: string, suit?: string): Promise<ApiResponse<TarotCardDto[]>> {
+      if (isMockMode()) {
+        let cards = MOCK_CARDS;
+        if (arcana) cards = cards.filter((c) => c.arcana === arcana);
+        if (suit) cards = cards.filter((c) => c.suit === suit);
+        return { code: 200, message: "OK (Mock)", data: cards, timestamp: new Date().toISOString() };
+      }
       const params = new URLSearchParams();
       if (arcana) params.append("arcana", arcana);
       if (suit) params.append("suit", suit);
@@ -412,15 +417,25 @@ export const apiClient = {
     },
 
     async getCardById(id: number): Promise<ApiResponse<TarotCardDto>> {
+      if (isMockMode()) {
+        const fallback = MOCK_CARDS.find((c) => c.id === id) || MOCK_CARDS[0];
+        return { code: 200, message: "OK (Mock)", data: fallback, timestamp: new Date().toISOString() };
+      }
       const fallback = MOCK_CARDS.find((c) => c.id === id) || MOCK_CARDS[0];
       return requestApi<TarotCardDto>(`/api/v1/tarot/cards/${id}`, {}, fallback);
     },
 
     async getDecks(): Promise<ApiResponse<TarotDeck[]>> {
+      if (isMockMode()) {
+        return { code: 200, message: "OK (Mock)", data: MOCK_DECKS, timestamp: new Date().toISOString() };
+      }
       return requestApi<TarotDeck[]>("/api/v1/tarot/decks", {}, MOCK_DECKS);
     },
 
     async getSpreads(): Promise<ApiResponse<SpreadTemplate[]>> {
+      if (isMockMode()) {
+        return { code: 200, message: "OK (Mock)", data: MOCK_SPREADS, timestamp: new Date().toISOString() };
+      }
       const res = await requestApi<SpreadTemplate[]>("/api/v1/tarot/spreads", {}, MOCK_SPREADS);
       if (res.data && Array.isArray(res.data)) {
         res.data = res.data.map((spread) => {
@@ -438,9 +453,14 @@ export const apiClient = {
     }
   },
 
-  // 3. Reading Session Module (Saved directly in Supabase reading_sessions & drawn_cards)
+  // 3. Reading Session Module (Saved directly in Supabase or Local Mock Storage)
   readings: {
     async create(req: CreateReadingSessionRequest): Promise<ApiResponse<ReadingSessionDto>> {
+      if (isMockMode()) {
+        const created = createMockSession(req);
+        return { code: 201, message: "Session created (Mock)", data: created, timestamp: new Date().toISOString() };
+      }
+
       const payload = {
         spreadId: req.spreadId,
         deckId: req.deckId || "ED-01",
@@ -461,62 +481,76 @@ export const apiClient = {
       }
 
       // Local fallback if backend temporarily unreachable
-      const spread = MOCK_SPREADS.find((s) => s.id === req.spreadId) || MOCK_SPREADS[1];
-      const deck = MOCK_DECKS.find((d) => d.id === req.deckId) || MOCK_DECKS[0];
-      const fallbackSession: ReadingSessionDto = {
-        id: `RS-${Date.now().toString().slice(-4)}`,
-        sessionCode: `SESSION-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-        status: "CREATED",
-        question: req.question || "General energetic guidance and spiritual clarity.",
-        inputMode: req.inputMode || "CARD_DRAW",
-        persona: req.persona || "MYSTIC_SAGE",
-        spreadTemplate: spread,
-        deck,
-        drawnCards: [],
-        messages: [],
-        createdAt: new Date().toISOString()
-      };
+      const fallbackSession = createMockSession(req);
       return { code: 201, message: "Session created (Fallback)", data: fallbackSession, timestamp: new Date().toISOString() };
     },
 
     async getById(id: string): Promise<ApiResponse<ReadingSessionDto>> {
+      if (isMockMode()) {
+        const session = getMockSessionById(id);
+        if (session) {
+          return { code: 200, message: "OK (Mock)", data: session, timestamp: new Date().toISOString() };
+        }
+      }
+
       const res = await requestApi<any>(`/api/v1/readings/sessions/${id}`);
       if (res.data) {
         return { ...res, data: normalizeReadingSession(res.data) };
       }
-      const fallback = MOCK_SESSIONS.find((s) => s.id === id || s.sessionCode === id) || MOCK_SESSIONS[0];
+      const fallback = getMockSessionById(id) || MOCK_SESSIONS[0];
       return { code: 200, message: "OK", data: fallback, timestamp: new Date().toISOString() };
     },
 
     async drawCards(sessionId: string): Promise<ApiResponse<ReadingSessionDto>> {
+      if (isMockMode()) {
+        const drawn = drawCardsForMockSession(sessionId);
+        return { code: 200, message: "Cards drawn (Mock)", data: drawn, timestamp: new Date().toISOString() };
+      }
+
       const res = await requestApi<any>(`/api/v1/readings/sessions/${sessionId}/draw`, { method: "POST" });
       if (res.data) {
         return { ...res, data: normalizeReadingSession(res.data) };
       }
       // Fallback
-      const session = MOCK_SESSIONS[0];
-      return { code: 200, message: "Cards drawn", data: session, timestamp: new Date().toISOString() };
+      const fallback = drawCardsForMockSession(sessionId);
+      return { code: 200, message: "Cards drawn (Fallback)", data: fallback, timestamp: new Date().toISOString() };
     },
 
     async interpret(sessionId: string): Promise<ApiResponse<ReadingSessionDto>> {
+      if (isMockMode()) {
+        const interpreted = interpretMockSession(sessionId);
+        return { code: 200, message: "Interpretation generated (Mock)", data: interpreted, timestamp: new Date().toISOString() };
+      }
+
       const res = await requestApi<any>(`/api/v1/readings/sessions/${sessionId}/interpret`, { method: "POST" });
       if (res.data) {
         return { ...res, data: normalizeReadingSession(res.data) };
       }
       // Fallback
-      const session = MOCK_SESSIONS[0];
-      return { code: 200, message: "Interpretation generated", data: session, timestamp: new Date().toISOString() };
+      const fallback = interpretMockSession(sessionId);
+      return { code: 200, message: "Interpretation generated (Fallback)", data: fallback, timestamp: new Date().toISOString() };
     },
 
     async drawClarifier(sessionId: string): Promise<ApiResponse<ReadingSessionDto>> {
+      if (isMockMode()) {
+        const session = drawClarifierForMockSession(sessionId);
+        return { code: 200, message: "Clarifier card drawn (Mock)", data: session, timestamp: new Date().toISOString() };
+      }
+
       const res = await requestApi<any>(`/api/v1/readings/sessions/${sessionId}/clarifier`, { method: "POST" });
       if (res.data) {
         return { ...res, data: normalizeReadingSession(res.data) };
       }
-      return res;
+      const fallback = drawClarifierForMockSession(sessionId);
+      return { code: 200, message: "Clarifier card drawn (Fallback)", data: fallback, timestamp: new Date().toISOString() };
     },
 
     async sendChat(sessionId: string, userMessage: string): Promise<ApiResponse<SessionMessageDto>> {
+      if (isMockMode()) {
+        const reply = sendChatForMockSession(sessionId, userMessage);
+        return { code: 200, message: "OK (Mock)", data: reply, timestamp: new Date().toISOString() };
+      }
+
       const res = await requestApi<any>(`/api/v1/readings/sessions/${sessionId}/chat`, {
         method: "POST",
         body: JSON.stringify({ question: userMessage })
@@ -555,55 +589,75 @@ export const apiClient = {
         }
       }
 
-      const fallbackMsg: SessionMessageDto = {
-        id: `MSG-${Date.now()}-A`,
-        sender: "AI_READER",
-        content: `Dựa trên năng lượng của lá bài và câu hỏi của bạn: "${userMessage}", vũ trụ khuyên bạn hãy tin tưởng vào trực giác nội tâm.`,
-        createdAt: new Date().toISOString()
-      };
-      return { code: 200, message: "Reply sent", data: fallbackMsg, timestamp: new Date().toISOString() };
+      const fallbackReply = sendChatForMockSession(sessionId, userMessage);
+      return { code: 200, message: "Reply sent (Fallback)", data: fallbackReply, timestamp: new Date().toISOString() };
     },
 
     async saveJournal(sessionId: string, notes: string, tags: string[] = []): Promise<ApiResponse<JournalEntryDto>> {
+      if (isMockMode()) {
+        const entry = saveMockJournal(sessionId, notes, tags);
+        return { code: 201, message: "Saved to journal (Mock)", data: entry, timestamp: new Date().toISOString() };
+      }
+
       const res = await requestApi<any>(`/api/v1/readings/sessions/${sessionId}/journal`, {
         method: "PUT",
         body: JSON.stringify({ reflectionNote: notes, notes, moodTags: tags, tags })
       });
 
-      const entry: JournalEntryDto = {
-        id: `JN-${Date.now().toString().slice(-4)}`,
-        readingSessionId: sessionId,
-        sessionCode: `SESSION-${sessionId.slice(0, 8)}`,
-        title: `Ghi chép trải bài`,
-        summary: "Nghiệm lý trải bài Tarot",
-        userNotes: notes,
-        tags: tags.length ? tags : ["Personal Reflection", "Reading"],
-        spreadNameEn: "Tarot Spread",
-        spreadNameVi: "Trải bài Tarot",
-        cardCount: 3,
-        createdAt: new Date().toISOString()
-      };
-      return { code: 201, message: "Saved to journal", data: entry, timestamp: new Date().toISOString() };
+      if (res.data) {
+        const entry: JournalEntryDto = {
+          id: res.data.id ? res.data.id.toString() : `JN-${Date.now().toString().slice(-4)}`,
+          readingSessionId: sessionId,
+          sessionCode: `SESSION-${sessionId.slice(0, 8)}`,
+          title: res.data.title || `Ghi chép trải bài`,
+          summary: res.data.summary || notes.slice(0, 100) || "Nghiệm lý trải bài Tarot",
+          userNotes: notes,
+          tags: tags.length ? tags : ["Personal Reflection", "Reading"],
+          spreadNameEn: "Tarot Spread",
+          spreadNameVi: "Trải bài Tarot",
+          cardCount: 3,
+          createdAt: res.data.createdAt || new Date().toISOString()
+        };
+        return { code: 201, message: "Saved to journal", data: entry, timestamp: new Date().toISOString() };
+      }
+
+      const entry = saveMockJournal(sessionId, notes, tags);
+      return { code: 201, message: "Saved to journal (Fallback)", data: entry, timestamp: new Date().toISOString() };
     },
 
     async getHistory(): Promise<ApiResponse<ReadingSessionDto[]>> {
+      if (isMockMode()) {
+        const history = getMockSessions();
+        return { code: 200, message: "OK (Mock)", data: history, timestamp: new Date().toISOString() };
+      }
+
       const res = await requestApi<any[]>("/api/v1/readings/history");
       if (res.data && Array.isArray(res.data)) {
         const normalized = res.data.map((s) => normalizeReadingSession(s));
         return { ...res, data: normalized };
       }
-      return { code: 200, message: "OK", data: MOCK_SESSIONS, timestamp: new Date().toISOString() };
+      return { code: 200, message: "OK", data: getMockSessions(), timestamp: new Date().toISOString() };
     },
 
     async getJournal(): Promise<ApiResponse<JournalEntryDto[]>> {
+      if (isMockMode()) {
+        const journals = getMockJournals();
+        return { code: 200, message: "OK (Mock)", data: journals, timestamp: new Date().toISOString() };
+      }
+
       const res = await requestApi<JournalEntryDto[]>("/api/v1/readings/journal");
       if (res.data && Array.isArray(res.data) && res.data.length > 0) {
         return res;
       }
-      return { code: 200, message: "OK", data: MOCK_JOURNAL_ENTRIES, timestamp: new Date().toISOString() };
+      return { code: 200, message: "OK", data: getMockJournals(), timestamp: new Date().toISOString() };
     },
 
     async checkDailyDraw(locale: string = "vi"): Promise<ApiResponse<ReadingSessionDto | null>> {
+      if (isMockMode()) {
+        const session = checkMockDailyDraw(locale);
+        return { code: 200, message: "OK (Mock)", data: session, timestamp: new Date().toISOString() };
+      }
+
       const endpoint = `/api/v1/readings/daily?locale=${locale}`;
       const res = await requestApi<any>(endpoint, { method: "GET" });
       if (res.data && res.data.id) {
@@ -613,15 +667,26 @@ export const apiClient = {
     },
 
     async flipDailyDraw(locale: string = "vi", force: boolean = false): Promise<ApiResponse<ReadingSessionDto>> {
+      if (isMockMode()) {
+        const session = flipMockDailyDraw(locale, force);
+        return { code: 200, message: "Daily card flipped (Mock)", data: session, timestamp: new Date().toISOString() };
+      }
+
       const endpoint = `/api/v1/readings/daily?locale=${locale}${force ? "&force=true" : ""}`;
       const res = await requestApi<any>(endpoint, { method: "POST" });
       if (res.data) {
         return { ...res, data: normalizeReadingSession(res.data, "S-01", "ED-01") };
       }
-      return res;
+      const fallback = flipMockDailyDraw(locale, force);
+      return { code: 200, message: "Daily card flipped (Fallback)", data: fallback, timestamp: new Date().toISOString() };
     },
 
     async getDailyDraw(locale: string = "vi", force: boolean = false): Promise<ApiResponse<ReadingSessionDto>> {
+      if (isMockMode()) {
+        const session = flipMockDailyDraw(locale, force);
+        return { code: 200, message: "Daily card resolved (Mock)", data: session, timestamp: new Date().toISOString() };
+      }
+
       const endpoint = `/api/v1/readings/daily?locale=${locale}${force ? "&force=true" : ""}`;
       const res = await requestApi<any>(endpoint, {
         method: force ? "POST" : "GET"
@@ -633,13 +698,20 @@ export const apiClient = {
     }
   },
 
-  // 4. Mystic Profile Module (Direct from Supabase mystic_profiles table)
+  // 4. Mystic Profile Module (Direct from Supabase mystic_profiles table or Mock)
   profile: {
     async getMysticProfile(): Promise<ApiResponse<MysticProfileDto>> {
+      if (isMockMode()) {
+        return { code: 200, message: "OK (Mock)", data: getMockProfile(), timestamp: new Date().toISOString() };
+      }
       return requestApi<MysticProfileDto>("/api/v1/profile/mystic", {}, MOCK_MYSTIC_PROFILE);
     },
 
     async updateMysticProfile(data: UpdateMysticProfileRequest): Promise<ApiResponse<MysticProfileDto>> {
+      if (isMockMode()) {
+        const updated = updateMockProfile(data);
+        return { code: 200, message: "Profile updated (Mock)", data: updated, timestamp: new Date().toISOString() };
+      }
       return requestApi<MysticProfileDto>(
         "/api/v1/profile/mystic",
         {
@@ -651,9 +723,12 @@ export const apiClient = {
     }
   },
 
-  // 5. Crystal Wallet Module (Direct from Supabase users.crystal_balance)
+  // 5. Crystal Wallet Module (Direct from Supabase users.crystal_balance or Mock)
   wallet: {
     async getBalance(): Promise<ApiResponse<WalletBalanceDto>> {
+      if (isMockMode()) {
+        return { code: 200, message: "OK (Mock)", data: getMockWallet(), timestamp: new Date().toISOString() };
+      }
       const res = await requestApi<any>("/api/v1/wallet/balance", {}, MOCK_WALLET);
       if (res.data) {
         const balance = res.data.balance !== undefined ? res.data.balance : res.data.crystalBalance || 20;
@@ -668,6 +743,11 @@ export const apiClient = {
     },
 
     async claimDailyReward(): Promise<ApiResponse<WalletBalanceDto>> {
+      if (isMockMode()) {
+        const updated = claimMockDailyReward();
+        return { code: 200, message: "Daily reward claimed (+10 Crystals) (Mock)", data: updated, timestamp: new Date().toISOString() };
+      }
+
       const res = await requestApi<any>("/api/v1/wallet/daily-reward", { method: "POST" });
       if (res.data) {
         const balance = res.data.balance !== undefined ? res.data.balance : res.data.crystalBalance || 30;
@@ -687,11 +767,7 @@ export const apiClient = {
         };
         return { ...res, code: 200, data: normalized };
       }
-      const updatedBalance = MOCK_WALLET.balance + 10;
-      const updatedWallet: WalletBalanceDto = {
-        ...MOCK_WALLET,
-        balance: updatedBalance
-      };
+      const updatedWallet = claimMockDailyReward();
       return { code: 200, message: "Daily reward claimed (+10 Crystals)", data: updatedWallet, timestamp: new Date().toISOString() };
     }
   }
