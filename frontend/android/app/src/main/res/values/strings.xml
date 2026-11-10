@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AI Tarot Reader</string>
+    <string name="title_activity_main">AI Tarot Reader</string>
+    <string name="package_name">com.aitarotreader.app</string>
+    <string name="custom_url_scheme">com.aitarotreader.app</string>
+</resources>
