@@ -47,7 +47,13 @@ jobs:
           NEXT_PUBLIC_USE_MOCK_API: "true"
           NEXT_PUBLIC_API_URL: "http://localhost:8080"
         run: |
+          echo "NEXT_PUBLIC_USE_MOCK_API=true" > .env.production
+          echo "NEXT_PUBLIC_API_URL=http://localhost:8080" >> .env.production
           npm run build
+
+      - name: Sync Capacitor Android
+        working-directory: frontend
+        run: |
           npx cap sync android
 
       - name: Build Android Debug APK
