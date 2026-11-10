@@ -32,10 +32,11 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Verify Android SDK Environment
+      - name: Verify Android SDK & Accept Licenses
         run: |
           echo "ANDROID_HOME: $ANDROID_HOME"
-          ls -la "$ANDROID_HOME/platforms"
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-36" || true
 
       - name: Install Frontend Dependencies
         working-directory: frontend
@@ -60,7 +61,7 @@ jobs:
         working-directory: frontend/android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon -Pandroid.builder.sdkDownload=true
 
       - name: Prepare APK File
         run: |
