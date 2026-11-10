@@ -32,8 +32,10 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Verify Android SDK Environment
+        run: |
+          echo "ANDROID_HOME: $ANDROID_HOME"
+          ls -la "$ANDROID_HOME/platforms"
 
       - name: Install Frontend Dependencies
         working-directory: frontend
@@ -74,10 +76,11 @@ jobs:
           name: "AI Tarot Reader — Offline APK Preview"
           body: |
             ## Bản build APK thử nghiệm (Offline Mock Data)
-            - **Tải trực tiếp về điện thoại**: Tải file `ai-tarot-reader-offline.apk` đính kèm bên dưới.
+            - **Tải trực tiếp về điện thoại Android**: Bấm vào file `ai-tarot-reader-offline.apk` trong mục Assets bên dưới để tải và cài đặt.
             - **Tính năng**: Hoạt động hoàn toàn Offline 100%, tích hợp giao diện rút bài hàng ngày, bàn làm việc Tarot (rút bài, luận giải, clarifier card, chat, nhật ký).
           draft: false
-          prerelease: true
+          prerelease: false
+          make_latest: "true"
           files: ai-tarot-reader-offline.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
