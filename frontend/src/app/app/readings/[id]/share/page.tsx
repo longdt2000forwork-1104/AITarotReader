@@ -92,8 +92,8 @@ export default function MobileShareStudioPage() {
   const displayCards = drawnCards.slice(0, 3);
 
   return (
-    <div className="bg-[#FAF9F6] text-[#0F172A] font-body min-h-screen flex justify-center selection:bg-emerald-100 selection:text-emerald-900">
-      <div className="w-full max-w-[420px] bg-white min-h-screen flex flex-col shadow-xl border-x border-[#E2E8F0] relative pb-28">
+    <div className="bg-[#FAF9F6] text-[#0F172A] font-body min-h-screen flex justify-center selection:bg-emerald-100 selection:text-emerald-900 overflow-x-hidden">
+      <div className="w-full max-w-[420px] sm:max-w-md bg-white min-h-screen flex flex-col shadow-xl border-x border-[#E2E8F0] relative pb-28 overflow-x-hidden">
         {/* Save Toast */}
         {saveToast && (
           <div className="bg-emerald-600 text-white text-xs font-mono font-medium px-4 py-2 text-center flex items-center justify-center gap-2 sticky top-0 z-50 shadow-md">
@@ -103,10 +103,10 @@ export default function MobileShareStudioPage() {
         )}
 
         {/* 1. Top Header Bar */}
-        <header className="bg-white border-b border-[#E2E8F0] px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+        <header className="bg-white border-b border-[#E2E8F0] px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between sticky top-0 z-40 w-full gap-2">
           <Link
             href={`/app/readings/${session?.id || readingId}`}
-            className="flex items-center gap-2 px-2 py-1 -ml-2 rounded-lg hover:bg-slate-100 text-[#0F172A] hover:text-primary transition-colors text-xs font-medium"
+            className="flex items-center gap-1.5 sm:gap-2 px-2 py-1 -ml-1.5 sm:-ml-2 rounded-lg hover:bg-slate-100 text-[#0F172A] hover:text-primary transition-colors text-xs font-medium shrink-0"
           >
             <span className="material-symbols-outlined text-lg">arrow_back</span>
             <span>{isVi ? "Quay lại" : "Back"}</span>

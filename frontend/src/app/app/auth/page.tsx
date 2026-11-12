@@ -45,24 +45,24 @@ export default function MobileAuthOnboardingPage() {
   };
 
   return (
-    <div className="bg-[#FAF9F6] text-[#0F172A] font-body min-h-screen flex justify-center selection:bg-emerald-100 selection:text-emerald-900">
-      <main className="w-full max-w-[412px] bg-[#FAF9F6] min-h-screen flex flex-col relative pb-32 border-x border-[#E2E8F0] shadow-sm">
+    <div className="bg-[#FAF9F6] text-[#0F172A] font-body min-h-screen flex justify-center selection:bg-emerald-100 selection:text-emerald-900 overflow-x-hidden">
+      <main className="w-full max-w-[430px] sm:max-w-md bg-[#FAF9F6] min-h-screen flex flex-col relative pb-32 border-x border-[#E2E8F0] shadow-sm overflow-x-hidden">
         {/* Top Header */}
-        <header className="px-4 py-3 bg-white border-b border-[#E2E8F0] flex items-center justify-between sticky top-0 z-40">
+        <header className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white border-b border-[#E2E8F0] flex items-center justify-between sticky top-0 z-40 w-full gap-2">
           <Link
             href="/app/home"
-            className="flex items-center gap-2 px-2 py-1 -ml-2 rounded-lg hover:bg-slate-100 text-xs text-slate-600 hover:text-on-surface font-medium transition-colors"
+            className="flex items-center gap-1.5 sm:gap-2 px-2 py-1 -ml-1.5 sm:-ml-2 rounded-lg hover:bg-slate-100 text-xs text-slate-600 hover:text-on-surface font-medium transition-colors shrink-0"
           >
             <span className="material-symbols-outlined text-lg">arrow_back</span>
             <span>{isVi ? "Thánh Địa" : "Sanctuary"}</span>
           </Link>
-          <div className="flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-primary text-base">auto_awesome</span>
-            <span className="font-headline font-bold text-xs tracking-tight text-slate-900 uppercase">
+          <div className="flex items-center gap-1.5 min-w-0 flex-1 justify-center">
+            <span className="material-symbols-outlined text-primary text-base shrink-0">auto_awesome</span>
+            <span className="font-headline font-bold text-xs tracking-tight text-slate-900 uppercase truncate">
               {isVi ? "Xác Thực" : "Authentication"}
             </span>
           </div>
-          <div className="flex items-center border border-[#E2E8F0] rounded text-[10px] font-mono overflow-hidden">
+          <div className="flex items-center border border-[#E2E8F0] rounded text-[10px] font-mono overflow-hidden shrink-0">
             <button
               onClick={() => setLocale("en")}
               className={`px-2 py-1 font-bold ${

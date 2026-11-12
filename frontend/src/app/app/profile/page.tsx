@@ -97,8 +97,8 @@ export default function MobileSeekerProfilePage() {
   };
 
   return (
-    <div className="bg-[#FAF9F6] text-[#0F172A] font-body min-h-screen flex justify-center selection:bg-emerald-100 selection:text-emerald-900">
-      <main className="w-full max-w-[412px] bg-[#FAF9F6] min-h-screen flex flex-col relative pb-28 border-x border-[#E2E8F0] shadow-sm">
+    <div className="bg-[#FAF9F6] text-[#0F172A] font-body min-h-screen flex justify-center selection:bg-emerald-100 selection:text-emerald-900 overflow-x-hidden">
+      <main className="w-full max-w-[430px] sm:max-w-md bg-[#FAF9F6] min-h-screen flex flex-col relative pb-28 border-x border-[#E2E8F0] shadow-sm overflow-x-hidden">
         {/* Toast Notification */}
         {toastMessage && (
           <div className="bg-emerald-600 text-white text-xs font-mono font-medium px-4 py-2 text-center flex items-center justify-center gap-2 sticky top-0 z-50 shadow-md">
@@ -108,18 +108,18 @@ export default function MobileSeekerProfilePage() {
         )}
 
         {/* Top Header */}
-        <header className="px-4 py-3 bg-white border-b border-outline-variant flex items-center justify-between sticky top-0 z-40">
+        <header className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white border-b border-outline-variant flex items-center justify-between sticky top-0 z-40 w-full gap-2">
           <Link
             href="/app/home"
-            className="flex items-center gap-2 px-2 py-1 -ml-2 rounded-lg hover:bg-slate-100 text-xs text-slate-600 hover:text-on-surface font-medium transition-colors"
+            className="flex items-center gap-1.5 sm:gap-2 px-2 py-1 -ml-1.5 sm:-ml-2 rounded-lg hover:bg-slate-100 text-xs text-slate-600 hover:text-on-surface font-medium transition-colors shrink-0"
           >
             <span className="material-symbols-outlined text-lg">arrow_back</span>
             <span>{isVi ? "Thánh Địa" : "Sanctuary"}</span>
           </Link>
-          <span className="font-mono text-xs font-semibold text-on-surface">
+          <span className="font-mono text-xs font-semibold text-on-surface truncate text-center min-w-0 flex-1">
             {isVi ? "HỒ SƠ NGƯỜI TÌM KIẾM" : "SEEKER PROFILE"}
           </span>
-          <span className="text-[10px] font-mono bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200 font-semibold">
+          <span className="text-[10px] font-mono bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200 font-semibold shrink-0">
             SUPABASE
           </span>
         </header>

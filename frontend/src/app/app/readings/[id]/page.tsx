@@ -246,28 +246,28 @@ export default function MobileReadingReportPage() {
   const waterPct = Math.max(0, 100 - (firePct + earthPct + airPct));
 
   return (
-    <div className="bg-[#FAF9F6] text-[#0F172A] font-body min-h-screen flex justify-center selection:bg-emerald-100 selection:text-emerald-900">
-      <div className="w-full max-w-[420px] bg-[#FAF9F6] min-h-screen flex flex-col relative pb-24 border-x border-[#E2E8F0] shadow-sm">
+    <div className="bg-[#FAF9F6] text-[#0F172A] font-body min-h-screen flex justify-center selection:bg-emerald-100 selection:text-emerald-900 overflow-x-hidden">
+      <div className="w-full max-w-[420px] sm:max-w-md bg-[#FAF9F6] min-h-screen flex flex-col relative pb-24 border-x border-[#E2E8F0] shadow-sm overflow-x-hidden">
         {/* 1. Top Navigation Bar */}
-        <header className="sticky top-0 z-40 bg-white border-b border-[#E2E8F0] px-4 py-3 flex items-center justify-between">
+        <header className="sticky top-0 z-40 bg-white border-b border-[#E2E8F0] px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between w-full gap-2">
           <Link
             href="/app/home"
-            className="flex items-center gap-2 px-2 py-1 -ml-2 rounded-lg hover:bg-slate-100 text-[#0F172A] hover:text-primary transition-colors text-xs font-medium"
+            className="flex items-center gap-1.5 sm:gap-2 px-2 py-1 -ml-1.5 sm:-ml-2 rounded-lg hover:bg-slate-100 text-[#0F172A] hover:text-primary transition-colors text-xs font-medium shrink-0"
           >
             <span className="material-symbols-outlined text-lg">arrow_back</span>
             <span>{isVi ? "Quay lại" : "Back"}</span>
           </Link>
-          <div className="flex flex-col items-center text-center px-1">
-            <h1 className="font-headline font-bold text-sm tracking-tight text-slate-900 leading-tight">
+          <div className="flex flex-col items-center text-center px-1 min-w-0 flex-1 overflow-hidden">
+            <h1 className="font-headline font-bold text-xs sm:text-sm tracking-tight text-slate-900 leading-tight truncate w-full">
               {isVi ? "Báo Cáo Tổng Hợp" : "Synthesis Report"}
             </h1>
-            <span className="text-[10px] text-slate-500 truncate max-w-[170px] font-mono">
+            <span className="text-[10px] text-slate-500 truncate w-full font-mono">
               {spreadName}
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 shrink-0">
             {/* Language Switcher */}
-            <div className="flex items-center border border-[#E2E8F0] rounded text-[10px] font-mono overflow-hidden shadow-xs">
+            <div className="flex items-center border border-[#E2E8F0] rounded text-[10px] font-mono overflow-hidden shadow-2xs">
               <button
                 onClick={() => setLocale("en")}
                 className={`px-1.5 py-0.5 font-bold ${

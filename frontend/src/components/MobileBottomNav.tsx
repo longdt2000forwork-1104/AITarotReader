@@ -57,32 +57,32 @@ export default function MobileBottomNav({
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200 max-w-[430px] mx-auto shadow-[0_-2px_10px_rgba(0,0,0,0.05)] pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-      <div className="flex items-center justify-around px-2 py-1.5">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200 w-full max-w-[430px] sm:max-w-md mx-auto shadow-[0_-2px_10px_rgba(0,0,0,0.05)] pb-[max(0.5rem,env(safe-area-inset-bottom))] transition-all">
+      <div className="flex items-center justify-around px-1 sm:px-2 py-1 sm:py-1.5 w-full">
         {navItems.map((item) => {
           return (
             <Link
               key={item.key}
               href={item.href}
-              className={`flex-1 flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-all duration-150 select-none group min-w-0 ${
+              className={`flex-1 flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition-all duration-150 select-none group min-w-0 ${
                 item.isActive
                   ? "text-primary"
                   : "text-slate-500 hover:text-slate-800"
               }`}
             >
               <div
-                className={`w-9 h-7 rounded-full flex items-center justify-center transition-colors ${
+                className={`w-8 sm:w-9 h-6 sm:h-7 rounded-full flex items-center justify-center transition-colors shrink-0 ${
                   item.isActive
                     ? "bg-emerald-50 text-primary"
                     : "text-slate-400 group-hover:text-slate-600 group-hover:bg-slate-50"
                 }`}
               >
-                <span className="material-symbols-outlined text-[20px] leading-none">
+                <span className="material-symbols-outlined text-[19px] sm:text-[20px] leading-none">
                   {item.icon}
                 </span>
               </div>
               <span
-                className={`mt-1 text-[11px] leading-tight tracking-tight text-center truncate w-full transition-colors ${
+                className={`mt-0.5 sm:mt-1 text-[10px] sm:text-[11px] leading-tight tracking-tight text-center truncate w-full px-0.5 transition-colors ${
                   item.isActive
                     ? "font-semibold text-primary"
                     : "font-normal text-slate-500 group-hover:text-slate-800"

@@ -227,34 +227,34 @@ export default function MobileDailyHomePage() {
     : [];
 
   return (
-    <div className="max-w-[430px] mx-auto min-h-screen bg-surface flex flex-col border-x border-outline-variant pb-20">
+    <div className="w-full max-w-[430px] sm:max-w-md mx-auto min-h-screen bg-surface flex flex-col border-x border-outline-variant pb-20 overflow-x-hidden">
       {/* Top Hairline App Bar */}
-      <header className="px-4 py-3 bg-white border-b border-outline-variant flex items-center justify-between sticky top-0 z-40">
+      <header className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white border-b border-outline-variant flex items-center justify-between sticky top-0 z-40 w-full gap-2">
         <Link
           href="/app/profile"
-          className="flex items-center gap-2.5 group hover:opacity-90 transition-opacity"
+          className="flex items-center gap-2 sm:gap-2.5 min-w-0 max-w-[58%] sm:max-w-[62%] group hover:opacity-90 transition-opacity"
           title={isVi ? "Mở Hồ Sơ Cá Nhân" : "Open Seeker Profile"}
         >
-          <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 group-hover:border-primary flex items-center justify-center text-xs font-serif font-bold text-slate-800 transition-colors">
+          <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 group-hover:border-primary flex items-center justify-center text-xs font-serif font-bold text-slate-800 transition-colors shrink-0 shadow-2xs">
             ✦
           </div>
-          <div>
-            <div className="text-xs font-bold text-on-surface group-hover:text-primary leading-tight transition-colors">
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <div className="text-xs font-bold text-on-surface group-hover:text-primary leading-tight transition-colors truncate">
               Aria • {sunSignDisplay}
             </div>
-            <div className="text-[10px] font-mono text-slate-400 mt-0.5">
-              {isVi ? "Số Đường Đời " : "Life Path "} {profile ? profile.lifePathNumber : "7"}
+            <div className="text-[10px] font-mono text-slate-400 mt-0.5 truncate">
+              {isVi ? "Đường Đời " : "LP "} {profile ? profile.lifePathNumber : "7"}
             </div>
           </div>
         </Link>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Mobile Language Switcher */}
           <div className="flex items-center border border-outline-variant rounded-md text-[10px] font-mono overflow-hidden shadow-2xs">
             <button
               type="button"
               onClick={() => setLocale("en")}
-              className={`px-2 py-1 transition-colors ${
+              className={`px-1.5 sm:px-2 py-0.5 sm:py-1 transition-colors ${
                 !isVi ? "bg-slate-900 text-white font-bold" : "text-slate-500 hover:text-on-surface"
               }`}
             >
@@ -263,7 +263,7 @@ export default function MobileDailyHomePage() {
             <button
               type="button"
               onClick={() => setLocale("vi")}
-              className={`px-2 py-1 transition-colors ${
+              className={`px-1.5 sm:px-2 py-0.5 sm:py-1 transition-colors ${
                 isVi ? "bg-primary text-white font-bold" : "text-slate-500 hover:text-on-surface"
               }`}
             >
@@ -273,26 +273,11 @@ export default function MobileDailyHomePage() {
 
           <Link
             href="/app/billing"
-            className="flex items-center gap-1.5 px-2.5 py-1 bg-[#FEF3C7] text-[#B45309] border border-amber-200 rounded-md text-xs font-mono font-semibold hover:bg-amber-100 transition-colors shadow-2xs"
+            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 bg-[#FEF3C7] text-[#B45309] border border-amber-200 rounded-md text-xs font-mono font-semibold hover:bg-amber-100 transition-colors shadow-2xs shrink-0"
+            title={isVi ? "Ví Crystal & Nạp thêm" : "Crystal Balance"}
           >
-            <span className="material-symbols-outlined text-[15px]">toll</span>
-            <span>{wallet ? wallet.balance : 85} CR</span>
-          </Link>
-
-          <Link
-            href="/app/profile"
-            className="w-7 h-7 rounded border border-outline-variant bg-slate-50 hover:bg-emerald-50 hover:border-primary text-slate-700 hover:text-primary flex items-center justify-center transition-colors"
-            title={isVi ? "Hồ sơ cá nhân" : "Profile"}
-          >
-            <span className="material-symbols-outlined text-base">person</span>
-          </Link>
-
-          <Link
-            href="/login"
-            className="w-7 h-7 rounded border border-outline-variant bg-slate-50 hover:bg-emerald-50 hover:border-primary text-slate-700 hover:text-primary flex items-center justify-center transition-colors"
-            title={isVi ? "Đăng nhập / Tài khoản" : "Login / Account"}
-          >
-            <span className="material-symbols-outlined text-base">login</span>
+            <span className="material-symbols-outlined text-[14px] sm:text-[15px]">toll</span>
+            <span className="whitespace-nowrap">{wallet ? wallet.balance : 85} CR</span>
           </Link>
         </div>
       </header>
