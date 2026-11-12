@@ -232,29 +232,29 @@ export default function MobileDailyHomePage() {
       <header className="px-4 py-3 bg-white border-b border-outline-variant flex items-center justify-between sticky top-0 z-40">
         <Link
           href="/app/profile"
-          className="flex items-center gap-2 group hover:opacity-90 transition-opacity"
+          className="flex items-center gap-2.5 group hover:opacity-90 transition-opacity"
           title={isVi ? "Mở Hồ Sơ Cá Nhân" : "Open Seeker Profile"}
         >
-          <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 group-hover:border-primary flex items-center justify-center text-xs font-serif font-bold text-slate-800 transition-colors">
+          <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 group-hover:border-primary flex items-center justify-center text-xs font-serif font-bold text-slate-800 transition-colors">
             ✦
           </div>
           <div>
             <div className="text-xs font-bold text-on-surface group-hover:text-primary leading-tight transition-colors">
               Aria • {sunSignDisplay}
             </div>
-            <div className="text-[10px] font-mono text-slate-400">
+            <div className="text-[10px] font-mono text-slate-400 mt-0.5">
               {isVi ? "Số Đường Đời " : "Life Path "} {profile ? profile.lifePathNumber : "7"}
             </div>
           </div>
         </Link>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           {/* Mobile Language Switcher */}
-          <div className="flex items-center border border-outline-variant rounded text-[10px] font-mono overflow-hidden shadow-xs">
+          <div className="flex items-center border border-outline-variant rounded-md text-[10px] font-mono overflow-hidden shadow-2xs">
             <button
               type="button"
               onClick={() => setLocale("en")}
-              className={`px-2 py-0.5 transition-colors ${
+              className={`px-2 py-1 transition-colors ${
                 !isVi ? "bg-slate-900 text-white font-bold" : "text-slate-500 hover:text-on-surface"
               }`}
             >
@@ -263,7 +263,7 @@ export default function MobileDailyHomePage() {
             <button
               type="button"
               onClick={() => setLocale("vi")}
-              className={`px-2 py-0.5 transition-colors ${
+              className={`px-2 py-1 transition-colors ${
                 isVi ? "bg-primary text-white font-bold" : "text-slate-500 hover:text-on-surface"
               }`}
             >
@@ -273,9 +273,9 @@ export default function MobileDailyHomePage() {
 
           <Link
             href="/app/billing"
-            className="flex items-center gap-1 px-2 py-0.5 bg-[#FEF3C7] text-[#B45309] border border-amber-200 rounded text-xs font-mono font-semibold"
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-[#FEF3C7] text-[#B45309] border border-amber-200 rounded-md text-xs font-mono font-semibold hover:bg-amber-100 transition-colors shadow-2xs"
           >
-            <span className="material-symbols-outlined text-[13px]">toll</span>
+            <span className="material-symbols-outlined text-[15px]">toll</span>
             <span>{wallet ? wallet.balance : 85} CR</span>
           </Link>
 
@@ -508,19 +508,19 @@ export default function MobileDailyHomePage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="space-y-2 pt-2">
+        <div className="space-y-2.5 pt-2">
           <Link
             href="/app/readings/new"
-            className="w-full py-3 bg-primary text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-primary-hover shadow-sm"
+            className="w-full py-3.5 bg-primary text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2.5 hover:bg-primary-hover shadow-sm transition-all"
           >
-            <span className="material-symbols-outlined text-sm">auto_awesome</span>
+            <span className="material-symbols-outlined text-base">auto_awesome</span>
             <span>{isVi ? "Bắt Đầu Trải Bài Mới (3 Lá)" : "Begin New Reading (3-Card)"}</span>
           </Link>
           <Link
             href={`/app/readings/${dailySession?.id || "demo-session"}`}
-            className="w-full py-2.5 bg-white border border-outline-variant text-on-surface text-xs font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-slate-50"
+            className="w-full py-3 bg-white border border-outline-variant text-on-surface text-xs font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-slate-50 transition-all shadow-2xs"
           >
-            <span className="material-symbols-outlined text-sm text-primary">space_dashboard</span>
+            <span className="material-symbols-outlined text-base text-primary">space_dashboard</span>
             <span>{isVi ? "Mở Bàn Trải Bài & Hỏi Đáp AI (Workbench)" : "Open Reading Workbench & AI Chat"}</span>
           </Link>
         </div>

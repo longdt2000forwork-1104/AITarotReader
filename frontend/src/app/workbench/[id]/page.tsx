@@ -433,9 +433,9 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="text-xs font-mono text-slate-500 hover:text-on-surface flex items-center gap-1 transition-colors"
+              className="text-xs font-mono text-slate-500 hover:text-on-surface flex items-center gap-2 transition-colors"
             >
-              <span className="material-symbols-outlined text-sm">arrow_back</span>
+              <span className="material-symbols-outlined text-base">arrow_back</span>
               <span>{t.workbench.dailyPortal}</span>
             </Link>
             <span className="text-slate-300">|</span>
@@ -483,7 +483,7 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
             </button>
             <Link
               href={session?.id ? `/app/readings/${session.id}/share` : "/pricing"}
-              className="px-3 py-1 bg-white border border-outline-variant rounded text-xs font-medium text-on-surface hover:bg-slate-50 flex items-center gap-1 transition-colors shadow-2xs"
+              className="px-3 py-1 bg-white border border-outline-variant rounded text-xs font-medium text-on-surface hover:bg-slate-50 flex items-center gap-1.5 transition-colors shadow-2xs"
             >
               <span className="material-symbols-outlined text-sm">share</span>
               <span>{t.workbench.exportCard}</span>

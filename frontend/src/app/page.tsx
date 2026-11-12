@@ -596,7 +596,7 @@ export default function EditorialPortalPage() {
               </Link>
               <Link
                 href={`/workbench/${dailySession?.id || "demo-session"}`}
-                className="text-xs font-semibold text-primary hover:text-emerald-700 flex items-center gap-1 group transition-colors"
+                className="text-xs font-semibold text-primary hover:text-emerald-700 flex items-center gap-1.5 group transition-colors"
               >
                 <span>{t.portal.viewReport}</span>
                 <span className="material-symbols-outlined text-sm transition-transform group-hover:translate-x-0.5">
@@ -638,7 +638,7 @@ export default function EditorialPortalPage() {
                 <span className="font-mono text-xs font-semibold text-slate-500">{t.portal.rateFree}</span>
                 <Link
                   href="/app/readings/draw"
-                  className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1 transition-colors"
+                  className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1.5 transition-colors"
                 >
                   <span>{t.portal.deploy}</span>
                   <span className="material-symbols-outlined text-xs">arrow_outward</span>
@@ -664,7 +664,7 @@ export default function EditorialPortalPage() {
                 <span className="font-mono text-xs font-semibold text-slate-500">{t.portal.rate10}</span>
                 <Link
                   href="/workbench/demo-session"
-                  className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1 transition-colors"
+                  className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1.5 transition-colors"
                 >
                   <span>{t.portal.deploy}</span>
                   <span className="material-symbols-outlined text-xs">arrow_outward</span>
@@ -690,7 +690,7 @@ export default function EditorialPortalPage() {
                 <span className="font-mono text-xs font-semibold text-slate-500">{t.portal.rate15}</span>
                 <Link
                   href="/workbench/demo-session"
-                  className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1 transition-colors"
+                  className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1.5 transition-colors"
                 >
                   <span>{t.portal.deploy}</span>
                   <span className="material-symbols-outlined text-xs">arrow_outward</span>
@@ -718,7 +718,7 @@ export default function EditorialPortalPage() {
                 <span className="font-mono text-xs font-semibold text-slate-500">{t.portal.rate25}</span>
                 <Link
                   href="/workbench/demo-session"
-                  className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1 transition-colors"
+                  className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1.5 transition-colors"
                 >
                   <span>{t.portal.deploy}</span>
                   <span className="material-symbols-outlined text-xs">arrow_outward</span>

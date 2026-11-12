@@ -10,56 +10,90 @@ interface MobileBottomNavProps {
 export default function MobileBottomNav({
   activeTab = "home",
 }: MobileBottomNavProps) {
-  const { t, locale } = useLanguage();
-  const isVi = locale === "vi";
+  const { t } = useLanguage();
+
+  const isHomeActive = activeTab === "home";
+  const isOracleActive = activeTab === "oracle";
+  const isDecksActive = activeTab === "decks";
+  const isJournalActive = activeTab === "journal";
+  const isProfileActive = activeTab === "profile" || activeTab === "billing";
+
+  const navItems = [
+    {
+      key: "home",
+      href: "/app/home",
+      icon: "spa",
+      label: t.mobileNav.sanctuary,
+      isActive: isHomeActive,
+    },
+    {
+      key: "oracle",
+      href: "/app/readings/new",
+      icon: "style",
+      label: t.mobileNav.oracle,
+      isActive: isOracleActive,
+    },
+    {
+      key: "decks",
+      href: "/app/decks",
+      icon: "menu_book",
+      label: t.mobileNav.decks,
+      isActive: isDecksActive,
+    },
+    {
+      key: "journal",
+      href: "/journal",
+      icon: "auto_stories",
+      label: t.mobileNav.journal,
+      isActive: isJournalActive,
+    },
+    {
+      key: "profile",
+      href: "/app/profile",
+      icon: "person",
+      label: t.mobileNav.profile,
+      isActive: isProfileActive,
+    },
+  ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-3 py-2 bg-white/95 backdrop-blur-md border-t border-x border-outline-variant max-w-[430px] mx-auto shadow-sm">
-      <Link
-        href="/app/home"
-        className={`flex flex-col items-center justify-center py-1 transition-colors ${
-          activeTab === "home" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
-        }`}
-      >
-        <span className="material-symbols-outlined text-xl">spa</span>
-        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">{t.mobileNav.sanctuary}</span>
-      </Link>
-      <Link
-        href="/app/readings/new"
-        className={`flex flex-col items-center justify-center py-1 transition-colors ${
-          activeTab === "oracle" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
-        }`}
-      >
-        <span className="material-symbols-outlined text-xl">style</span>
-        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">{t.mobileNav.oracle}</span>
-      </Link>
-      <Link
-        href="/app/decks"
-        className={`flex flex-col items-center justify-center py-1 transition-colors ${
-          activeTab === "decks" || activeTab === "journal" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
-        }`}
-      >
-        <span className="material-symbols-outlined text-xl">menu_book</span>
-        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">{t.mobileNav.decks}</span>
-      </Link>
-      <Link
-        href="/app/profile"
-        className={`flex flex-col items-center justify-center py-1 transition-colors ${
-          activeTab === "profile" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
-        }`}
-      >
-        <span className="material-symbols-outlined text-xl">person</span>
-        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">{t.mobileNav.profile}</span>
-      </Link>
-      <Link
-        href="/login"
-        className="flex flex-col items-center justify-center py-1 text-on-surface-variant font-normal hover:text-primary transition-colors"
-      >
-        <span className="material-symbols-outlined text-xl">login</span>
-        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">
-          {isVi ? "Đăng Nhập" : "Login"}
-        </span>
-      </Link>
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200 max-w-[430px] mx-auto shadow-[0_-2px_10px_rgba(0,0,0,0.05)] pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <div className="flex items-center justify-around px-2 py-1.5">
+        {navItems.map((item) => {
+          return (
+            <Link
+              key={item.key}
+              href={item.href}
+              className={`flex-1 flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-all duration-150 select-none group min-w-0 ${
+                item.isActive
+                  ? "text-primary"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              <div
+                className={`w-9 h-7 rounded-full flex items-center justify-center transition-colors ${
+                  item.isActive
+                    ? "bg-emerald-50 text-primary"
+                    : "text-slate-400 group-hover:text-slate-600 group-hover:bg-slate-50"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[20px] leading-none">
+                  {item.icon}
+                </span>
+              </div>
+              <span
+                className={`mt-1 text-[11px] leading-tight tracking-tight text-center truncate w-full transition-colors ${
+                  item.isActive
+                    ? "font-semibold text-primary"
+                    : "font-normal text-slate-500 group-hover:text-slate-800"
+                }`}
+              >
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }

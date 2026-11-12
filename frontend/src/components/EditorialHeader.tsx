@@ -30,7 +30,7 @@ export default function EditorialHeader({
         <div suppressHydrationWarning className="flex items-center gap-3 shrink-0">
           <Link
             href="/"
-            className="flex items-center gap-2 group transition-colors"
+            className="flex items-center gap-2.5 group transition-colors"
           >
             <span className="material-symbols-outlined text-primary text-2xl group-hover:rotate-12 transition-transform duration-300">
               auto_awesome
@@ -95,12 +95,12 @@ export default function EditorialHeader({
           {/* Amber Credit Badge linking to /pricing */}
           <Link
             href="/pricing"
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-amber-50 text-amber-900 border border-amber-200/90 rounded-lg text-xs font-mono font-semibold hover:bg-amber-100/80 transition-colors shrink-0 shadow-sm"
+            className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-900 border border-amber-200/90 rounded-lg text-xs font-mono font-semibold hover:bg-amber-100/80 transition-colors shrink-0 shadow-sm"
             title={locale === "vi" ? "Gói phí & Tinh thể" : "Crystals & Subscription"}
           >
-            <span className="material-symbols-outlined text-[16px] text-amber-600">toll</span>
+            <span className="material-symbols-outlined text-[17px] text-amber-600">toll</span>
             <span className="whitespace-nowrap">{credits} CR</span>
-            <span className="text-amber-500 hover:text-amber-700 font-bold ml-0.5 text-xs leading-none" title={locale === "vi" ? "Nạp thêm tinh thể" : "Refill credits"}>
+            <span className="text-amber-500 hover:text-amber-700 font-bold ml-1 text-xs leading-none" title={locale === "vi" ? "Nạp thêm tinh thể" : "Refill credits"}>
               +
             </span>
           </Link>
@@ -108,7 +108,7 @@ export default function EditorialHeader({
           {/* Astrological Profile Pill linking to /settings/profile */}
           <Link
             href="/settings/profile"
-            className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-slate-200 hover:opacity-85 transition-opacity shrink-0"
+            className="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-slate-200 hover:opacity-85 transition-opacity shrink-0"
             title={locale === "vi" ? "Hồ sơ & Cài đặt" : "Seeker Profile & Settings"}
           >
             <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 font-serif font-bold text-xs shrink-0 shadow-sm">
@@ -116,7 +116,7 @@ export default function EditorialHeader({
             </div>
             <div className="hidden sm:flex flex-col text-left">
               <span className="text-xs font-semibold text-slate-800 leading-tight">Aria</span>
-              <span className="text-[10px] font-mono text-slate-500 leading-none">
+              <span className="text-[10px] font-mono text-slate-500 leading-none mt-0.5">
                 {locale === "vi" ? "Bạch Dương · Số 7" : "Aries · LP 7"}
               </span>
             </div>

@@ -107,28 +107,22 @@ export default function MobileSeekerProfilePage() {
           </div>
         )}
 
-        {/* 1. Status Bar */}
-        <header className="w-full pt-3 px-6 pb-2 flex justify-between items-center text-slate-800 select-none bg-white">
-          <span className="font-mono text-xs font-bold">09:41</span>
-          <div className="flex items-center gap-1.5 text-slate-700">
-            <span className="material-symbols-outlined text-[16px]">signal_cellular_4_bar</span>
-            <span className="material-symbols-outlined text-[16px]">wifi</span>
-            <span className="material-symbols-outlined text-[18px]">battery_full</span>
-          </div>
-        </header>
-
-        {/* 2. Top Title Bar */}
-        <div className="px-6 py-2.5 flex items-center justify-between border-b border-[#E2E8F0] bg-white sticky top-0 z-30">
-          <div className="flex items-center space-x-2">
-            <span className="material-symbols-outlined text-primary text-xl">person</span>
-            <h1 className="font-headline font-bold text-sm tracking-tight text-slate-900 uppercase">
-              {isVi ? "Hồ Sơ & Thiết Lập Người Tìm Kiếm" : "Seeker Profile & Settings"}
-            </h1>
-          </div>
+        {/* Top Header */}
+        <header className="px-4 py-3 bg-white border-b border-outline-variant flex items-center justify-between sticky top-0 z-40">
+          <Link
+            href="/app/home"
+            className="flex items-center gap-2 px-2 py-1 -ml-2 rounded-lg hover:bg-slate-100 text-xs text-slate-600 hover:text-on-surface font-medium transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">arrow_back</span>
+            <span>{isVi ? "Thánh Địa" : "Sanctuary"}</span>
+          </Link>
+          <span className="font-mono text-xs font-semibold text-on-surface">
+            {isVi ? "HỒ SƠ NGƯỜI TÌM KIẾM" : "SEEKER PROFILE"}
+          </span>
           <span className="text-[10px] font-mono bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200 font-semibold">
             SUPABASE
           </span>
-        </div>
+        </header>
 
         {/* 3. Seeker Identity Card */}
         <div className="p-4 bg-white border-b border-[#E2E8F0]">
@@ -381,20 +375,20 @@ export default function MobileSeekerProfilePage() {
                   </button>
                 </div>
 
-                <div className="pt-3 border-t border-[#E2E8F0] grid grid-cols-2 gap-2">
+                <div className="pt-3 border-t border-[#E2E8F0] grid grid-cols-2 gap-2.5">
                   <Link
-                    href="/profile"
-                    className="px-3 py-2 border border-[#E2E8F0] bg-[#FAF9F6] hover:bg-slate-100 rounded-lg text-xs font-mono font-semibold text-slate-800 flex items-center justify-center gap-1.5 transition-colors"
+                    href="/settings/profile"
+                    className="px-3 py-2.5 border border-[#E2E8F0] bg-[#FAF9F6] hover:bg-slate-100 rounded-xl text-xs font-medium text-slate-800 flex items-center justify-center gap-2 transition-colors shadow-2xs"
                   >
-                    <span className="material-symbols-outlined text-sm text-primary">badge</span>
-                    <span>{isVi ? "Hồ Sơ Đầy Đủ" : "Full Profile"}</span>
+                    <span className="material-symbols-outlined text-base text-primary">badge</span>
+                    <span>{isVi ? "Hồ Sơ Chi Tiết" : "Full Profile"}</span>
                   </Link>
                   <Link
-                    href="/login"
-                    className="px-3 py-2 bg-primary hover:bg-[#047857] text-white rounded-lg text-xs font-mono font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                    href="/app/auth"
+                    className="px-3 py-2.5 bg-primary hover:bg-[#047857] text-white rounded-xl text-xs font-medium flex items-center justify-center gap-2 transition-colors shadow-2xs"
                   >
-                    <span className="material-symbols-outlined text-sm">login</span>
-                    <span>{isVi ? "Đăng Nhập / Đổi TK" : "Login / Switch"}</span>
+                    <span className="material-symbols-outlined text-base">login</span>
+                    <span>{isVi ? "Đổi Tài Khoản" : "Switch Account"}</span>
                   </Link>
                 </div>
               </section>

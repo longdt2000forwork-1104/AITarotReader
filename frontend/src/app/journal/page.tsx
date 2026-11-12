@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import EditorialHeader from "@/components/EditorialHeader";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
 import { JournalEntryDto, ReadingSessionDto } from "@/types/api";
@@ -288,6 +289,7 @@ export default function JournalPatternLedgerPage() {
           </div>
         </div>
       </main>
+      <MobileBottomNav activeTab="journal" />
     </>
   );
 }

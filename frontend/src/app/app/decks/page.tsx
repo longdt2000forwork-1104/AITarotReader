@@ -76,8 +76,8 @@ export default function MobileDecksGalleryPage() {
     <div className="max-w-[430px] mx-auto min-h-screen bg-surface flex flex-col border-x border-outline-variant pb-20">
       {/* Top Header */}
       <header className="px-4 py-3 bg-white border-b border-outline-variant flex items-center justify-between sticky top-0 z-40">
-        <Link href="/app/home" className="flex items-center gap-1 text-xs text-slate-500 hover:text-on-surface">
-          <span className="material-symbols-outlined text-base">arrow_back</span>
+        <Link href="/app/home" className="flex items-center gap-2 px-2 py-1 -ml-2 rounded-lg hover:bg-slate-100 text-xs text-slate-600 hover:text-on-surface font-medium transition-colors">
+          <span className="material-symbols-outlined text-lg">arrow_back</span>
           <span>{isVi ? "Thánh Địa" : "Sanctuary"}</span>
         </Link>
         <span className="font-mono text-xs font-semibold text-on-surface">

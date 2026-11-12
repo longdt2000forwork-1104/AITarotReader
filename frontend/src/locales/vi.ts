@@ -15,8 +15,9 @@ export const vi: TranslationDict = {
   mobileNav: {
     sanctuary: "Thánh Địa",
     oracle: "Trải Bài",
-    decks: "Bộ Bài & Nhật Ký",
-    profile: "Hồ Sơ & Pha Lê",
+    decks: "Bộ Bài",
+    journal: "Nhật Ký",
+    profile: "Hồ Sơ",
   },
   portal: {
     kicker: "ẤN BẢN SỐ 31 · CÔNG CỤ LUẬN GIẢI TAROT SONG NGỮ",

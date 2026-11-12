@@ -47,28 +47,25 @@ export default function MobileAuthOnboardingPage() {
   return (
     <div className="bg-[#FAF9F6] text-[#0F172A] font-body min-h-screen flex justify-center selection:bg-emerald-100 selection:text-emerald-900">
       <main className="w-full max-w-[412px] bg-[#FAF9F6] min-h-screen flex flex-col relative pb-32 border-x border-[#E2E8F0] shadow-sm">
-        {/* 1. Status Bar */}
-        <header className="w-full pt-3 px-6 pb-2 flex justify-between items-center text-slate-800 select-none">
-          <span className="font-mono text-xs font-bold">09:41</span>
-          <div className="flex items-center gap-1.5 text-slate-700">
-            <span className="material-symbols-outlined text-[16px]">signal_cellular_4_bar</span>
-            <span className="material-symbols-outlined text-[16px]">wifi</span>
-            <span className="material-symbols-outlined text-[18px]">battery_full</span>
-          </div>
-        </header>
-
-        {/* 2. Brand Bar & Language Switch */}
-        <div className="px-6 py-2 flex items-center justify-between border-b border-[#E2E8F0] bg-white">
-          <div className="flex items-center space-x-2">
-            <span className="material-symbols-outlined text-primary text-xl">auto_awesome</span>
-            <span className="font-headline font-bold text-sm tracking-tight text-slate-900 uppercase">
-              {isVi ? "AITAROT · THÁNH ĐỊA" : "AITAROT · SANCTUARY"}
+        {/* Top Header */}
+        <header className="px-4 py-3 bg-white border-b border-[#E2E8F0] flex items-center justify-between sticky top-0 z-40">
+          <Link
+            href="/app/home"
+            className="flex items-center gap-2 px-2 py-1 -ml-2 rounded-lg hover:bg-slate-100 text-xs text-slate-600 hover:text-on-surface font-medium transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">arrow_back</span>
+            <span>{isVi ? "Thánh Địa" : "Sanctuary"}</span>
+          </Link>
+          <div className="flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-primary text-base">auto_awesome</span>
+            <span className="font-headline font-bold text-xs tracking-tight text-slate-900 uppercase">
+              {isVi ? "Xác Thực" : "Authentication"}
             </span>
           </div>
-          <div className="flex items-center border border-[#E2E8F0] rounded text-[11px] font-mono overflow-hidden">
+          <div className="flex items-center border border-[#E2E8F0] rounded text-[10px] font-mono overflow-hidden">
             <button
               onClick={() => setLocale("en")}
-              className={`px-2 py-0.5 font-bold ${
+              className={`px-2 py-1 font-bold ${
                 !isVi ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
               }`}
             >
@@ -76,14 +73,14 @@ export default function MobileAuthOnboardingPage() {
             </button>
             <button
               onClick={() => setLocale("vi")}
-              className={`px-2 py-0.5 font-bold ${
+              className={`px-2 py-1 font-bold ${
                 isVi ? "bg-primary text-white" : "text-slate-600 hover:bg-slate-100"
               }`}
             >
               VI
             </button>
           </div>
-        </div>
+        </header>
 
         {/* 3. Hero Specimen Card Display */}
         <div className="px-6 pt-5 pb-3 flex items-center gap-4 bg-white border-b border-[#E2E8F0]">

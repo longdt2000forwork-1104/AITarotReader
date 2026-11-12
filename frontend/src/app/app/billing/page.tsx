@@ -55,8 +55,8 @@ export default function MobileBillingPage() {
     <div className="max-w-[430px] mx-auto min-h-screen bg-surface flex flex-col border-x border-outline-variant pb-20">
       {/* Top Header */}
       <header className="px-4 py-3 bg-white border-b border-outline-variant flex items-center justify-between sticky top-0 z-40">
-        <Link href="/app/home" className="flex items-center gap-1 text-xs text-slate-500 hover:text-on-surface">
-          <span className="material-symbols-outlined text-base">arrow_back</span>
+        <Link href="/app/home" className="flex items-center gap-2 px-2 py-1 -ml-2 rounded-lg hover:bg-slate-100 text-xs text-slate-600 hover:text-on-surface font-medium transition-colors">
+          <span className="material-symbols-outlined text-lg">arrow_back</span>
           <span>{isVi ? "Thánh Địa" : "Sanctuary"}</span>
         </Link>
         <span className="font-mono text-xs font-semibold text-on-surface">
@@ -152,19 +152,19 @@ export default function MobileBillingPage() {
                 : "Unlimited follow-up questions, all 5 Tarot deck editions unlocked, high-res PDF/poster exports."}
             </p>
           </div>
-          <ul className="text-xs text-slate-600 space-y-1.5 pt-1">
-            <li className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-sm text-primary">check</span>
+          <ul className="text-xs text-slate-600 space-y-2 pt-1">
+            <li className="flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-base text-primary shrink-0">check</span>
               <span>{isVi ? "150 Crystal Thưởng Hàng Tháng" : "150 Monthly Bonus Credits"}</span>
             </li>
-            <li className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-sm text-primary">check</span>
+            <li className="flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-base text-primary shrink-0">check</span>
               <span>
                 {isVi ? "Quyền dùng bộ bài Swiss Geometric & Thủy Mặc Sumi-e" : "Access to Swiss Geometric & Sumi-e decks"}
               </span>
             </li>
-            <li className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-sm text-primary">check</span>
+            <li className="flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-base text-primary shrink-0">check</span>
               <span>{isVi ? "Ưu tiên đường truyền AI tốc độ cao nhất" : "Priority low-latency streaming"}</span>
             </li>
           </ul>

@@ -106,9 +106,9 @@ export default function MobileShareStudioPage() {
         <header className="bg-white border-b border-[#E2E8F0] px-4 py-3 flex items-center justify-between sticky top-0 z-40">
           <Link
             href={`/app/readings/${session?.id || readingId}`}
-            className="flex items-center gap-1 text-[#0F172A] hover:text-primary transition-colors text-xs font-semibold"
+            className="flex items-center gap-2 px-2 py-1 -ml-2 rounded-lg hover:bg-slate-100 text-[#0F172A] hover:text-primary transition-colors text-xs font-medium"
           >
-            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+            <span className="material-symbols-outlined text-lg">arrow_back</span>
             <span>{isVi ? "Quay lại" : "Back"}</span>
           </Link>
 

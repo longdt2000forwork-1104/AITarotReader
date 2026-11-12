@@ -13,8 +13,9 @@ export const en = {
   mobileNav: {
     sanctuary: "Sanctuary",
     oracle: "Oracle",
-    decks: "Decks & Journal",
-    profile: "Profile & CR",
+    decks: "Decks",
+    journal: "Journal",
+    profile: "Profile",
   },
   portal: {
     kicker: "ISSUE NO. 31 · BILINGUAL TAROT SYNTHESIS ENGINE",
