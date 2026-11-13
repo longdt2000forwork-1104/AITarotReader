@@ -57,7 +57,10 @@ export default function MobileBottomNav({
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200 w-full max-w-[430px] sm:max-w-md mx-auto shadow-[0_-2px_10px_rgba(0,0,0,0.05)] pb-[max(0.5rem,env(safe-area-inset-bottom))] transition-all">
+    <nav
+      aria-label="Mobile Navigation"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200 w-full max-w-[430px] sm:max-w-md mx-auto shadow-[0_-4px_20px_rgba(15,23,42,0.06)] pb-[max(0.5rem,env(safe-area-inset-bottom))] transition-all"
+    >
       <div className="flex items-center justify-around px-1 sm:px-2 py-1 sm:py-1.5 w-full">
         {navItems.map((item) => {
           return (

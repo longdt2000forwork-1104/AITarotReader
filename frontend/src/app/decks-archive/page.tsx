@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import EditorialHeader from "@/components/EditorialHeader";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
 import { TarotDeck } from "@/types/api";
@@ -67,7 +68,7 @@ export default function DecksArchivePage() {
       <EditorialHeader activeTab="decks" />
 
       {/* WEB — CURATED DECK EDITIONS & 78-CARD CONTACT SHEET (SCR-W06) */}
-      <main className="flex-1 max-w-[1440px] w-full mx-auto border-x border-outline-variant flex flex-col bg-white">
+      <main className="flex-1 max-w-[1440px] w-full mx-auto border-x border-outline-variant flex flex-col bg-white pb-20 lg:pb-0">
         {/* Toast Notification */}
         {toastMessage && (
           <div className="bg-emerald-600 text-white text-xs font-mono font-medium px-4 py-2.5 text-center flex items-center justify-center gap-2 animate-fadeIn shadow-sm">
@@ -77,7 +78,7 @@ export default function DecksArchivePage() {
         )}
 
         {/* Header Strip */}
-        <section className="p-6 lg:p-8 bg-[#FAF9F6] border-b border-outline-variant">
+        <section className="p-6 lg:p-8 linen-texture border-b border-outline-variant">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
               <span className="font-mono text-[10px] uppercase tracking-widest text-primary font-semibold block mb-1">
@@ -280,6 +281,8 @@ export default function DecksArchivePage() {
           )}
         </section>
       </main>
+
+      <MobileBottomNav activeTab="decks" />
     </>
   );
 }

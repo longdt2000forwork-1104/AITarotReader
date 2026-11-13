@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import EditorialHeader from "@/components/EditorialHeader";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { useLanguage } from "@/context/LanguageContext";
@@ -194,14 +195,14 @@ export default function EditorialPortalPage() {
       <EditorialHeader activeTab="daily" />
 
       {/* MAIN EDITORIAL CANVASES (1280px+ Wide Responsive Layout) */}
-      <main suppressHydrationWarning className="flex-1 max-w-[1440px] w-full mx-auto border-x border-outline-variant flex flex-col bg-white">
+      <main suppressHydrationWarning className="flex-1 max-w-[1440px] w-full mx-auto border-x border-outline-variant flex flex-col bg-white pb-20 lg:pb-0">
         {/* 2-COLUMN HERO EDITORIAL GRID */}
         <section className="grid grid-cols-1 lg:grid-cols-12 min-h-[580px] border-b border-outline-variant">
           {/* LEFT EDITORIAL SECTION (60% on desktop) */}
-          <div className="lg:col-span-7 p-8 md:p-12 lg:p-16 bg-[#FAF9F6] border-b lg:border-b-0 lg:border-r border-outline-variant flex flex-col justify-between">
+          <div className="lg:col-span-7 p-6 sm:p-10 md:p-12 lg:p-16 linen-texture border-b lg:border-b-0 lg:border-r border-outline-variant flex flex-col justify-between">
             <div>
               {/* Kicker Tag */}
-              <div className="flex items-center gap-2.5 mb-6">
+              <div className="flex items-center gap-2.5 mb-5 sm:mb-6">
                 <span className="inline-block w-2 h-2 rounded-full bg-primary" />
                 <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
                   {t.portal.kicker}
@@ -219,19 +220,28 @@ export default function EditorialPortalPage() {
               </p>
 
               {/* Action Buttons */}
-              <div className="mt-8 flex flex-wrap items-center gap-4">
+              <div className="mt-8 flex flex-wrap items-center gap-3.5">
                 <Link
+                  id="cta-open-workbench"
                   href="/workbench/demo-session"
-                  className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-sm font-medium px-6 py-3.5 rounded-lg transition-all active:scale-[0.98]"
+                  className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-sm font-medium px-6 py-3.5 rounded-lg shadow-sm hover:shadow transition-all active:scale-[0.98]"
                 >
                   <span>{t.portal.openWorkbench}</span>
                   <span className="material-symbols-outlined text-base">arrow_forward</span>
+                </Link>
+                <Link
+                  id="cta-browse-catalog"
+                  href="/catalog-picker"
+                  className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-on-surface border border-outline-variant hover:border-slate-300 text-sm font-medium px-5 py-3.5 rounded-lg transition-all active:scale-[0.98]"
+                >
+                  <span className="material-symbols-outlined text-base text-slate-600">menu_book</span>
+                  <span>{isVi ? "Thư Viện 78 Lá" : "Explore 78 Cards"}</span>
                 </Link>
               </div>
             </div>
 
             {/* 3-Column Key Metrics Strip */}
-            <div className="mt-14 pt-8 border-t border-outline-variant grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="mt-12 lg:mt-14 pt-8 border-t border-outline-variant grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div className="space-y-1">
                 <div className="font-mono text-[11px] uppercase tracking-wider text-slate-500">
                   {t.portal.metric1Label}
@@ -257,7 +267,7 @@ export default function EditorialPortalPage() {
           </div>
 
           {/* RIGHT SPECIMEN & DAILY DRAW COLUMN (40% on desktop) */}
-          <div className="lg:col-span-5 p-8 lg:p-10 bg-white flex flex-col justify-between">
+          <div className="lg:col-span-5 p-6 sm:p-8 lg:p-10 bg-white flex flex-col justify-between">
             <div>
               {/* Specimen Header Strip */}
               <div className="flex items-center justify-between pb-4 border-b border-outline-variant">
@@ -329,147 +339,165 @@ export default function EditorialPortalPage() {
                   </div>
                 </div>
               ) : !card ? (
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
-                  {/* Interactive Face-Down Tarot Card */}
-                  <div className="sm:col-span-5 bg-[#FAF9F6] border border-outline-variant rounded-lg p-3 text-center flex flex-col items-center justify-between min-h-[250px] shadow-sm relative overflow-hidden">
-                    <div className="w-full flex justify-between items-center text-[10px] font-mono text-slate-400 border-b border-slate-200 pb-1">
-                      <span>Rider-Waite 1909</span>
-                      <span>{isVi ? "78 Lá" : "78 Cards"}</span>
-                    </div>
-
-                    {/* Mystical Face-Down Card Back (Click to Flip & Call API) */}
-                    <button
-                      type="button"
-                      onClick={() => handleFlipCard(false)}
-                      disabled={isFlipping || isLoading}
-                      className="my-2 relative w-28 h-48 rounded-lg border-2 border-amber-500/70 bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] shadow-lg flex flex-col items-center justify-center overflow-hidden group cursor-pointer hover:scale-105 hover:border-amber-400 hover:shadow-xl transition-all duration-300 disabled:opacity-75"
-                      title={isVi ? "Chạm để lật lá bài hôm nay" : "Click to flip today's card"}
-                    >
-                      {/* Inner Ornate Sacred Geometry Frame */}
-                      <div className="w-24 h-44 border border-amber-400/40 rounded flex flex-col items-center justify-between p-2.5 relative">
-                        <div className="w-full flex justify-between text-[9px] text-amber-400/70 font-serif">
-                          <span>✦</span>
-                          <span>✦</span>
-                        </div>
-
-                        {isFlipping ? (
-                          <div className="flex flex-col items-center justify-center gap-2">
-                            <span className="material-symbols-outlined text-amber-400 text-3xl animate-spin">
-                              progress_activity
-                            </span>
-                            <span className="text-[9px] font-mono tracking-wider text-amber-200 uppercase">
-                              {isVi ? "Đang lật bài..." : "Flipping..."}
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col items-center justify-center gap-1.5">
-                            <div className="w-11 h-11 rounded-full border border-amber-400/50 bg-amber-500/10 flex items-center justify-center group-hover:scale-110 group-hover:bg-amber-500/20 transition-all">
-                              <span className="material-symbols-outlined text-amber-300 text-xl">
-                                auto_awesome
-                              </span>
-                            </div>
-                            <span className="text-[9px] font-mono font-semibold tracking-widest text-amber-200/90 uppercase mt-1">
-                              {isVi ? "CHẠM ĐỂ LẬT" : "TAP TO FLIP"}
-                            </span>
-                          </div>
-                        )}
-
-                        <div className="w-full flex justify-between text-[9px] text-amber-400/70 font-serif">
-                          <span>✦</span>
-                          <span>✦</span>
-                        </div>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key="face-down"
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.25 }}
+                    className="mt-6 grid grid-cols-1 sm:grid-cols-12 gap-6 items-start"
+                  >
+                    {/* Interactive Face-Down Tarot Card */}
+                    <div className="sm:col-span-5 specimen-grid border border-outline-variant rounded-xl p-3.5 text-center flex flex-col items-center justify-between min-h-[260px] shadow-sm relative overflow-hidden">
+                      <div className="w-full flex justify-between items-center text-[10px] font-mono text-slate-500 border-b border-slate-200/80 pb-1.5">
+                        <span>Rider-Waite 1909</span>
+                        <span>{isVi ? "78 Lá" : "78 Cards"}</span>
                       </div>
-                    </button>
 
-                    <div className="w-full pt-2 border-t border-slate-200 flex flex-col items-center">
-                      <div className="font-mono text-[10px] font-semibold text-amber-700 uppercase tracking-widest">
-                        {isVi ? "BÀI ĐANG ÚP" : "FACE DOWN"}
-                      </div>
-                      <div className="text-[11px] font-medium text-slate-600">
-                        {isVi ? "Chưa rút cho hôm nay" : "Not drawn yet today"}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Unflipped Prompt & Locked Metadata Table */}
-                  <div className="sm:col-span-7 flex flex-col justify-between h-full pt-1">
-                    <div>
-                      <h2 className="font-headline text-lg font-bold text-on-surface leading-snug">
-                        {isVi ? "Lá Bài Hôm Nay Đang Úp" : "Today's Card is Face Down"}
-                      </h2>
-                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                        {isVi
-                          ? "Lá bài định hướng của ngày hôm nay chưa được rút khỏi bộ bài. Hãy tĩnh tâm và nhấn lật bài để rút lá bài dành riêng cho bạn."
-                          : "Today's daily card has not been drawn from the deck yet. Center your mind and flip the card to draw your guidance for today."}
-                      </p>
+                      {/* Mystical Face-Down Card Back (Click to Flip & Call API) */}
                       <button
+                        id="btn-flip-daily-card"
                         type="button"
                         onClick={() => handleFlipCard(false)}
                         disabled={isFlipping || isLoading}
-                        className="mt-3 inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-xs transition-all active:scale-[0.98] disabled:opacity-50"
+                        className="my-3 relative w-28 h-48 rounded-lg border-2 border-amber-500/70 bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] shadow-lg flex flex-col items-center justify-center overflow-hidden group cursor-pointer hover:scale-[1.04] hover:-translate-y-0.5 hover:border-amber-400 hover:shadow-xl transition-all duration-300 disabled:opacity-75"
+                        title={isVi ? "Chạm để lật lá bài hôm nay" : "Click to flip today's card"}
                       >
-                        <span className={`material-symbols-outlined text-sm ${isFlipping ? "animate-spin" : ""}`}>
-                          {isFlipping ? "progress_activity" : "touch_app"}
-                        </span>
-                        <span>
-                          {isFlipping
-                            ? isVi
-                              ? "Đang rút & lật lá bài..."
-                              : "Drawing & flipping card..."
-                            : isVi
-                            ? "Lật Mở Lá Bài Hôm Nay"
-                            : "Flip Today's Card"}
-                        </span>
-                      </button>
-                    </div>
+                        {/* Inner Ornate Sacred Geometry Frame */}
+                        <div className="w-24 h-44 border border-amber-400/40 rounded flex flex-col items-center justify-between p-2.5 relative">
+                          <div className="w-full flex justify-between text-[9px] text-amber-400/70 font-serif">
+                            <span>✦</span>
+                            <span>✦</span>
+                          </div>
 
-                    {/* Metadata Table Matrix (Unrevealed State) */}
-                    <div className="mt-4 border border-outline-variant rounded-lg divide-y divide-outline-variant text-xs">
-                      <div className="p-2.5 flex items-center justify-between bg-surface-subtle">
-                        <span className="text-slate-500 font-mono text-[11px]">{t.portal.primaryElement}</span>
-                        <span className="text-slate-400 font-mono text-[11px] italic">
-                          {isVi ? "Ẩn · Lật bài để mở" : "Hidden · Flip to reveal"}
-                        </span>
-                      </div>
-                      <div className="p-2.5 flex items-center justify-between">
-                        <span className="text-slate-500 font-mono text-[11px]">{t.portal.arcanaClass}</span>
-                        <span className="text-slate-400 font-mono text-[11px] italic">
-                          {isVi ? "78 Lá Rider-Waite" : "78 Rider-Waite Cards"}
-                        </span>
-                      </div>
-                      <div className="p-2.5 flex flex-col gap-1 bg-white">
-                        <span className="text-slate-500 font-mono text-[11px]">{t.portal.coreKeywords}</span>
-                        <div className="flex flex-wrap gap-1 mt-0.5">
-                          <span className="px-1.5 py-0.5 bg-amber-50 border border-amber-200/70 rounded text-[11px] text-amber-800 font-medium">
-                            {isVi ? "Chờ lật bài" : "Awaiting Flip"}
-                          </span>
-                          <span className="px-1.5 py-0.5 bg-slate-100 rounded text-[11px] text-slate-600 font-medium">
-                            {isVi ? "Reset 00:00 mỗi ngày" : "Resets 00:00 daily"}
-                          </span>
+                          {isFlipping ? (
+                            <div className="flex flex-col items-center justify-center gap-2">
+                              <span className="material-symbols-outlined text-amber-400 text-3xl animate-spin">
+                                progress_activity
+                              </span>
+                              <span className="text-[9px] font-mono tracking-wider text-amber-200 uppercase">
+                                {isVi ? "Đang lật..." : "Flipping..."}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-center justify-center gap-1.5">
+                              <div className="w-11 h-11 rounded-full border border-amber-400/50 bg-amber-500/10 flex items-center justify-center group-hover:scale-110 group-hover:bg-amber-500/20 transition-all duration-300">
+                                <span className="material-symbols-outlined text-amber-300 text-xl">
+                                  auto_awesome
+                                </span>
+                              </div>
+                              <span className="text-[9px] font-mono font-semibold tracking-widest text-amber-200/90 uppercase mt-1">
+                                {isVi ? "CHẠM ĐỂ LẬT" : "TAP TO FLIP"}
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="w-full flex justify-between text-[9px] text-amber-400/70 font-serif">
+                            <span>✦</span>
+                            <span>✦</span>
+                          </div>
+                        </div>
+                      </button>
+
+                      <div className="w-full pt-2 border-t border-slate-200/80 flex flex-col items-center">
+                        <div className="font-mono text-[10px] font-semibold text-amber-700 uppercase tracking-widest">
+                          {isVi ? "BÀI ĐANG ÚP" : "FACE DOWN"}
+                        </div>
+                        <div className="text-[11px] font-medium text-slate-600">
+                          {isVi ? "Chưa rút cho hôm nay" : "Not drawn yet today"}
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
-                  {/* Tarot Card Visual Specimen Frame (Flipped / Face Up) */}
-                  <div className="sm:col-span-5 bg-[#FAF9F6] border border-outline-variant rounded-lg p-3 text-center flex flex-col items-center justify-between min-h-[250px] shadow-sm relative overflow-hidden">
-                    <div className="w-full flex justify-between items-center text-[10px] font-mono text-slate-400 border-b border-slate-200 pb-1">
-                      <span>Rider-Waite 1909</span>
-                      <span>{card.suit === "MAJOR" || (card as any).arcana === "MAJOR" || !card.suit ? (isVi ? "Bộ Ẩn Chính" : "Major Arcana") : card.suit}</span>
-                    </div>
 
-                    {/* Real Tarot Card Artwork */}
-                    <div className="my-2 relative group">
-                      <img
-                        src={card.image}
-                        alt={`${card.number} ${isVi ? card.nameVi : card.nameEn}`}
-                        className={`w-28 h-48 object-cover rounded border border-slate-200 shadow-md transition-all duration-300 ${
-                          isReversed ? "rotate-180" : ""
-                        }`}
-                      />
+                    {/* Unflipped Prompt & Locked Metadata Table */}
+                    <div className="sm:col-span-7 flex flex-col justify-between h-full pt-1">
+                      <div>
+                        <h2 className="font-headline text-lg font-bold text-on-surface leading-snug">
+                          {isVi ? "Lá Bài Hôm Nay Đang Úp" : "Today's Card is Face Down"}
+                        </h2>
+                        <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                          {isVi
+                            ? "Lá bài định hướng của ngày hôm nay chưa được rút khỏi bộ bài. Hãy tĩnh tâm và nhấn lật bài để rút lá bài dành riêng cho bạn."
+                            : "Today's daily card has not been drawn from the deck yet. Center your mind and flip the card to draw your guidance for today."}
+                        </p>
+                        <button
+                          id="btn-flip-daily-card-cta"
+                          type="button"
+                          onClick={() => handleFlipCard(false)}
+                          disabled={isFlipping || isLoading}
+                          className="mt-3.5 inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
+                        >
+                          <span className={`material-symbols-outlined text-sm ${isFlipping ? "animate-spin" : ""}`}>
+                            {isFlipping ? "progress_activity" : "touch_app"}
+                          </span>
+                          <span>
+                            {isFlipping
+                              ? isVi
+                                ? "Đang rút & lật lá bài..."
+                                : "Drawing & flipping card..."
+                              : isVi
+                              ? "Lật Mở Lá Bài Hôm Nay"
+                              : "Flip Today's Card"}
+                          </span>
+                        </button>
+                      </div>
+
+                      {/* Metadata Table Matrix (Unrevealed State) */}
+                      <div className="mt-4 border border-outline-variant rounded-lg divide-y divide-outline-variant text-xs overflow-hidden">
+                        <div className="p-2.5 flex items-center justify-between bg-surface-subtle">
+                          <span className="text-slate-500 font-mono text-[11px]">{t.portal.primaryElement}</span>
+                          <span className="text-slate-400 font-mono text-[11px] italic">
+                            {isVi ? "Ẩn · Lật bài để mở" : "Hidden · Flip to reveal"}
+                          </span>
+                        </div>
+                        <div className="p-2.5 flex items-center justify-between bg-white">
+                          <span className="text-slate-500 font-mono text-[11px]">{t.portal.arcanaClass}</span>
+                          <span className="text-slate-400 font-mono text-[11px] italic">
+                            {isVi ? "78 Lá Rider-Waite" : "78 Rider-Waite Cards"}
+                          </span>
+                        </div>
+                        <div className="p-2.5 flex flex-col gap-1 bg-white">
+                          <span className="text-slate-500 font-mono text-[11px]">{t.portal.coreKeywords}</span>
+                          <div className="flex flex-wrap gap-1.5 mt-0.5">
+                            <span className="px-2 py-0.5 bg-amber-50 border border-amber-200/70 rounded text-[11px] text-amber-800 font-medium">
+                              {isVi ? "Chờ lật bài" : "Awaiting Flip"}
+                            </span>
+                            <span className="px-2 py-0.5 bg-slate-100 rounded text-[11px] text-slate-600 font-medium">
+                              {isVi ? "Reset 00:00 mỗi ngày" : "Resets 00:00 daily"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
+                  </motion.div>
+                </AnimatePresence>
+              ) : (
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`revealed-${card.id}`}
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.35, ease: "easeOut" }}
+                    className="mt-6 grid grid-cols-1 sm:grid-cols-12 gap-6 items-start"
+                  >
+                    {/* Tarot Card Visual Specimen Frame (Flipped / Face Up) */}
+                    <div className="sm:col-span-5 specimen-grid border border-outline-variant rounded-xl p-3.5 text-center flex flex-col items-center justify-between min-h-[260px] shadow-sm relative overflow-hidden">
+                      <div className="w-full flex justify-between items-center text-[10px] font-mono text-slate-500 border-b border-slate-200/80 pb-1.5">
+                        <span>Rider-Waite 1909</span>
+                        <span>{card.suit === "MAJOR" || (card as any).arcana === "MAJOR" || !card.suit ? (isVi ? "Bộ Ẩn Chính" : "Major Arcana") : card.suit}</span>
+                      </div>
+
+                      {/* Real Tarot Card Artwork */}
+                      <div className="my-3 relative group">
+                        <img
+                          src={card.image}
+                          alt={`${card.number} ${isVi ? card.nameVi : card.nameEn}`}
+                          className={`w-28 h-48 object-cover rounded-lg border border-slate-200 shadow-md group-hover:shadow-lg transition-all duration-300 ${
+                            isReversed ? "rotate-180" : "group-hover:scale-[1.03]"
+                          }`}
+                        />
+                      </div>
 
                     <div className="w-full pt-2 border-t border-slate-200">
                       <div className="font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
@@ -543,7 +571,8 @@ export default function EditorialPortalPage() {
                       </div>
                     </div>
                   </div>
-                </div>
+                  </motion.div>
+                </AnimatePresence>
               )}
 
               {/* Daily Synthesis Pullquote Note (Powered by Gemini AI) */}
@@ -621,11 +650,16 @@ export default function EditorialPortalPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-outline-variant">
             {/* Spread Card 1 */}
-            <div className="p-6 lg:p-7 flex flex-col justify-between hover:bg-slate-50/60 transition-colors group">
+            <div className="p-6 lg:p-7 flex flex-col justify-between hover:bg-[#FAF9F6] transition-all duration-200 group">
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <span className="font-mono text-xs text-primary font-bold">01 PROTOCOL</span>
-                  <span className="text-[11px] font-mono text-slate-400">1 CARD</span>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-0.5" aria-hidden="true">
+                      <span className="w-2 h-3 rounded-[2px] border border-primary/60 bg-emerald-50 group-hover:bg-primary/20 transition-colors" />
+                    </span>
+                    <span className="text-[11px] font-mono text-slate-400">1 CARD</span>
+                  </div>
                 </div>
                 <h3 className="font-headline font-bold text-lg text-on-surface group-hover:text-primary transition-colors">
                   {t.portal.protocol1Title}
@@ -635,23 +669,30 @@ export default function EditorialPortalPage() {
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between">
-                <span className="font-mono text-xs font-semibold text-slate-500">{t.portal.rateFree}</span>
+                <span className="font-mono text-xs font-semibold text-emerald-700">{t.portal.rateFree}</span>
                 <Link
                   href="/app/readings/draw"
-                  className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1.5 transition-colors"
+                  className="text-xs font-semibold text-on-surface group-hover:text-primary flex items-center gap-1.5 transition-colors"
                 >
                   <span>{t.portal.deploy}</span>
-                  <span className="material-symbols-outlined text-xs">arrow_outward</span>
+                  <span className="material-symbols-outlined text-xs transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5">arrow_outward</span>
                 </Link>
               </div>
             </div>
 
             {/* Spread Card 2 */}
-            <div className="p-6 lg:p-7 flex flex-col justify-between hover:bg-slate-50/60 transition-colors group">
+            <div className="p-6 lg:p-7 flex flex-col justify-between hover:bg-[#FAF9F6] transition-all duration-200 group">
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <span className="font-mono text-xs text-primary font-bold">02 PROTOCOL</span>
-                  <span className="text-[11px] font-mono text-slate-400">3 CARDS</span>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-0.5" aria-hidden="true">
+                      <span className="w-1.5 h-2.5 rounded-[1px] border border-slate-400 group-hover:border-primary/70 transition-colors" />
+                      <span className="w-1.5 h-2.5 rounded-[1px] border border-slate-400 group-hover:border-primary/70 transition-colors" />
+                      <span className="w-1.5 h-2.5 rounded-[1px] border border-slate-400 group-hover:border-primary/70 transition-colors" />
+                    </span>
+                    <span className="text-[11px] font-mono text-slate-400">3 CARDS</span>
+                  </div>
                 </div>
                 <h3 className="font-headline font-bold text-lg text-on-surface group-hover:text-primary transition-colors">
                   {t.portal.protocol2Title}
@@ -664,20 +705,29 @@ export default function EditorialPortalPage() {
                 <span className="font-mono text-xs font-semibold text-slate-500">{t.portal.rate10}</span>
                 <Link
                   href="/workbench/demo-session"
-                  className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1.5 transition-colors"
+                  className="text-xs font-semibold text-on-surface group-hover:text-primary flex items-center gap-1.5 transition-colors"
                 >
                   <span>{t.portal.deploy}</span>
-                  <span className="material-symbols-outlined text-xs">arrow_outward</span>
+                  <span className="material-symbols-outlined text-xs transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5">arrow_outward</span>
                 </Link>
               </div>
             </div>
 
             {/* Spread Card 3 */}
-            <div className="p-6 lg:p-7 flex flex-col justify-between hover:bg-slate-50/60 transition-colors group">
+            <div className="p-6 lg:p-7 flex flex-col justify-between hover:bg-[#FAF9F6] transition-all duration-200 group">
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <span className="font-mono text-xs text-primary font-bold">03 PROTOCOL</span>
-                  <span className="text-[11px] font-mono text-slate-400">5 CARDS</span>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-0.5" aria-hidden="true">
+                      <span className="w-1.5 h-2.5 rounded-[1px] border border-slate-400 group-hover:border-primary/70 transition-colors" />
+                      <span className="w-1.5 h-2.5 rounded-[1px] border border-slate-400 group-hover:border-primary/70 -translate-y-0.5 transition-colors" />
+                      <span className="w-1.5 h-2.5 rounded-[1px] border border-slate-400 group-hover:border-primary/70 transition-colors" />
+                      <span className="w-1.5 h-2.5 rounded-[1px] border border-slate-400 group-hover:border-primary/70 -translate-y-0.5 transition-colors" />
+                      <span className="w-1.5 h-2.5 rounded-[1px] border border-slate-400 group-hover:border-primary/70 transition-colors" />
+                    </span>
+                    <span className="text-[11px] font-mono text-slate-400">5 CARDS</span>
+                  </div>
                 </div>
                 <h3 className="font-headline font-bold text-lg text-on-surface group-hover:text-primary transition-colors">
                   {t.portal.protocol3Title}
@@ -690,16 +740,16 @@ export default function EditorialPortalPage() {
                 <span className="font-mono text-xs font-semibold text-slate-500">{t.portal.rate15}</span>
                 <Link
                   href="/workbench/demo-session"
-                  className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1.5 transition-colors"
+                  className="text-xs font-semibold text-on-surface group-hover:text-primary flex items-center gap-1.5 transition-colors"
                 >
                   <span>{t.portal.deploy}</span>
-                  <span className="material-symbols-outlined text-xs">arrow_outward</span>
+                  <span className="material-symbols-outlined text-xs transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5">arrow_outward</span>
                 </Link>
               </div>
             </div>
 
             {/* Spread Card 4 */}
-            <div className="p-6 lg:p-7 flex flex-col justify-between hover:bg-slate-50/60 transition-colors group">
+            <div className="p-6 lg:p-7 flex flex-col justify-between hover:bg-[#FAF9F6] transition-all duration-200 group">
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <span className="font-mono text-xs text-primary font-bold">04 PROTOCOL</span>
@@ -715,13 +765,13 @@ export default function EditorialPortalPage() {
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between">
-                <span className="font-mono text-xs font-semibold text-slate-500">{t.portal.rate25}</span>
+                <span className="font-mono text-xs font-semibold text-amber-700">{t.portal.rate25}</span>
                 <Link
                   href="/workbench/demo-session"
-                  className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1.5 transition-colors"
+                  className="text-xs font-semibold text-on-surface group-hover:text-primary flex items-center gap-1.5 transition-colors"
                 >
                   <span>{t.portal.deploy}</span>
-                  <span className="material-symbols-outlined text-xs">arrow_outward</span>
+                  <span className="material-symbols-outlined text-xs transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5">arrow_outward</span>
                 </Link>
               </div>
             </div>
