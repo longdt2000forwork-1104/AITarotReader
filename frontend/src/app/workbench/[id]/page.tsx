@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import EditorialHeader from "@/components/EditorialHeader";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
 import { ReadingSessionDto, DrawnCardDto } from "@/types/api";
@@ -427,7 +428,7 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
       <EditorialHeader activeTab="workbench" />
 
       {/* 3-COLUMN SPLIT-PANE READING WORKBENCH */}
-      <main className="flex-1 max-w-[1440px] w-full mx-auto border-x border-outline-variant flex flex-col bg-white">
+      <main className="flex-1 max-w-[1440px] w-full mx-auto border-x border-outline-variant flex flex-col bg-white pb-20 lg:pb-0">
         {/* Top Control Bar */}
         <div className="px-6 py-3 bg-[#F8FAFC] border-b border-outline-variant flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -981,6 +982,8 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
           </div>
         </div>
       )}
+
+      <MobileBottomNav activeTab="oracle" />
     </>
   );
 }

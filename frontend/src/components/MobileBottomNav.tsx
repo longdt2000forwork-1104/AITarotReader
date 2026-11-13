@@ -13,53 +13,40 @@ export default function MobileBottomNav({
   const { t, locale } = useLanguage();
   const isVi = locale === "vi";
 
+  const items = [
+    { key: "home", href: "/", icon: "today", label: isVi ? "Hôm Nay" : "Daily" },
+    { key: "oracle", href: "/workbench/demo-session", icon: "style", label: t.mobileNav.oracle },
+    { key: "decks", href: "/catalog-picker", icon: "menu_book", label: isVi ? "78 Lá" : "Catalog" },
+    { key: "journal", href: "/journal", icon: "auto_stories", label: isVi ? "Nhật Ký" : "Journal" },
+    { key: "profile", href: "/settings/profile", icon: "person", label: t.mobileNav.profile },
+  ];
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-3 py-2 bg-white/95 backdrop-blur-md border-t border-x border-outline-variant max-w-[430px] mx-auto shadow-sm">
-      <Link
-        href="/app/home"
-        className={`flex flex-col items-center justify-center py-1 transition-colors ${
-          activeTab === "home" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
-        }`}
-      >
-        <span className="material-symbols-outlined text-xl">spa</span>
-        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">{t.mobileNav.sanctuary}</span>
-      </Link>
-      <Link
-        href="/app/readings/new"
-        className={`flex flex-col items-center justify-center py-1 transition-colors ${
-          activeTab === "oracle" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
-        }`}
-      >
-        <span className="material-symbols-outlined text-xl">style</span>
-        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">{t.mobileNav.oracle}</span>
-      </Link>
-      <Link
-        href="/app/decks"
-        className={`flex flex-col items-center justify-center py-1 transition-colors ${
-          activeTab === "decks" || activeTab === "journal" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
-        }`}
-      >
-        <span className="material-symbols-outlined text-xl">menu_book</span>
-        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">{t.mobileNav.decks}</span>
-      </Link>
-      <Link
-        href="/app/profile"
-        className={`flex flex-col items-center justify-center py-1 transition-colors ${
-          activeTab === "profile" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
-        }`}
-      >
-        <span className="material-symbols-outlined text-xl">person</span>
-        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">{t.mobileNav.profile}</span>
-      </Link>
-      <Link
-        href="/login"
-        className="flex flex-col items-center justify-center py-1 text-on-surface-variant font-normal hover:text-primary transition-colors"
-      >
-        <span className="material-symbols-outlined text-xl">login</span>
-        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">
-          {isVi ? "Đăng Nhập" : "Login"}
-        </span>
-      </Link>
+    <nav
+      aria-label="Mobile Navigation"
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-outline-variant shadow-[0_-4px_20px_rgba(15,23,42,0.06)]"
+    >
+      <div className="max-w-[520px] mx-auto flex justify-around items-center px-2 py-1.5">
+        {items.map((item) => {
+          const isActive = activeTab === item.key;
+          return (
+            <Link
+              key={item.key}
+              href={item.href}
+              className={`flex flex-col items-center justify-center px-2.5 py-1 rounded-lg transition-colors ${
+                isActive
+                  ? "text-primary font-semibold bg-emerald-50/70"
+                  : "text-on-surface-variant font-normal hover:text-on-surface"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
+              <span className="font-label text-[10px] tracking-wide mt-0.5 whitespace-nowrap">
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import EditorialHeader from "@/components/EditorialHeader";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
 import { JournalEntryDto, ReadingSessionDto } from "@/types/api";
@@ -97,9 +98,9 @@ export default function JournalPatternLedgerPage() {
       <EditorialHeader activeTab="journal" />
 
       {/* WEB ARCHIVE JOURNAL & PATTERN LEDGER (SCR-W04) */}
-      <main className="flex-1 max-w-[1440px] w-full mx-auto border-x border-outline-variant flex flex-col bg-white">
+      <main className="flex-1 max-w-[1440px] w-full mx-auto border-x border-outline-variant flex flex-col bg-white pb-20 lg:pb-0">
         {/* Top Analytics KPI Bar */}
-        <section className="p-6 bg-[#FAF9F6] border-b border-outline-variant grid grid-cols-1 md:grid-cols-3 gap-6">
+        <section className="p-6 linen-texture border-b border-outline-variant grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="p-4 bg-white border border-outline-variant rounded-lg space-y-1">
             <span className="font-mono text-[10px] uppercase text-slate-400">
               {locale === "vi" ? "TỔNG SỐ PHIÊN ĐÃ LƯU" : "TOTAL SESSIONS LOGGED"}
@@ -288,6 +289,8 @@ export default function JournalPatternLedgerPage() {
           </div>
         </div>
       </main>
+
+      <MobileBottomNav activeTab="journal" />
     </>
   );
 }

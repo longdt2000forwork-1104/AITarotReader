@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import EditorialHeader from "@/components/EditorialHeader";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
 import { TAROT_CARDS, TarotCard } from "@/data/tarotCards";
@@ -74,17 +75,17 @@ export default function CatalogPickerPage() {
       <EditorialHeader activeTab="catalog" />
 
       {/* WEB — 78-CARD REFERENCE ENCYCLOPEDIA */}
-      <main className="flex-1 max-w-[1440px] w-full mx-auto border-x border-outline-variant flex flex-col bg-white">
+      <main className="flex-1 max-w-[1440px] w-full mx-auto border-x border-outline-variant flex flex-col bg-white pb-20 lg:pb-0">
         {/* Encyclopedia Header */}
-        <section className="px-6 py-5 bg-[#FAF9F6] border-b border-outline-variant">
+        <section className="px-6 py-6 linen-texture border-b border-outline-variant">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <span className="font-mono text-[10px] uppercase tracking-widest text-primary font-semibold block">
                 {t.catalog.kicker}
               </span>
-              <h2 className="font-headline font-bold text-xl text-on-surface mt-0.5">
+              <h1 className="font-headline font-bold text-2xl text-on-surface mt-0.5">
                 {t.catalog.title}
-              </h2>
+              </h1>
             </div>
             <div className="flex items-center gap-3">
               <Link
@@ -217,8 +218,28 @@ export default function CatalogPickerPage() {
               </div>
             );
           })}
+          {filteredCards.length === 0 && (
+            <div className="col-span-full py-16 text-center flex flex-col items-center justify-center space-y-3">
+              <span className="material-symbols-outlined text-4xl text-slate-300">search_off</span>
+              <p className="text-sm text-slate-500">
+                {isVi ? "Không tìm thấy lá bài phù hợp với từ khóa." : "No tarot cards match your search."}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch("");
+                  setSelectedSuit("ALL");
+                }}
+                className="px-4 py-2 text-xs font-medium bg-white border border-outline-variant rounded-lg hover:border-primary hover:text-primary transition-colors"
+              >
+                {isVi ? "Đặt lại bộ lọc" : "Reset filters"}
+              </button>
+            </div>
+          )}
         </section>
       </main>
+
+      <MobileBottomNav activeTab="decks" />
     </>
   );
 }
