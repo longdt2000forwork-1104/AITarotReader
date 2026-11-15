@@ -8,7 +8,7 @@ import { apiClient } from "@/services/apiClient";
 import { MysticProfileDto, WalletBalanceDto } from "@/types/api";
 
 export default function SeekerProfilePage() {
-  const { locale, setLocale, t } = useLanguage();
+  const { locale, setLocale } = useLanguage();
   const isVi = locale === "vi";
 
   const [loading, setLoading] = useState(true);
@@ -20,14 +20,11 @@ export default function SeekerProfilePage() {
 
   // Form State
   const [allowAiContext, setAllowAiContext] = useState(true);
-  const [stalkerAlerts, setStalkerAlerts] = useState(true);
-  const [selectedPersona, setSelectedPersona] = useState<"MYSTIC_SAGE" | "IDEA_SPARK" | "GENTLE_FRIEND">("IDEA_SPARK");
   const [selectedDeck, setSelectedDeck] = useState("ED-02");
   const [birthZodiac, setBirthZodiac] = useState("Aries");
   const [birthDate, setBirthDate] = useState("1998-04-12");
   const [credits, setCredits] = useState(45);
   const [claimedDaily, setClaimedDaily] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -43,14 +40,6 @@ export default function SeekerProfilePage() {
           if (profRes.data.preferredDeckId) setSelectedDeck(profRes.data.preferredDeckId);
           if (profRes.data.birthZodiac) setBirthZodiac(profRes.data.birthZodiac);
           if (profRes.data.birthDate) setBirthDate(profRes.data.birthDate);
-          if (profRes.data.personaCode) {
-            const mapped = profRes.data.personaCode === "MYSTIC_SAGE"
-              ? "MYSTIC_SAGE"
-              : profRes.data.personaCode === "GENTLE_FRIEND"
-              ? "GENTLE_FRIEND"
-              : "IDEA_SPARK";
-            setSelectedPersona(mapped);
-          }
         }
 
         if (walRes.data) {
@@ -88,7 +77,6 @@ export default function SeekerProfilePage() {
         preferredDeckId: selectedDeck,
         birthZodiac: birthZodiac,
         birthDate: birthDate,
-        personaCode: selectedPersona,
         aiContextNotes: allowAiContext
           ? "Harmonize readings with natal birth zodiac decans and active archival deck."
           : "Standard objective card analysis without astrological bias."
@@ -135,110 +123,11 @@ export default function SeekerProfilePage() {
         </div>
       )}
 
-      {/* Main 3-Zone Architecture Container */}
-      <div className="flex-1 flex w-full max-w-[1600px] mx-auto border-x border-[#E2E8F0] bg-white">
-        {/* ZONE 1: LEFT RAIL NAVIGATION (240px) */}
-        <aside className="hidden lg:flex w-[240px] shrink-0 bg-white border-r border-[#E2E8F0] flex-col justify-between p-4 min-h-[calc(100vh-64px)]">
-          <div>
-            <div className="pb-4 mb-4 border-b border-[#E2E8F0]">
-              <div className="font-headline font-bold text-sm tracking-tight text-slate-900 uppercase">
-                ✦ AITAROT · VAULT
-              </div>
-              <div className="text-[10px] font-mono tracking-wider uppercase text-slate-500 mt-0.5">
-                {isVi ? "Bảng Điều Khiển · SCR-W08" : "Seeker Console · SCR-W08"}
-              </div>
-              <div className="mt-3 inline-flex items-center space-x-1.5 px-2 py-1 bg-emerald-50 border border-emerald-200/80 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                <span className="text-[10px] font-mono text-primary font-semibold">
-                  {isVi ? "SUPABASE · TRỰC TUYẾN" : "SUPABASE · LIVE"}
-                </span>
-              </div>
-            </div>
-
-            <nav className="space-y-1 text-xs font-mono">
-              <Link
-                href="/"
-                className="flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-              >
-                <span className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px] text-slate-400">spa</span>
-                  <span>{isVi ? "Chỉ Số Ngày" : "Daily Index"}</span>
-                </span>
-                <span className="text-[10px] text-slate-400">24h</span>
-              </Link>
-              <Link
-                href="/workbench/demo-session"
-                className="flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-              >
-                <span className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px] text-slate-400">style</span>
-                  <span>{isVi ? "Bàn Trải Bài" : "Workbench"}</span>
-                </span>
-              </Link>
-              <Link
-                href="/catalog-picker"
-                className="flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-              >
-                <span className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px] text-slate-400">grid_view</span>
-                  <span>{isVi ? "Tra Cứu 78 Lá" : "78-Card Input"}</span>
-                </span>
-                <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">78</span>
-              </Link>
-              <Link
-                href="/decks-archive"
-                className="flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-              >
-                <span className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px] text-slate-400">collections_bookmark</span>
-                  <span>{isVi ? "Kho 5 Bộ Bài" : "5 Decks Archive"}</span>
-                </span>
-                <span className="text-[10px] text-primary bg-emerald-50 px-1.5 py-0.5 rounded font-semibold">5 ED</span>
-              </Link>
-              <Link
-                href="/journal"
-                className="flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-              >
-                <span className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px] text-slate-400">menu_book</span>
-                  <span>{isVi ? "Nhật Ký Nghiệm Lý" : "Archive Journal"}</span>
-                </span>
-              </Link>
-              <Link
-                href="/pricing"
-                className="flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-              >
-                <span className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px] text-slate-400">store</span>
-                  <span>{isVi ? "Bảng Giá & Gói Phí" : "Pricing & Store"}</span>
-                </span>
-                <span className="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded font-semibold">CR</span>
-              </Link>
-              <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-emerald-50 text-primary font-semibold border-l-2 border-primary pl-2.5">
-                <span className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px] text-primary">person</span>
-                  <span>{isVi ? "Hồ Sơ Của Bạn" : "Seeker Profile"}</span>
-                </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-              </div>
-            </nav>
-          </div>
-
-          {/* Rail Colophon */}
-          <div className="p-3 bg-[#FAF9F6] border border-[#E2E8F0] rounded-lg">
-            <div className="flex items-center space-x-2 mb-1 text-xs font-semibold text-slate-900 font-mono">
-              <span className="material-symbols-outlined text-primary text-base">park</span>
-              <span>{isVi ? "Bộ Bài Ưu Thích" : "Preferred Deck"}</span>
-            </div>
-            <div className="text-xs text-slate-800 font-medium">{selectedDeck}</div>
-            <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-              {isVi ? "Đồng bộ Supabase PostgreSQL" : "Synced with Supabase Cloud"}
-            </div>
-          </div>
-        </aside>
-
-        {/* ZONE 2: CENTER COLUMN */}
-        <main className="flex-1 bg-[#FAF9F6] p-6 lg:p-8 overflow-y-auto max-w-[780px] border-r border-[#E2E8F0]">
+      {/* Main 2-Zone Architecture Container */}
+      <div className="flex-1 flex flex-col xl:flex-row w-full max-w-[1440px] mx-auto border-x border-[#E2E8F0] bg-white">
+        {/* MAIN PROFILE SETTINGS CANVAS */}
+        <main className="flex-1 bg-[#FAF9F6] p-6 lg:p-8 overflow-y-auto xl:border-r border-[#E2E8F0]">
+          <div className="max-w-[880px] mx-auto">
           {/* Top Context Banner */}
           <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#E2E8F0]">
             <div>
@@ -258,7 +147,7 @@ export default function SeekerProfilePage() {
               className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1.5 transition-colors"
             >
               <span className="material-symbols-outlined text-sm">save</span>
-              <span>{saving ? (isVi ? "Đang lưu..." : "Saving...") : (isVi ? "Lưu Thiết Lập" : "Save Changes")}</span>
+              <span>{saving ? (isVi ? "Đang lưu..." : "Saving...") : "Save"}</span>
             </button>
           </div>
 
@@ -422,13 +311,13 @@ export default function SeekerProfilePage() {
                 </div>
               </section>
 
-              {/* CARD 03: Preferred Deck Edition & Voice Persona */}
+              {/* CARD 03: Preferred Deck Edition */}
               <section className="bg-white border border-[#E2E8F0] rounded-xl p-5 mb-6 shadow-xs">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
                     <span className="text-xs font-mono uppercase text-primary font-bold tracking-widest">03.</span>
                     <h2 className="font-headline font-bold text-base text-slate-900">
-                      {isVi ? "Bộ Bài & Giọng Đọc AI (FR-2.4 & FR-3.1)" : "Deck Edition & Voice Persona (FR-2.4 & FR-3.1)"}
+                      {isVi ? "Bộ Bài Tarot Mặc Định (FR-2.4)" : "Preferred Tarot Deck Edition (FR-2.4)"}
                     </h2>
                   </div>
                 </div>
@@ -467,46 +356,6 @@ export default function SeekerProfilePage() {
                         >
                           {deck.badge}
                         </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Reader Persona Selector */}
-                <div className="mt-4 pt-3 border-t border-[#E2E8F0]">
-                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-600 mb-2">
-                    {isVi ? "Giọng Đọc Luận Giải Mặc Định" : "Default Synthesis Voice Persona"}
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      {
-                        code: "MYSTIC_SAGE",
-                        title: isVi ? "Hiền Triết Huyền Bí" : "Mystic Sage",
-                        desc: isVi ? "Cổ điển, chiêm nghiệm, thấu thị" : "Esoteric, poetic, archetypal",
-                      },
-                      {
-                        code: "IDEA_SPARK",
-                        title: isVi ? "Tia Sáng Sáng Tạo" : "Idea Spark",
-                        desc: isVi ? "Chiến lược, trực diện, kích hoạt" : "Tactical, direct, creative catalyst",
-                      },
-                      {
-                        code: "GENTLE_FRIEND",
-                        title: isVi ? "Người Bạn Ôn Nhu" : "Gentle Friend",
-                        desc: isVi ? "Đồng cảm, vỗ về, chánh niệm" : "Compassionate, mindful, reassuring",
-                      },
-                    ].map((p) => (
-                      <button
-                        key={p.code}
-                        type="button"
-                        onClick={() => setSelectedPersona(p.code as any)}
-                        className={`p-2.5 rounded-lg border text-left transition-all ${
-                          selectedPersona === p.code
-                            ? "border-primary bg-emerald-50 text-slate-900 ring-1 ring-primary"
-                            : "border-[#E2E8F0] hover:bg-slate-50 text-slate-700"
-                        }`}
-                      >
-                        <div className="text-xs font-bold">{p.title}</div>
-                        <div className="text-[10px] text-slate-500 mt-0.5 leading-tight">{p.desc}</div>
                       </button>
                     ))}
                   </div>
@@ -561,16 +410,17 @@ export default function SeekerProfilePage() {
                     className="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-lg text-xs font-semibold shadow-sm flex items-center gap-2 transition-colors"
                   >
                     <span className="material-symbols-outlined text-sm">save</span>
-                    <span>{saving ? (isVi ? "Đang lưu..." : "Saving...") : (isVi ? "Lưu Toàn Bộ Cấu Hình Vào Supabase" : "Save All Settings To Supabase")}</span>
+                    <span>{saving ? (isVi ? "Đang lưu..." : "Saving...") : "Save"}</span>
                   </button>
                 </div>
               </section>
             </>
           )}
+          </div>
         </main>
 
-        {/* ZONE 3: RIGHT COLUMN */}
-        <aside className="hidden xl:flex w-[360px] shrink-0 bg-white p-6 flex-col justify-between overflow-y-auto">
+        {/* ZONE 2: RIGHT COLUMN (Membership & Wallet) */}
+        <aside className="flex w-full xl:w-[360px] shrink-0 bg-white p-6 flex-col justify-between overflow-y-auto border-t xl:border-t-0 border-[#E2E8F0]">
           <div className="space-y-6">
             {/* Membership Pass */}
             <div className="p-5 rounded-xl border-2 border-primary bg-gradient-to-br from-emerald-50/60 via-white to-amber-50/30 relative shadow-sm">

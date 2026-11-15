@@ -358,6 +358,11 @@ public class ReadingSessionService {
         ReadingSession session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "Session not found"));
 
+        Instant startOfToday = getStartOfToday();
+        if (session.getCreatedAt() != null && session.getCreatedAt().isBefore(startOfToday)) {
+            throw new CustomException(ErrorCode.BAD_REQUEST, "Phiên trải bài của ngày cũ chỉ có thể xem lại luận giải, không thể rút thêm lá bài bổ sung.");
+        }
+
         ensureChronologicalClarifiers(session);
 
         List<DrawnCard> existingDrawn = drawnCardRepository.findBySessionIdOrderByPositionIndexAsc(sessionId);
@@ -430,13 +435,13 @@ public class ReadingSessionService {
         }
         if (aiAnswer == null || aiAnswer.isBlank()) {
             aiAnswer = isVi
-                    ? "✦ **Giải mã Lá Làm Rõ — " + cardName + " (" + orientLabel + "):**\n"
-                    + (summary != null ? summary + "\n" : "")
-                    + "Từ khóa trọng tâm: *" + (keywords != null ? keywords : "") + "*. "
+                    ? "Lá Làm Rõ — " + cardName + " (" + orientLabel + ")\n\n"
+                    + (summary != null && !summary.isBlank() ? summary + "\n\n" : "")
+                    + "Từ khóa trọng tâm: " + (keywords != null ? keywords : "") + ". "
                     + "Sự xuất hiện của lá bài này bổ sung góc nhìn sâu sắc cho trải bài hiện tại, nhắc nhở bạn kết nối trực giác với hành động thực tế."
-                    : "✦ **Clarifier Interpretation — " + cardName + " (" + orientLabel + "):**\n"
-                    + (summary != null ? summary + "\n" : "")
-                    + "Core keywords: *" + (keywords != null ? keywords : "") + "*.";
+                    : "Clarifier Interpretation — " + cardName + " (" + orientLabel + ")\n\n"
+                    + (summary != null && !summary.isBlank() ? summary + "\n\n" : "")
+                    + "Core keywords: " + (keywords != null ? keywords : "") + ".";
         }
 
         SessionMessage aiMsg = SessionMessage.builder()
@@ -723,31 +728,31 @@ public class ReadingSessionService {
         StringBuilder sb = new StringBuilder();
 
         if (isVi) {
-            sb.append("### ✨ Phân tích Tổng quan Trải bài (")
+            sb.append("Phân tích Tổng quan Trải bài (")
               .append(session.getSpread() != null ? session.getSpread().getNameVi() : "Trải bài")
               .append(")\n\n");
             for (DrawnCard dc : cards) {
                 String cardName = dc.getCard().getNameVi();
                 String orientation = dc.getIsReversed() ? "(Ngược)" : "(Xuôi)";
                 String position = dc.getPositionNameVi() != null ? dc.getPositionNameVi() : "Vị trí " + (dc.getPositionIndex() + 1);
-                sb.append(String.format("1. **%s (%s %s)**:\n%s\n\n",
+                sb.append(String.format("%s — %s %s: %s\n\n",
                         position, cardName, orientation,
                         dc.getIsReversed() ? dc.getCard().getKeywordsReversedVi() : dc.getCard().getKeywordsUprightVi()));
             }
-            sb.append("**Lời khuyên đúc kết**: Năng lượng các lá bài nhắc nhở bạn giữ vững sự kiên định, mở rộng tầm nhìn và tự tin lắng nghe trực giác trong mọi quyết định.");
+            sb.append("Lời khuyên đúc kết: Năng lượng các lá bài nhắc nhở bạn giữ vững sự kiên định, mở rộng tầm nhìn và tự tin lắng nghe trực giác trong mọi quyết định.");
         } else {
-            sb.append("### ✨ Reading Synthesis (")
+            sb.append("Reading Synthesis (")
               .append(session.getSpread() != null ? session.getSpread().getNameEn() : "Spread")
               .append(")\n\n");
             for (DrawnCard dc : cards) {
                 String cardName = dc.getCard().getNameEn();
                 String orientation = dc.getIsReversed() ? "(Reversed)" : "(Upright)";
                 String position = dc.getPositionNameEn() != null ? dc.getPositionNameEn() : "Position " + (dc.getPositionIndex() + 1);
-                sb.append(String.format("1. **%s (%s %s)**:\n%s\n\n",
+                sb.append(String.format("%s — %s %s: %s\n\n",
                         position, cardName, orientation,
                         dc.getIsReversed() ? dc.getCard().getKeywordsReversedEn() : dc.getCard().getKeywordsUprightEn()));
             }
-            sb.append("\n**Sage Counsel:** Take quiet moments of reflection to turn inner obstacles into transformative growth.");
+            sb.append("Sage Counsel: Take quiet moments of reflection to turn inner obstacles into transformative growth.");
         }
 
         return sb.toString();

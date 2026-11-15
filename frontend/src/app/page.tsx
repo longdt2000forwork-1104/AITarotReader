@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import EditorialHeader from "@/components/EditorialHeader";
-import MobileBottomNav from "@/components/MobileBottomNav";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
 import { TAROT_CARDS, TarotCard } from "@/data/tarotCards";
 import { ReadingSessionDto } from "@/types/api";
+import { getAiGuidancePreview } from "@/utils/formatAiText";
 
 export default function EditorialPortalPage() {
   const { t, locale } = useLanguage();
@@ -16,6 +16,7 @@ export default function EditorialPortalPage() {
   const [dailySession, setDailySession] = useState<ReadingSessionDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isFlipping, setIsFlipping] = useState(false);
+  const [isGuidanceExpanded, setIsGuidanceExpanded] = useState(false);
 
   const getTodayDateKey = (): string => {
     try {
@@ -67,6 +68,7 @@ export default function EditorialPortalPage() {
   const handleFlipCard = async (force: boolean = false) => {
     if (isFlipping) return;
     setIsFlipping(true);
+    setIsGuidanceExpanded(false);
     try {
       const todayKey = getTodayDateKey();
       const res = await apiClient.readings.flipDailyDraw(locale, force);
@@ -143,6 +145,7 @@ export default function EditorialPortalPage() {
     : null;
   const isReversed = Boolean(drawnCardData?.isReversed);
   const aiMessage = dailySession?.aiInterpretation || dailySession?.aiSynthesisResult || t.portal.advisoryQuote;
+  const guidance = getAiGuidancePreview(aiMessage, 220);
 
   // Resolve Element mapping
   const getElementDetails = (element?: string) => {
@@ -557,31 +560,57 @@ export default function EditorialPortalPage() {
                     <span>AI Guidance</span>
                   </span>
                 </div>
-                <blockquote className="font-headline italic text-sm md:text-[15px] text-on-surface leading-snug">
+                <blockquote className="font-headline text-sm md:text-[15px] text-on-surface leading-relaxed">
                   {isLoading && !dailySession ? (
-                    <span className="text-slate-400 not-italic font-sans text-xs flex items-center gap-2 py-1">
+                    <span className="text-slate-400 font-sans text-xs flex items-center gap-2 py-1">
                       <span className="material-symbols-outlined text-sm animate-spin text-primary">sync</span>
                       {isVi
                         ? "Đang đồng bộ trạng thái lá bài hôm nay..."
                         : "Syncing today's card status..."}
                     </span>
                   ) : isFlipping ? (
-                    <span className="text-slate-400 not-italic font-sans text-xs flex items-center gap-2 py-1">
+                    <span className="text-slate-400 font-sans text-xs flex items-center gap-2 py-1">
                       <span className="material-symbols-outlined text-sm animate-spin text-primary">sync</span>
                       {isVi
                         ? "Gemini AI đang rút lá bài từ cơ sở dữ liệu và khởi tạo thông điệp ngày mới..."
                         : "Gemini AI is drawing your card and synthesizing today's mindful guidance..."}
                     </span>
                   ) : !dailySession ? (
-                    <span className="text-slate-500 not-italic font-sans text-xs block py-1">
+                    <span className="text-slate-500 font-sans text-xs block py-1">
                       {isVi
                         ? "Lá bài hôm nay đang ở trạng thái úp. Hãy chạm vào lá bài phía trên để rút bài từ cơ sở dữ liệu và mở thông điệp định hướng cho ngày hôm nay."
                         : "Today's card is currently face down. Tap the card above to draw from the database and reveal your daily synthesis."}
                     </span>
+                  ) : guidance.isLong && !isGuidanceExpanded ? (
+                    <p>{guidance.previewText}</p>
                   ) : (
-                    `“${aiMessage}”`
+                    <div className="space-y-2.5">
+                      {guidance.paragraphs.map((paragraph, idx) => (
+                        <p key={idx}>{paragraph}</p>
+                      ))}
+                    </div>
                   )}
                 </blockquote>
+                {dailySession && !isLoading && !isFlipping && guidance.isLong && (
+                  <button
+                    type="button"
+                    onClick={() => setIsGuidanceExpanded((prev) => !prev)}
+                    className="mt-2.5 inline-flex items-center gap-1 text-xs font-mono font-semibold text-primary hover:text-emerald-700 transition-colors"
+                  >
+                    <span>
+                      {isGuidanceExpanded
+                        ? isVi
+                          ? "Thu gọn"
+                          : "Show less"
+                        : isVi
+                        ? "Xem thêm"
+                        : "Read more"}
+                    </span>
+                    <span className="material-symbols-outlined text-sm">
+                      {isGuidanceExpanded ? "expand_less" : "expand_more"}
+                    </span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -745,8 +774,6 @@ export default function EditorialPortalPage() {
           </div>
         </section>
       </main>
-
-      <MobileBottomNav activeTab="home" />
     </>
   );
 }

@@ -296,7 +296,7 @@ export const MOCK_SESSIONS: ReadingSessionDto[] = [
       }
     ],
     aiInterpretation:
-      "### Tổng hòa Trải bài: Khởi đầu Rực rỡ và Sự Thành toàn Sáng tạo\n\n1. **Quá khứ (The Fool - Thuận)**: Bạn đã bắt đầu hành trình này bằng một niềm tin thuần khiết, không bị gò bó bởi những định kiến cũ. Sự dũng cảm nhảy vào vùng vô định đã tạo tiền đề cho sự thức tỉnh hiện tại.\n\n2. **Hiện tại (The Magician - Thuận)**: Mọi công cụ, kỹ năng và nguồn lực cần thiết đều đã nằm trong lòng bàn tay bạn. Đây là thời khắc để hành động dứt khoát, biến ý tưởng thành tạo vật hữu hình.\n\n3. **Tương lai (The Star - Thuận)**: Ngôi sao hy vọng và sự hồi sinh soi chiếu chặng đường kế tiếp. Dự án của bạn không chỉ đạt được thành công mà còn mang lại sự chữa lành sâu sắc cho cộng đồng xung quanh.",
+      "Tổng hòa Trải bài: Khởi đầu Rực rỡ và Sự Thành toàn Sáng tạo\n\n1. Quá khứ (The Fool - Thuận): Bạn đã bắt đầu hành trình này bằng một niềm tin thuần khiết, không bị gò bó bởi những định kiến cũ. Sự dũng cảm nhảy vào vùng vô định đã tạo tiền đề cho sự thức tỉnh hiện tại.\n\n2. Hiện tại (The Magician - Thuận): Mọi công cụ, kỹ năng và nguồn lực cần thiết đều đã nằm trong lòng bàn tay bạn. Đây là thời khắc để hành động dứt khoát, biến ý tưởng thành tạo vật hữu hình.\n\n3. Tương lai (The Star - Thuận): Ngôi sao hy vọng và sự hồi sinh soi chiếu chặng đường kế tiếp. Dự án của bạn không chỉ đạt được thành công mà còn mang lại sự chữa lành sâu sắc cho cộng đồng xung quanh.",
     messages: [
       {
         id: "MSG-01",
