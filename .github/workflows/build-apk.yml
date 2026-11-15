@@ -3,15 +3,10 @@ name: Build Android APK (Manual)
 on:
   workflow_dispatch:
     inputs:
-      api_url:
-        description: 'Backend API Base URL'
+      app_url:
+        description: 'Frontend Mobile App URL (Vercel)'
         required: true
-        default: 'https://ai-tarot-backend-2jsg.onrender.com'
-        type: string
-      use_mock:
-        description: 'Use Mock API (true/false)'
-        required: true
-        default: 'false'
+        default: 'https://ai-tarot-reader-delta.vercel.app/app/home'
         type: string
 
 jobs:
@@ -40,18 +35,42 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Configure environment & prepare static export
+      - name: Configure Capacitor URL & fallback webDir
         working-directory: frontend
         run: |
-          cat <<EOF > .env.production
-          NEXT_PUBLIC_USE_MOCK_API=${{ inputs.use_mock }}
-          NEXT_PUBLIC_API_URL=${{ inputs.api_url }}
+          mkdir -p out
+          cat <<'EOF' > out/index.html
+          <!DOCTYPE html>
+          <html lang="vi">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>AI Tarot Reader</title>
+          </head>
+          <body style="font-family: sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #FAF9F6; color: #0F172A; text-align: center; padding: 24px;">
+            <div>
+              <h2>Không thể kết nối máy chủ</h2>
+              <p>Vui lòng kiểm tra kết nối Internet và mở lại ứng dụng.</p>
+            </div>
+          </body>
+          </html>
           EOF
-          rm -rf src/app/api
+          cat <<EOF > capacitor.config.ts
+          import type { CapacitorConfig } from '@capacitor/cli';
 
-      - name: Build Next.js static export
-        working-directory: frontend
-        run: npm run build
+          const config: CapacitorConfig = {
+            appId: 'com.aitarotreader.app',
+            appName: 'AI Tarot Reader',
+            webDir: 'out',
+            server: {
+              url: '${{ inputs.app_url }}',
+              cleartext: false,
+              androidScheme: 'https',
+            },
+          };
+
+          export default config;
+          EOF
 
       - name: Setup & sync Capacitor Android
         working-directory: frontend

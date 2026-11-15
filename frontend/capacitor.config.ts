@@ -5,6 +5,8 @@ const config: CapacitorConfig = {
   appName: 'AI Tarot Reader',
   webDir: 'out',
   server: {
+    url: 'https://ai-tarot-reader-delta.vercel.app/app/home',
+    cleartext: false,
     androidScheme: 'https',
   },
 };
