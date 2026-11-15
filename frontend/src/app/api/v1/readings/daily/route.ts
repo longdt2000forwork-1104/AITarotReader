@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { TAROT_CARDS, TarotCard } from "@/data/tarotCards";
+import { cleanAiText } from "@/utils/formatAiText";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
@@ -35,24 +36,32 @@ async function generateGeminiDailyMessage(
   const keywords = isVi ? card.keywordsVi : card.keywordsEn;
 
   const prompt = isVi
-    ? `Bạn là một Tarot Reader thông thái, chiêm nghiệm theo trường phái Hermetic và Botanical Editorial Print.
+    ? `Bạn là một Tarot Reader tinh tế theo tinh thần Sunlit Botanical & Editorial Print.
 Hôm nay seeker rút được lá bài hàng ngày (Daily Tarot Card):
 - Lá bài: ${cardName} (${card.nameEn}) - Số ${card.number} (Bộ ${card.suit})
 - Trạng thái: ${orientation}
 - Nguyên tố: ${card.element}
 - Từ khóa: ${keywords}
 
-Yêu cầu:
-Viết một thông điệp chiêm nghiệm ngắn gọn (khoảng 2-3 câu, tối đa 70 từ) cho ngày mới. Văn phong bình an, sâu sắc, không mê tín dị đoan, tập trung vào sự sáng tỏ tâm trí và một lời khuyên hành động thực tế cho hôm nay.`
-    : `You are an insightful Tarot Reader in the Sunlit Botanical & Editorial Print tradition.
+Yêu cầu bắt buộc:
+- Viết đúng 2 đoạn văn ngắn gọn (tổng khoảng 60-90 từ), cách nhau bằng đúng một dòng trống.
+- Đoạn 1: Thông điệp trọng tâm và góc nhìn sâu sắc của lá bài cho ngày mới.
+- Đoạn 2: Một lời khuyên hành động thực tế, nhẹ nhàng cho hôm nay.
+- Giọng văn bình an, tự nhiên như người thật trò chuyện; tránh các câu mở đầu/kết thúc rập khuôn kiểu AI.
+- TUYỆT ĐỐI KHÔNG dùng ký tự Markdown (cấm ###, #, **, *, __, ---) và KHÔNG chèn emoji hay icon.`
+    : `You are a thoughtful Tarot Reader in the Sunlit Botanical & Editorial Print tradition.
 Today the seeker drew the daily card:
 - Card: ${card.nameEn} (No. ${card.number}, Suit: ${card.suit})
 - Orientation: ${orientation}
 - Element: ${card.element}
 - Keywords: ${keywords}
 
-Instruction:
-Write an inspiring, reflective daily guidance note (2-3 sentences, max 70 words). Elegant, grounded, mindful, and offering a practical focus for today.`;
+Mandatory instructions:
+- Write exactly 2 concise paragraphs (60-90 words total) separated by a blank line.
+- Paragraph 1: The core daily reflection and insight from this card.
+- Paragraph 2: One grounded, practical focus for today.
+- Use a calm, natural human editorial tone without generic AI filler phrases.
+- STRICTLY FORBIDDEN to use Markdown characters (no ###, #, **, *, __, ---) or emojis/icons.`;
 
   try {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY.trim()}`;
@@ -79,7 +88,7 @@ Write an inspiring, reflective daily guidance note (2-3 sentences, max 70 words)
       const data = await res.json();
       const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
       if (text && text.trim()) {
-        return text.trim();
+        return cleanAiText(text);
       }
     }
   } catch (err) {

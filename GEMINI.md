@@ -1,5 +1,15 @@
 # Hướng Dẫn & Quy Tắc Cốt Lõi Dự Án (Project Instructions)
 
+## Quy Tắc Bắt Buộc Đầu Tiên: Kiểm Tra `rules.md`
+1. **Luôn chạy qua `rules.md` trước khi làm việc:**
+   - Trước khi phân tích, sửa lỗi hoặc phát triển tính năng trên `AITarotReader`, mọi Agent **BẮT BUỘC phải đọc và tuân thủ file @[rules.md](./rules.md)** ở thư mục gốc dự án (đồng bộ với `.agents/rules/rules.md`).
+2. **Tách biệt giao diện Website (`SCR-W*`) và Mobile App (`/app/*`, `SCR-M*`):**
+   - Website (`/`, `/workbench/*`, `/catalog-picker`, `/decks-archive`, `/journal`, `/studio-billing`, `/pricing`, `/settings/profile`, `/auth`) **chỉ dùng `<EditorialHeader />`**, **TUYỆT ĐỐI KHÔNG** import hoặc render `<MobileBottomNav />` (kể cả ẩn bằng CSS breakpoint).
+   - Mobile App (`/app/*`) **chỉ dùng `<MobileBottomNav />`** và header cục bộ của App, **KHÔNG** dùng `<EditorialHeader />`.
+3. **Quy Tắc Prompt & Định Dạng Đầu Ra Luận Giải AI (Editorial Anti-AI Copywriting):**
+   - Mọi prompt gửi tới LLM (Gemini AI) và chuỗi fallback **TUYỆT ĐỐI KHÔNG** yêu cầu hoặc xuất ký tự Markdown thô (`###`, `##`, `#`, `**`, `*`, `__`, `---`) hay spam emoji/icon; phải viết tự nhiên, điềm tĩnh như biên tập viên và chia thành từng đoạn ngắn (2–3 câu/đoạn) cách nhau bằng dòng trống (`\n\n`).
+   - Trên UI, mọi khối luận giải/AI Guidance phải làm sạch qua `cleanAiText` / `splitAiParagraphs` (`frontend/src/utils/formatAiText.ts`), phân đoạn rõ ràng, và thu gọn nội dung dài kèm nút **"Xem thêm / Thu gọn"**.
+
 ## Quy Tắc Cơ Sở Dữ Liệu: Supabase Cloud PostgreSQL 17
 1. **Luôn luôn sử dụng Supabase:**
    - Cơ sở dữ liệu duy nhất của toàn bộ hệ thống là Supabase Cloud PostgreSQL 17.

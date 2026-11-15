@@ -7,6 +7,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
 import { MysticProfileDto, WalletBalanceDto, ReadingSessionDto } from "@/types/api";
 import { TAROT_CARDS, TarotCard } from "@/data/tarotCards";
+import { getAiGuidancePreview } from "@/utils/formatAiText";
 
 export default function MobileDailyHomePage() {
   const { locale, setLocale, t } = useLanguage();
@@ -17,6 +18,7 @@ export default function MobileDailyHomePage() {
   const [dailySession, setDailySession] = useState<ReadingSessionDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isFlipping, setIsFlipping] = useState(false);
+  const [isGuidanceExpanded, setIsGuidanceExpanded] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
   const [claimToast, setClaimToast] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -87,6 +89,7 @@ export default function MobileDailyHomePage() {
   const handleFlipCard = async (force: boolean = false) => {
     if (isFlipping) return;
     setIsFlipping(true);
+    setIsGuidanceExpanded(false);
     try {
       const todayKey = getTodayDateKey();
       const res = await apiClient.readings.flipDailyDraw(locale, force);
@@ -217,6 +220,7 @@ export default function MobileDailyHomePage() {
     : null;
   const isReversed = Boolean(drawnCardData?.isReversed);
   const aiMessage = dailySession?.aiInterpretation || dailySession?.aiSynthesisResult || t.portal.advisoryQuote;
+  const guidance = getAiGuidancePreview(aiMessage, 190);
 
   const rawKeywords: string = card ? String((isVi ? card.keywordsVi : card.keywordsEn) || "") : "";
   const keywordsList: string[] = rawKeywords
@@ -484,27 +488,53 @@ export default function MobileDailyHomePage() {
               {isClaiming ? (isVi ? "Đang nhận..." : "Claiming...") : (isVi ? "+10 CR Phước lành" : "+10 CR Blessing")}
             </button>
           </div>
-          <p className="font-headline italic text-sm text-on-surface leading-snug">
+          <div className="font-headline text-sm text-on-surface leading-relaxed">
             {isLoading && !dailySession ? (
-              <span className="text-slate-400 not-italic font-sans text-xs flex items-center gap-1.5 py-1">
+              <span className="text-slate-400 font-sans text-xs flex items-center gap-1.5 py-1">
                 <span className="material-symbols-outlined text-xs animate-spin text-primary">sync</span>
                 {isVi ? "Đang đồng bộ trạng thái lá bài..." : "Syncing daily card status..."}
               </span>
             ) : isFlipping ? (
-              <span className="text-slate-400 not-italic font-sans text-xs flex items-center gap-1.5 py-1">
+              <span className="text-slate-400 font-sans text-xs flex items-center gap-1.5 py-1">
                 <span className="material-symbols-outlined text-xs animate-spin text-primary">sync</span>
                 {isVi ? "Đang rút bài và thỉnh thông điệp từ Gemini AI..." : "Drawing card & synthesizing with Gemini AI..."}
               </span>
             ) : !dailySession ? (
-              <span className="text-slate-500 not-italic font-sans text-xs block py-1">
+              <span className="text-slate-500 font-sans text-xs block py-1">
                 {isVi
                   ? "Lá bài hôm nay vẫn đang úp. Hãy chạm lật bài phía trên để rút lá bài từ cơ sở dữ liệu và mở thông điệp ngày mới."
                   : "Today's card is still face down. Flip the card above to draw from the database and reveal your daily message."}
               </span>
+            ) : guidance.isLong && !isGuidanceExpanded ? (
+              <p>{guidance.previewText}</p>
             ) : (
-              `“${aiMessage}”`
+              <div className="space-y-2">
+                {guidance.paragraphs.map((paragraph, idx) => (
+                  <p key={idx}>{paragraph}</p>
+                ))}
+              </div>
             )}
-          </p>
+          </div>
+          {dailySession && !isLoading && !isFlipping && guidance.isLong && (
+            <button
+              type="button"
+              onClick={() => setIsGuidanceExpanded((prev) => !prev)}
+              className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-mono font-semibold text-primary hover:text-emerald-700 transition-colors"
+            >
+              <span>
+                {isGuidanceExpanded
+                  ? isVi
+                    ? "Thu gọn"
+                    : "Show less"
+                  : isVi
+                  ? "Xem thêm"
+                  : "Read more"}
+              </span>
+              <span className="material-symbols-outlined text-sm">
+                {isGuidanceExpanded ? "expand_less" : "expand_more"}
+              </span>
+            </button>
+          )}
         </div>
 
         {/* Action Buttons */}

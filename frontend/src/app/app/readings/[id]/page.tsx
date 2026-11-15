@@ -8,6 +8,7 @@ import { apiClient } from "@/services/apiClient";
 import { ReadingSessionDto, DrawnCardDto } from "@/types/api";
 import { TAROT_CARDS } from "@/data/tarotCards";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import { cleanAiText, splitAiParagraphs } from "@/utils/formatAiText";
 
 export default function MobileReadingReportPage() {
   const params = useParams();
@@ -457,13 +458,17 @@ export default function MobileReadingReportPage() {
             <h3 className="font-headline font-bold text-lg text-slate-900">
               {isVi ? "Thông Điệp Cốt Lõi Từ Vũ Trụ" : "Core Oracle Synthesis"}
             </h3>
-            <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-line">
-              {session.aiInterpretation ||
-                session.aiSynthesisResult ||
-                (isVi
-                  ? "Năng lượng các lá bài hội tụ chỉ ra rằng bạn đang đứng trước bước ngoặt quyết định. Hãy giữ tâm thế tự chủ và biến các chiêm nghiệm thành hành động cụ thể."
-                  : "The converging card energies indicate a defining milestone. Maintain sovereign focus and ground insights into deliberate action.")}
-            </p>
+            <div className="text-xs text-slate-700 leading-relaxed space-y-2.5">
+              {splitAiParagraphs(
+                session.aiInterpretation ||
+                  session.aiSynthesisResult ||
+                  (isVi
+                    ? "Năng lượng các lá bài hội tụ chỉ ra rằng bạn đang đứng trước bước ngoặt quyết định. Hãy giữ tâm thế tự chủ và biến các chiêm nghiệm thành hành động cụ thể."
+                    : "The converging card energies indicate a defining milestone. Maintain sovereign focus and ground insights into deliberate action.")
+              ).map((paragraph, idx) => (
+                <p key={idx}>{paragraph}</p>
+              ))}
+            </div>
           </section>
 
           {/* Section 04: Tactical Action Advice */}
@@ -584,13 +589,15 @@ export default function MobileReadingReportPage() {
                           : "✦ AI Oracle"}
                       </span>
                       <div
-                        className={`max-w-[88%] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm leading-relaxed whitespace-pre-line shadow-2xs ${
+                        className={`max-w-[88%] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm leading-relaxed space-y-1.5 shadow-2xs ${
                           msg.sender === "user"
                             ? "bg-primary text-white rounded-br-xs"
                             : "bg-white text-slate-800 border border-[#E2E8F0] rounded-bl-xs"
                         }`}
                       >
-                        {msg.text}
+                        {(msg.sender === "ai" ? splitAiParagraphs(msg.text) : [msg.text]).map((para, pIdx) => (
+                          <p key={pIdx}>{para}</p>
+                        ))}
                       </div>
                     </div>
                   ))

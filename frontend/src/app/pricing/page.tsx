@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import EditorialHeader from "@/components/EditorialHeader";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
 
 export default function PricingPlansStorePage() {
   const { locale } = useLanguage();
-  const isVi = locale === "vi";
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("annual");
   const [selectedProduct, setSelectedProduct] = useState<{
     id: string;
@@ -27,10 +25,8 @@ export default function PricingPlansStorePage() {
   });
 
   const [paymentMethod, setPaymentMethod] = useState<"vietqr" | "stripe">("vietqr");
-  const [claimedDaily, setClaimedDaily] = useState(false);
   const [currentBalance, setCurrentBalance] = useState(45);
   const [transferSuccess, setTransferSuccess] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchBalance() {
@@ -45,21 +41,6 @@ export default function PricingPlansStorePage() {
     }
     fetchBalance();
   }, []);
-
-  const handleClaimDaily = async () => {
-    if (claimedDaily) return;
-    try {
-      const res = await apiClient.wallet.claimDailyReward();
-      if (res.code === 200 && res.data) {
-        setCurrentBalance(res.data.balance);
-        setClaimedDaily(true);
-        setToastMessage(isVi ? "+10 CR Phước lành hàng ngày đã cộng vào tài khoản Supabase!" : "+10 CR Daily reward deposited to Supabase account!");
-        setTimeout(() => setToastMessage(null), 3000);
-      }
-    } catch (err) {
-      console.error("Error claiming daily reward:", err);
-    }
-  };
 
   const handleCompleteOrder = () => {
     setTransferSuccess(true);
@@ -111,122 +92,11 @@ export default function PricingPlansStorePage() {
     <div className="bg-[#FAF9F6] text-[#0F172A] antialiased min-h-screen flex flex-col font-body selection:bg-emerald-100 selection:text-emerald-900">
       <EditorialHeader activeTab="pricing" credits={currentBalance} />
 
-      {toastMessage && (
-        <div className="bg-emerald-600 text-white text-xs font-mono font-medium px-4 py-2.5 text-center flex items-center justify-center gap-2 sticky top-16 z-50 shadow-md">
-          <span className="material-symbols-outlined text-sm">check_circle</span>
-          <span>{toastMessage}</span>
-        </div>
-      )}
-
-      {/* Main Container */}
-      <div className="flex-1 flex w-full max-w-[1600px] mx-auto border-x border-[#E2E8F0] bg-white">
-        {/* ZONE 1: LEFT RAIL NAVIGATION */}
-        <aside className="hidden lg:flex w-[240px] shrink-0 bg-white border-r border-[#E2E8F0] flex-col justify-between p-4 min-h-[calc(100vh-64px)]">
-          <div>
-            <div className="pb-4 mb-4 border-b border-[#E2E8F0]">
-              <div className="font-headline font-bold text-sm tracking-tight text-slate-900 uppercase">
-                ✦ AITAROT · STORE
-              </div>
-              <div className="text-[10px] font-mono tracking-wider uppercase text-slate-500 mt-0.5">
-                Pricing & Ledger · SCR-W09
-              </div>
-              <div className="mt-3 inline-flex items-center space-x-1.5 px-2 py-1 bg-amber-50 border border-amber-200/80 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
-                <span className="text-[10px] font-mono text-amber-800 font-semibold">HERMETIC CREDITS STORE</span>
-              </div>
-            </div>
-
-            <nav className="space-y-1 text-xs font-mono">
-              <Link
-                href="/"
-                className="flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-              >
-                <span className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px] text-slate-400">spa</span>
-                  <span>{locale === "vi" ? "Chỉ Số Ngày" : "Daily Index"}</span>
-                </span>
-                <span className="text-[10px] text-slate-400">24h</span>
-              </Link>
-              <Link
-                href="/workbench/demo-session"
-                className="flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-              >
-                <span className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px] text-slate-400">style</span>
-                  <span>{locale === "vi" ? "Bàn Trải Bài" : "Workbench"}</span>
-                </span>
-              </Link>
-              <Link
-                href="/decks-archive"
-                className="flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-              >
-                <span className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px] text-slate-400">collections_bookmark</span>
-                  <span>{locale === "vi" ? "Kho 5 Bộ Bài" : "5 Decks Archive"}</span>
-                </span>
-                <span className="text-[10px] text-primary bg-emerald-50 px-1.5 py-0.5 rounded font-semibold">5 ED</span>
-              </Link>
-              <Link
-                href="/journal"
-                className="flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-              >
-                <span className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px] text-slate-400">menu_book</span>
-                  <span>{locale === "vi" ? "Nhật Ký Nghiệm Lý" : "Archive Journal"}</span>
-                </span>
-                <span className="text-[10px] text-slate-400">42</span>
-              </Link>
-              <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-emerald-50 text-primary font-semibold border-l-2 border-primary pl-2.5">
-                <span className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px] text-primary">store</span>
-                  <span>{locale === "vi" ? "Bảng Giá & Gói Phí" : "Pricing & Store"}</span>
-                </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-              </div>
-              <Link
-                href="/settings/profile"
-                className="flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-              >
-                <span className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px] text-slate-400">person</span>
-                  <span>{locale === "vi" ? "Hồ Sơ Của Bạn" : "Seeker Profile"}</span>
-                </span>
-              </Link>
-            </nav>
-          </div>
-
-          {/* Bottom Wallet Status Box */}
-          <div className="p-3 bg-[#FAF9F6] border border-[#E2E8F0] rounded-xl">
-            <div className="flex items-center justify-between mb-1 text-[11px] font-mono uppercase text-slate-500">
-              <span>{locale === "vi" ? "Số Dư Khả Dụng" : "Available Balance"}</span>
-              <span className="material-symbols-outlined text-amber-600 text-base">toll</span>
-            </div>
-            <div className="flex items-baseline space-x-1.5">
-              <span className="font-headline font-bold text-2xl text-slate-900">{currentBalance}</span>
-              <span className="text-xs font-mono font-bold text-primary">CR</span>
-              <span className="text-[10px] text-slate-400 font-mono ml-auto">{locale === "vi" ? "Khởi Đầu" : "Free Seeker"}</span>
-            </div>
-            <div className="mt-2.5 pt-2 border-t border-dashed border-slate-200 flex items-center justify-between">
-              <span className="text-[11px] text-slate-600 font-medium">{locale === "vi" ? "+5 CR Điểm Danh" : "+5 CR Daily Login"}</span>
-              <button
-                type="button"
-                onClick={handleClaimDaily}
-                disabled={claimedDaily}
-                className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase font-semibold transition-colors ${
-                  claimedDaily
-                    ? "bg-slate-200 text-slate-500 cursor-not-allowed"
-                    : "bg-primary text-white hover:bg-emerald-700"
-                }`}
-              >
-                {claimedDaily ? (locale === "vi" ? "Đã nhận" : "Claimed") : (locale === "vi" ? "Nhận" : "Claim")}
-              </button>
-            </div>
-          </div>
-        </aside>
-
-        {/* ZONE 2: CENTER MAIN STORE CANVAS */}
-        <main className="flex-1 bg-[#FAF9F6] border-r border-[#E2E8F0] overflow-y-auto p-6 lg:p-8">
-          <div className="max-w-[760px] mx-auto space-y-8">
+      {/* Main 2-Zone Container */}
+      <div className="flex-1 flex flex-col lg:flex-row w-full max-w-[1440px] mx-auto border-x border-[#E2E8F0] bg-white">
+        {/* MAIN STORE CANVAS */}
+        <main className="flex-1 bg-[#FAF9F6] lg:border-r border-[#E2E8F0] overflow-y-auto p-6 lg:p-8">
+          <div className="max-w-[880px] mx-auto space-y-8">
             {/* Header & Billing Cycle Toggle */}
             <div>
               <div className="flex items-center space-x-2 text-[11px] font-mono text-primary uppercase tracking-wider mb-1.5">
