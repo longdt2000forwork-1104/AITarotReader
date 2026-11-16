@@ -20,7 +20,6 @@ export default function SeekerProfilePage() {
 
   // Form State
   const [allowAiContext, setAllowAiContext] = useState(true);
-  const [selectedDeck, setSelectedDeck] = useState("ED-02");
   const [birthZodiac, setBirthZodiac] = useState("Aries");
   const [birthDate, setBirthDate] = useState("1998-04-12");
   const [credits, setCredits] = useState(45);
@@ -37,7 +36,6 @@ export default function SeekerProfilePage() {
 
         if (profRes.data) {
           setProfile(profRes.data);
-          if (profRes.data.preferredDeckId) setSelectedDeck(profRes.data.preferredDeckId);
           if (profRes.data.birthZodiac) setBirthZodiac(profRes.data.birthZodiac);
           if (profRes.data.birthDate) setBirthDate(profRes.data.birthDate);
         }
@@ -74,11 +72,10 @@ export default function SeekerProfilePage() {
     setSaving(true);
     try {
       const res = await apiClient.profile.updateMysticProfile({
-        preferredDeckId: selectedDeck,
         birthZodiac: birthZodiac,
         birthDate: birthDate,
         aiContextNotes: allowAiContext
-          ? "Harmonize readings with natal birth zodiac decans and active archival deck."
+          ? "Harmonize readings with natal birth zodiac decans."
           : "Standard objective card analysis without astrological bias."
       });
 
@@ -311,62 +308,11 @@ export default function SeekerProfilePage() {
                 </div>
               </section>
 
-              {/* CARD 03: Preferred Deck Edition */}
+              {/* CARD 03: AI Context Guardrail & Memory Management */}
               <section className="bg-white border border-[#E2E8F0] rounded-xl p-5 mb-6 shadow-xs">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
                     <span className="text-xs font-mono uppercase text-primary font-bold tracking-widest">03.</span>
-                    <h2 className="font-headline font-bold text-base text-slate-900">
-                      {isVi ? "Bộ Bài Tarot Mặc Định (FR-2.4)" : "Preferred Tarot Deck Edition (FR-2.4)"}
-                    </h2>
-                  </div>
-                </div>
-
-                {/* Deck Selector */}
-                <div className="mt-3">
-                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-600 mb-2">
-                    {isVi ? "Bộ Bài Mặc Định Ưa Thích" : "Preferred Archival Deck"}
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {[
-                      { id: "ED-01", name: "Rider-Waite-Smith 1909", badge: isVi ? "KINH ĐIỂN" : "CANONICAL" },
-                      { id: "ED-02", name: "Sunlit Botanical Herbarium", badge: isVi ? "THẢO MỘC" : "BOTANICAL" },
-                      { id: "ED-03", name: "Swiss Geometric Construct", badge: "PRO" },
-                      { id: "ED-04", name: "Marseille 1760 Heritage", badge: "PRO" },
-                      { id: "ED-05", name: "Kyoto Sumi-e Ink Wash", badge: "PRO" },
-                    ].map((deck) => (
-                      <button
-                        key={deck.id}
-                        type="button"
-                        onClick={() => setSelectedDeck(deck.id)}
-                        className={`p-2.5 rounded-lg border text-left flex items-center justify-between transition-all ${
-                          selectedDeck === deck.id
-                            ? "border-primary bg-emerald-50/50 text-slate-900 ring-1 ring-primary"
-                            : "border-[#E2E8F0] hover:bg-slate-50 text-slate-700"
-                        }`}
-                      >
-                        <div>
-                          <div className="text-xs font-semibold">{deck.name}</div>
-                          <div className="text-[10px] font-mono text-slate-500">{deck.id} · 78 {isVi ? "Lá Bài" : "Cards"}</div>
-                        </div>
-                        <span
-                          className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
-                            selectedDeck === deck.id ? "bg-primary text-white font-bold" : "bg-slate-100 text-slate-600"
-                          }`}
-                        >
-                          {deck.badge}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </section>
-
-              {/* CARD 04: AI Context Guardrail & Memory Management */}
-              <section className="bg-white border border-[#E2E8F0] rounded-xl p-5 mb-6 shadow-xs">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs font-mono uppercase text-primary font-bold tracking-widest">04.</span>
                     <h2 className="font-headline font-bold text-base text-slate-900">
                       {isVi ? "Kiểm Soát Ngữ Cảnh & Ký Ức AI (FR-1.3)" : "AI Context Guardrail & Memory (FR-1.3)"}
                     </h2>
@@ -435,8 +381,8 @@ export default function SeekerProfilePage() {
               </h3>
               <p className="text-xs text-slate-600 mt-1 leading-relaxed">
                 {isVi
-                  ? "Không giới hạn rút bài hàng ngày, xuất file in 300 DPI không đóng dấu mờ, mở khóa toàn bộ 5 bộ bài."
-                  : "Unlimited daily draws, watermark-free 300 DPI exports, 5 full Tarot editions unlocked."}
+                  ? "Không giới hạn rút bài hàng ngày, đào sâu hỏi đáp AI và lưu trữ Nhật Ký Lịch Ngày đồng bộ trên Web & Mobile."
+                  : "Unlimited daily draws, deep AI follow-up inquiry, and full Calendar Journal syncing across Web & Mobile."}
               </p>
               <div className="mt-4 pt-3 border-t border-emerald-200/80 flex items-center justify-between text-xs font-mono">
                 <span className="text-slate-500">{isVi ? "Tự động gia hạn:" : "Auto-renews:"}</span>

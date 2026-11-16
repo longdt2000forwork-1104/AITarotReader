@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import EditorialHeader from "@/components/EditorialHeader";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
@@ -28,6 +29,7 @@ function isSameLocalDay(dateString?: string): boolean {
 export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
   const { locale, t } = useLanguage();
   const isVi = locale === "vi";
+  const router = useRouter();
 
   const [session, setSession] = useState<ReadingSessionDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +37,6 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
   const [isDrawingClarifier, setIsDrawingClarifier] = useState(false);
   const [clarifierSuccess, setClarifierSuccess] = useState(false);
   const [clarifierError, setClarifierError] = useState<string | null>(null);
-  const [isCreatingNew, setIsCreatingNew] = useState(false);
 
   // Follow-up chat state
   const [chatInput, setChatInput] = useState("");
@@ -91,40 +92,7 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
     }
   };
 
-  const handleStartNewReading = async () => {
-    if (isCreatingNew) return;
-    setIsCreatingNew(true);
-    setIsLoading(true);
-    setClarifierError(null);
-    try {
-      const createRes = await apiClient.readings.create({
-        spreadId: "S-02",
-        deckId: "ED-01",
-        inputMode: "VIRTUAL",
-        question: isVi
-          ? "Định hướng phát triển và chuyển hóa năng lượng cá nhân trong chu kỳ mới"
-          : "Creative Direction & Energy Realignment for the current cycle",
-      });
-      if (createRes.data) {
-        const created = createRes.data;
-        const drawnRes = await apiClient.readings.drawCards(created.id);
-        const interpretedRes = await apiClient.readings.interpret(created.id);
-        const finalSession = interpretedRes.data || drawnRes.data || created;
-        setSession(finalSession);
-        initMessages(finalSession);
-        if (typeof window !== "undefined" && window.history) {
-          window.history.replaceState(null, "", `/workbench/${finalSession.id}`);
-        }
-      }
-    } catch (err) {
-      console.error("Failed to start new reading:", err);
-    } finally {
-      setIsCreatingNew(false);
-      setIsLoading(false);
-    }
-  };
-
-  // Load reading session
+  // Load reading session (no demo-session generation)
   useEffect(() => {
     let isSubscribed = true;
 
@@ -134,7 +102,7 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
       try {
         const id = params.id;
 
-        // 1. If a specific session UUID is requested (e.g. clicked from Calendar Journal)
+        // 1. Load specific session UUID
         if (id && id !== "demo-session") {
           const res = await apiClient.readings.getById(id);
           if (res.data && res.data.drawnCards && res.data.drawnCards.length > 0 && isSubscribed) {
@@ -145,62 +113,33 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
           }
         }
 
-        // 2. For default workbench route: look for today's active session first
-        const historyRes = await apiClient.readings.getHistory();
-        if (historyRes.data && historyRes.data.length > 0 && isSubscribed) {
-          const validSessions = historyRes.data.filter((s) => s.drawnCards && s.drawnCards.length > 0);
-          const todaySession = validSessions.find((s) => isSameLocalDay(s.createdAt));
-          if (todaySession) {
-            setSession(todaySession);
-            initMessages(todaySession);
-            if (typeof window !== "undefined" && window.history && id === "demo-session") {
-              window.history.replaceState(null, "", `/workbench/${todaySession.id}`);
-            }
-            setIsLoading(false);
-            return;
-          }
-        }
-
-        // 3. Check today's daily draw if no 3-card session exists today yet
-        const dailyRes = await apiClient.readings.getDailyDraw(locale, false);
+        // 2. If invalid ID or legacy demo route, check today's flipped daily draw
+        const dailyRes = await apiClient.readings.checkDailyDraw(locale);
         if (
           dailyRes.data &&
+          dailyRes.data.id &&
           dailyRes.data.drawnCards &&
           dailyRes.data.drawnCards.length > 0 &&
-          isSameLocalDay(dailyRes.data.createdAt) &&
           isSubscribed
         ) {
           setSession(dailyRes.data);
           initMessages(dailyRes.data);
+          if (typeof window !== "undefined") {
+            router.replace(`/workbench/${dailyRes.data.id}`);
+          }
           setIsLoading(false);
           return;
         }
 
-        // 4. Otherwise provision today's reading session via Supabase backend
-        const createRes = await apiClient.readings.create({
-          spreadId: "S-02",
-          deckId: "ED-01",
-          inputMode: "VIRTUAL",
-          question: isVi
-            ? "Định hướng phát triển và chuyển hóa năng lượng cá nhân trong chu kỳ mới"
-            : "Creative Direction & Energy Realignment for the current cycle",
-        });
-
-        if (createRes.data) {
-          const created = createRes.data;
-          const drawnRes = await apiClient.readings.drawCards(created.id);
-          const interpretedRes = await apiClient.readings.interpret(created.id);
-          const finalSession = interpretedRes.data || drawnRes.data || created;
-          if (isSubscribed) {
-            setSession(finalSession);
-            initMessages(finalSession);
-            if (typeof window !== "undefined" && window.history && id === "demo-session") {
-              window.history.replaceState(null, "", `/workbench/${finalSession.id}`);
-            }
-          }
+        // 3. No active daily reading found -> redirect back to Daily Index so user flips today's card
+        if (isSubscribed) {
+          router.replace("/");
         }
       } catch (err) {
         console.warn("Failed to load workbench session from backend:", err);
+        if (isSubscribed) {
+          router.replace("/");
+        }
       } finally {
         if (isSubscribed) {
           setIsLoading(false);
@@ -213,7 +152,7 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
     return () => {
       isSubscribed = false;
     };
-  }, [params.id, locale]);
+  }, [params.id, locale, router]);
 
   // Handle follow-up chat with AI Reader
   const handleSendChat = async (e: React.FormEvent) => {
@@ -393,10 +332,6 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
     ? session?.spreadNameVi || session?.spreadTemplate?.nameVi || "Hiện Trạng · Hành Động · Kết Quả"
     : session?.spreadNameEn || session?.spreadTemplate?.nameEn || "Situation · Action · Outcome";
 
-  const deckName = isVi
-    ? session?.deckNameVi || session?.deck?.nameVi || "Rider-Waite 1909 Kinh Điển"
-    : session?.deckNameEn || session?.deck?.nameEn || "Rider-Waite 1909 Canonical";
-
   const aiSynthesis = session?.aiInterpretation || session?.aiSynthesisResult || "";
 
   return (
@@ -445,33 +380,12 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
           </div>
 
           <div className="flex items-center gap-2.5">
-            <button
-              type="button"
-              onClick={handleStartNewReading}
-              disabled={isCreatingNew || isLoading}
-              className="px-3 py-1 bg-white border border-outline-variant hover:border-primary hover:text-primary rounded text-xs font-medium text-on-surface transition-colors shadow-2xs disabled:opacity-50"
-            >
-              {isCreatingNew
-                ? isVi
-                  ? "Đang tạo..."
-                  : "Creating..."
-                : isVi
-                ? "+ Trải Bài Mới"
-                : "+ New Reading"}
-            </button>
             <Link
               href="/journal"
               className="px-3 py-1 bg-primary hover:bg-primary-hover text-white rounded text-xs font-medium flex items-center gap-1.5 transition-colors shadow-2xs"
             >
               <span className="material-symbols-outlined text-sm">calendar_month</span>
               <span>{isVi ? "Lịch Nhật Ký" : "Calendar Journal"}</span>
-            </Link>
-            <Link
-              href={session?.id ? `/app/readings/${session.id}/share` : "/pricing"}
-              className="px-3 py-1 bg-white border border-outline-variant rounded text-xs font-medium text-on-surface hover:bg-slate-50 flex items-center gap-1 transition-colors shadow-2xs"
-            >
-              <span className="material-symbols-outlined text-sm">share</span>
-              <span>{t.workbench.exportCard}</span>
             </Link>
           </div>
         </div>
@@ -491,9 +405,6 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
                     <h2 className="font-headline font-bold text-lg text-on-surface">
                       {spreadName}
                     </h2>
-                    <p className="text-xs text-slate-500">
-                      {isVi ? `Bộ bài: ${deckName}` : `Active Deck: ${deckName}`}
-                    </p>
                   </div>
                   <span className="font-mono text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200">
                     {drawnCards.length > 0

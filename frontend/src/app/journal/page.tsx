@@ -432,10 +432,10 @@ export default function JournalPatternLedgerPage() {
                     </p>
                     {selectedDateKey === todayKey && (
                       <Link
-                        href="/workbench/demo-session"
+                        href="/"
                         className="inline-block px-3.5 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-hover shadow-xs transition-colors"
                       >
-                        {isVi ? "Bắt Đầu Trải Bài Hôm Nay →" : "Start Today's Reading →"}
+                        {isVi ? "Về Trang Chủ Lật Bài Hôm Nay →" : "Go Flip Today's Card →"}
                       </Link>
                     )}
                   </div>

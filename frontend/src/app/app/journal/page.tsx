@@ -384,10 +384,10 @@ export default function MobileCalendarJournalPage() {
               </p>
               {selectedDateKey === todayKey && (
                 <Link
-                  href="/app/readings/new"
+                  href="/app/home"
                   className="inline-block px-3.5 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-hover shadow-xs"
                 >
-                  {isVi ? "Bắt Đầu Trải Bài Mới →" : "Start New Reading →"}
+                  {isVi ? "Về Trang Chủ Lật Bài Hôm Nay →" : "Flip Today's Card →"}
                 </Link>
               )}
             </div>

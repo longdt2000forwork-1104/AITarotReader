@@ -88,11 +88,11 @@ export default function CatalogPickerPage() {
             </div>
             <div className="flex items-center gap-3">
               <Link
-                href="/workbench/demo-session"
+                href="/"
                 className="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-hover shadow-sm flex items-center gap-1.5 transition-all"
               >
-                <span>{t.catalog.proceed}</span>
-                <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                <span className="material-symbols-outlined text-sm">spa</span>
+                <span>{isVi ? "Về Trang Chủ Lật Bài" : "Back to Daily Draw"}</span>
               </Link>
             </div>
           </div>
