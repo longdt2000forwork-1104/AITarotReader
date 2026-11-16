@@ -172,7 +172,7 @@ export default function MobileDecksGalleryPage() {
 
                 <div className="pt-2 border-t border-slate-100 flex gap-2">
                   <Link
-                    href="/catalog-picker"
+                    href="/app/readings/manual"
                     className="flex-1 py-2 text-center text-xs font-medium border border-outline-variant rounded-lg hover:bg-slate-50 transition-colors"
                   >
                     {isVi ? `Xem ${activeDeck.cardCount} Bản Khắc` : `Browse ${activeDeck.cardCount} Plates`}

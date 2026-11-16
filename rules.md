@@ -72,14 +72,15 @@ Codebase `frontend/src/app/` phục vụ đồng thời **2 ứng dụng tách b
 | :--- | :--- | :--- | :--- |
 | `SCR-M01` | `/app/home` | `frontend/src/app/app/home/page.tsx` | Daily Index & Sanctuary |
 | `SCR-M02` | `/app/readings/new` | `frontend/src/app/app/readings/new/page.tsx` | Spread & Reader Configuration |
-| `SCR-M03` | `/app/readings/draw` | `frontend/src/app/app/readings/draw/page.tsx` | Tactile Deck Draw |
-| `SCR-M04` | `/app/readings/manual` | `frontend/src/app/app/readings/manual/page.tsx` | Physical Deck Index Picker |
+| `SCR-M03` | `/app/readings/draw` | `frontend/src/app/app/readings/draw/page.tsx` | Tactile Deck Draw & Clarifier |
+| `SCR-M04` | `/app/readings/manual` | `frontend/src/app/app/readings/manual/page.tsx` | 78-Card Reference Catalog |
 | `SCR-M05` | `/app/readings/[id]` | `frontend/src/app/app/readings/[id]/page.tsx` | Synthesis Report & Clarifier |
 | `SCR-M06` | `/app/readings/[id]/share` | `frontend/src/app/app/readings/[id]/share/page.tsx` | Editorial Print & Share Studio |
 | `SCR-M07` | `/app/billing` | `frontend/src/app/app/billing/page.tsx` | Credit Ledger & Pro Plan |
 | `SCR-M08` | `/app/decks` | `frontend/src/app/app/decks/page.tsx` | Deck Edition Gallery & Art Preview |
 | `SCR-M09` | `/app/auth` | `frontend/src/app/app/auth/page.tsx` | Sign In, Register & Mystic Onboarding |
 | `SCR-M10` | `/app/profile` | `frontend/src/app/app/profile/page.tsx` | Seeker Profile & Mystic Settings |
+| `SCR-M11` | `/app/journal` | `frontend/src/app/app/journal/page.tsx` | Calendar Journal & Daily Sessions |
 
 ### 3.2. Quy định cứng về Navigation & Routing
 1. **Cấm rò rỉ `<MobileBottomNav />` sang Website:**
@@ -88,7 +89,7 @@ Codebase `frontend/src/app/` phục vụ đồng thời **2 ứng dụng tách b
 2. **Cấm rò rỉ `<EditorialHeader />` vào Mobile App:**
    - Các trang trong `frontend/src/app/app/**` **TUYỆT ĐỐI KHÔNG** sử dụng `<EditorialHeader />`.
 3. **Cô lập điều hướng nội bộ (Route Isolation):**
-   - Các trang thuộc Mobile App (`/app/*`) và `<MobileBottomNav />` chỉ được điều hướng tới các route `/app/*` (ví dụ: `/app/home`, `/app/readings/new`, `/app/decks`, `/app/profile`, `/app/auth`, `/app/billing`). Tránh dẫn sang các route của Web hoặc các đường dẫn không tồn tại (như `/login`, `/profile`).
+   - Các trang thuộc Mobile App (`/app/*`) và `<MobileBottomNav />` chỉ được điều hướng tới các route `/app/*` (ví dụ: `/app/home`, `/app/readings/new`, `/app/journal`, `/app/decks`, `/app/profile`, `/app/auth`, `/app/billing`). Tránh dẫn sang các route của Web hoặc các đường dẫn không tồn tại (như `/login`, `/profile`).
    - Các trang thuộc Website (`SCR-W*`) ưu tiên điều hướng trong các route Web (`/`, `/workbench/...`, `/catalog-picker`, `/decks-archive`, `/journal`, `/pricing`, `/settings/profile`, `/studio-billing`, `/auth`).
 
 ---

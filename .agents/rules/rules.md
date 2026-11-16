@@ -14,7 +14,7 @@ Dự án chạy song song 2 phiên bản trên cùng một Next.js App Router:
 - **Website Desktop (`SCR-W01..W09`):** Các route cấp gốc (`/`, `/workbench/[id]`, `/catalog-picker`, `/decks-archive`, `/journal`, `/studio-billing`, `/pricing`, `/settings/profile`, `/auth`).
   - **CHỈ dùng `<EditorialHeader />`**.
   - **TUYỆT ĐỐI CẤM** import hoặc gắn `<MobileBottomNav />` vào bất kỳ trang Website nào (kể cả ẩn bằng CSS như `md:hidden` / `lg:hidden`). Nếu cần menu cho màn hình nhỏ trên Web, xử lý bên trong `EditorialHeader.tsx`.
-- **Mobile App (`SCR-M01..M10`):** Toàn bộ các route nằm dưới `/app/*` (`/app/home`, `/app/readings/*`, `/app/decks`, `/app/billing`, `/app/profile`, `/app/auth`).
+- **Mobile App (`SCR-M01..M11`):** Toàn bộ các route nằm dưới `/app/*` (`/app/home`, `/app/readings/*`, `/app/journal`, `/app/decks`, `/app/billing`, `/app/profile`, `/app/auth`).
   - **CHỈ dùng `<MobileBottomNav />`** và header cục bộ của App; **KHÔNG** dùng `<EditorialHeader />`.
   - Mọi liên kết bên trong `/app/*` và `MobileBottomNav` phải trỏ tới route `/app/*` hợp lệ, tránh trỏ nhầm sang route Website hoặc route không tồn tại (`/login`, `/profile`).
 
