@@ -199,7 +199,7 @@ export default function EditorialPortalPage() {
       {/* MAIN EDITORIAL CANVASES (1280px+ Wide Responsive Layout) */}
       <main suppressHydrationWarning className="flex-1 max-w-[1440px] w-full mx-auto border-x border-outline-variant flex flex-col bg-white">
         {/* 2-COLUMN HERO EDITORIAL GRID */}
-        <section className="grid grid-cols-1 lg:grid-cols-12 min-h-[580px] border-b border-outline-variant">
+        <section className="flex-1 grid grid-cols-1 lg:grid-cols-12 min-h-[580px] border-b border-outline-variant">
           {/* LEFT EDITORIAL SECTION (60% on desktop) */}
           <div className="lg:col-span-7 p-8 md:p-12 lg:p-16 bg-[#FAF9F6] border-b lg:border-b-0 lg:border-r border-outline-variant flex flex-col justify-between">
             <div>
