@@ -11,10 +11,10 @@ description: Bắt buộc mọi Agent phải đọc và tuân thủ file rules.m
 
 ## 2. Quy tắc tách biệt Navigation Bar & Route giữa Website và Mobile App
 Dự án chạy song song 2 phiên bản trên cùng một Next.js App Router:
-- **Website Desktop (`SCR-W01..W09`):** Các route cấp gốc (`/`, `/workbench/[id]`, `/catalog-picker`, `/decks-archive`, `/journal`, `/studio-billing`, `/pricing`, `/settings/profile`, `/auth`).
+- **Website Desktop (`SCR-W01..W09`):** Các route cấp gốc (`/`, `/workbench/[id]`, `/catalog-picker`, `/journal`, `/pricing`, `/settings/profile`, `/auth`).
   - **CHỈ dùng `<EditorialHeader />`**.
   - **TUYỆT ĐỐI CẤM** import hoặc gắn `<MobileBottomNav />` vào bất kỳ trang Website nào (kể cả ẩn bằng CSS như `md:hidden` / `lg:hidden`). Nếu cần menu cho màn hình nhỏ trên Web, xử lý bên trong `EditorialHeader.tsx`.
-- **Mobile App (`SCR-M01..M11`):** Toàn bộ các route nằm dưới `/app/*` (`/app/home`, `/app/readings/*`, `/app/journal`, `/app/decks`, `/app/billing`, `/app/profile`, `/app/auth`).
+- **Mobile App (`SCR-M01..M11`):** Toàn bộ các route nằm dưới `/app/*` (`/app/home`, `/app/readings/[id]`, `/app/readings/manual`, `/app/journal`, `/app/billing`, `/app/profile`, `/app/auth`). Tính năng chọn Bộ Bài (`/decks-archive`, `/app/decks`), Xuất Poster Nghệ Thuật (`/studio-billing`, `/app/readings/[id]/share`), và luồng `demo-session` đã được lược bỏ ở cả Web và App; mỗi ngày chỉ có 1 phiên trải bài bắt đầu từ Lá Bài Hôm Nay.
   - **CHỈ dùng `<MobileBottomNav />`** và header cục bộ của App; **KHÔNG** dùng `<EditorialHeader />`.
   - Mọi liên kết bên trong `/app/*` và `MobileBottomNav` phải trỏ tới route `/app/*` hợp lệ, tránh trỏ nhầm sang route Website hoặc route không tồn tại (`/login`, `/profile`).
 

@@ -16,9 +16,7 @@ export default function EditorialHeader({
 
   const navLinks = [
     { key: "daily", href: "/", label: t.nav.daily },
-    { key: "workbench", href: "/workbench/demo-session", label: t.nav.workbench },
     { key: "catalog", href: "/catalog-picker", label: t.nav.catalog },
-    { key: "decks", href: "/decks-archive", label: t.nav.decks },
     { key: "journal", href: "/journal", label: t.nav.journal },
     { key: "pricing", href: "/pricing", label: locale === "vi" ? "Bảng Giá" : "Pricing" },
   ];

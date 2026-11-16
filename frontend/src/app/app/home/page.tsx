@@ -539,20 +539,35 @@ export default function MobileDailyHomePage() {
 
         {/* Action Buttons */}
         <div className="space-y-2 pt-2">
-          <Link
-            href="/app/readings/new"
-            className="w-full py-3 bg-primary text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-primary-hover shadow-sm"
-          >
-            <span className="material-symbols-outlined text-sm">auto_awesome</span>
-            <span>{isVi ? "Bắt Đầu Trải Bài Mới (3 Lá)" : "Begin New Reading (3-Card)"}</span>
-          </Link>
-          <Link
-            href={`/app/readings/${dailySession?.id || "demo-session"}`}
-            className="w-full py-2.5 bg-white border border-outline-variant text-on-surface text-xs font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-slate-50"
-          >
-            <span className="material-symbols-outlined text-sm text-primary">space_dashboard</span>
-            <span>{isVi ? "Mở Bàn Trải Bài & Hỏi Đáp AI (Workbench)" : "Open Reading Workbench & AI Chat"}</span>
-          </Link>
+          {dailySession?.id ? (
+            <Link
+              href={`/app/readings/${dailySession.id}`}
+              className="w-full py-3 bg-primary text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-primary-hover shadow-sm"
+            >
+              <span className="material-symbols-outlined text-sm">space_dashboard</span>
+              <span>
+                {isVi ? "Rút Thêm Lá Bổ Sung & Hỏi Đáp AI" : "Draw Clarifiers & Open AI Chat"}
+              </span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => handleFlipCard(false)}
+              disabled={isFlipping || isLoading}
+              className="w-full py-3 bg-primary text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-primary-hover shadow-sm disabled:opacity-50"
+            >
+              <span className="material-symbols-outlined text-sm">touch_app</span>
+              <span>
+                {isFlipping
+                  ? isVi
+                    ? "Đang lật bài hôm nay..."
+                    : "Flipping today's card..."
+                  : isVi
+                  ? "Lật Bài Hôm Nay Để Mở Phiên"
+                  : "Flip Today's Card to Begin"}
+              </span>
+            </button>
+          )}
           <Link
             href="/app/journal"
             className="w-full py-2.5 bg-white border border-outline-variant text-on-surface text-xs font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-slate-50"

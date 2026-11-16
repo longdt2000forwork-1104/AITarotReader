@@ -276,11 +276,7 @@ export default function PricingPlansStorePage() {
                       </div>
                       <div className="flex items-start space-x-2">
                         <span className="material-symbols-outlined text-[16px] text-primary shrink-0 mt-0.5">check_circle</span>
-                        <span><strong>All 5 Curated 78-Card Editions Unlocked</strong> (Marseille, Kyoto Sumi-e)</span>
-                      </div>
-                      <div className="flex items-start space-x-2">
-                        <span className="material-symbols-outlined text-[16px] text-primary shrink-0 mt-0.5">check_circle</span>
-                        <span><strong>Watermark-Free 300 DPI Exports</strong> for printing & sharing</span>
+                        <span><strong>Up to 10 Clarifier Cards Daily</strong> & multi-turn AI follow-up analysis</span>
                       </div>
                       <div className="flex items-start space-x-2">
                         <span className="material-symbols-outlined text-[16px] text-primary shrink-0 mt-0.5">check_circle</span>
@@ -309,7 +305,7 @@ export default function PricingPlansStorePage() {
                     {locale === "vi" ? "02. CÁC GÓI TINH THỂ KHÔNG THỜI HẠN (CREDITS)" : "02. NON-EXPIRING RESONANCE POUCHES (CREDITS)"}
                   </h2>
                   <p className="text-xs text-slate-600 mt-0.5">
-                    Credits never expire. Top up and deploy on complex spreads (5-card, 10-card), clarifiers, or poster prints.
+                    Credits never expire. Top up and deploy on complex spreads (5-card, 10-card) and daily clarifiers.
                   </p>
                 </div>
                 <span className="text-[11px] font-mono text-primary font-bold">1 CR ≈ 1.500 ₫</span>
@@ -430,12 +426,6 @@ export default function PricingPlansStorePage() {
                       <td className="py-2.5">3 CR</td>
                       <td className="py-2.5 text-primary font-bold">0 CR (Up to 3/session)</td>
                       <td className="py-2.5 text-right text-slate-500">Multi-turn dialectic inquiry</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2.5 font-medium text-slate-900">9:16 Specimen Poster (300 DPI)</td>
-                      <td className="py-2.5">2 CR</td>
-                      <td className="py-2.5 text-primary font-bold">0 CR (Watermark-free)</td>
-                      <td className="py-2.5 text-right text-slate-500">Printable artboard export</td>
                     </tr>
                   </tbody>
                 </table>

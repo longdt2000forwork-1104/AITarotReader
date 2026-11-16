@@ -17,7 +17,6 @@ export default function MobileSeekerProfilePage() {
   const [wallet, setWallet] = useState<WalletBalanceDto | null>(null);
 
   const [allowAiContext, setAllowAiContext] = useState(true);
-  const [selectedDeck, setSelectedDeck] = useState("ED-02");
   const [birthZodiac, setBirthZodiac] = useState("Aries");
   const [birthDate, setBirthDate] = useState("1998-04-12");
 
@@ -35,7 +34,6 @@ export default function MobileSeekerProfilePage() {
         ]);
         if (profRes.data) {
           setProfile(profRes.data);
-          if (profRes.data.preferredDeckId) setSelectedDeck(profRes.data.preferredDeckId);
           if (profRes.data.birthZodiac || profRes.data.zodiacSign) {
             setBirthZodiac(profRes.data.birthZodiac || profRes.data.zodiacSign || "Aries");
           }
@@ -77,14 +75,13 @@ export default function MobileSeekerProfilePage() {
     setSaving(true);
     try {
       const res = await apiClient.profile.updateMysticProfile({
-        preferredDeckId: selectedDeck,
         birthZodiac: birthZodiac,
         zodiacSign: birthZodiac,
         birthDate: birthDate,
         allowAiContext: allowAiContext,
         locale: locale,
         aiContextNotes: allowAiContext
-          ? "Harmonize readings with natal birth zodiac decans and active archival deck."
+          ? "Harmonize readings with natal birth zodiac decans."
           : "Standard objective card analysis without astrological bias."
       });
       if (res.code === 200 || res.data) {
@@ -115,14 +112,6 @@ export default function MobileSeekerProfilePage() {
   ];
 
   const currentZodiac = zodiacOptions.find((z) => z.code === birthZodiac) || zodiacOptions[0];
-
-  const deckOptions = [
-    { id: "ED-01", name: "Rider-Waite-Smith 1909", badge: isVi ? "KINH ĐIỂN" : "CANONICAL" },
-    { id: "ED-02", name: "Sunlit Botanical Herbarium", badge: isVi ? "THẢO MỘC" : "BOTANICAL" },
-    { id: "ED-03", name: "Swiss Geometric Construct", badge: "PRO" },
-    { id: "ED-04", name: "Marseille 1760 Heritage", badge: "PRO" },
-    { id: "ED-05", name: "Kyoto Sumi-e Ink Wash", badge: "PRO" },
-  ];
 
   return (
     <div className="bg-[#FAF9F6] text-[#0F172A] font-body min-h-screen flex justify-center selection:bg-emerald-100 selection:text-emerald-900">
@@ -297,48 +286,6 @@ export default function MobileSeekerProfilePage() {
                     />
                   </button>
                 </div>
-              </section>
-
-              {/* Section 02: Preferred Deck Edition (AI Voice Persona removed to match Web) */}
-              <section className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-2xs space-y-3">
-                <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold">
-                    {isVi ? "02. BỘ BÀI TAROT MẶC ĐỊNH" : "02. PREFERRED TAROT DECK"}
-                  </span>
-                  <Link href="/app/decks" className="text-[10px] font-mono text-primary hover:underline font-semibold">
-                    {isVi ? "Xem Bộ Sưu Tập →" : "Gallery →"}
-                  </Link>
-                </div>
-
-                <div className="space-y-2">
-                  {deckOptions.map((deck) => (
-                    <button
-                      key={deck.id}
-                      type="button"
-                      onClick={() => setSelectedDeck(deck.id)}
-                      className={`w-full p-2.5 rounded-lg border text-left flex items-center justify-between transition-all ${
-                        selectedDeck === deck.id
-                          ? "border-primary bg-emerald-50/50 text-slate-900 ring-1 ring-primary"
-                          : "border-[#E2E8F0] hover:bg-slate-50 text-slate-700"
-                      }`}
-                    >
-                      <div>
-                        <div className="text-xs font-semibold">{deck.name}</div>
-                        <div className="text-[10px] font-mono text-slate-500">
-                          {deck.id} · 78 {isVi ? "Lá Bài" : "Cards"}
-                        </div>
-                      </div>
-                      <span
-                        className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
-                          selectedDeck === deck.id ? "bg-primary text-white font-bold" : "bg-slate-100 text-slate-600"
-                        }`}
-                      >
-                        {deck.badge}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-
                 <div className="pt-2 border-t border-[#E2E8F0] flex justify-end">
                   <button
                     type="button"
@@ -352,11 +299,11 @@ export default function MobileSeekerProfilePage() {
                 </div>
               </section>
 
-              {/* Section 03: Wallet & Billing Summary */}
+              {/* Section 02: Wallet & Billing Summary */}
               <section className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-2xs space-y-3">
                 <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2">
                   <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold">
-                    {isVi ? "03. VÍ CRYSTAL (SUPABASE)" : "03. CRYSTAL WALLET (SUPABASE)"}
+                    {isVi ? "02. VÍ CRYSTAL (SUPABASE)" : "02. CRYSTAL WALLET (SUPABASE)"}
                   </span>
                   <Link href="/app/billing" className="text-[10px] font-mono text-primary hover:underline font-semibold">
                     {isVi ? "Quản Lý Nạp Thẻ →" : "Manage Billing →"}
@@ -394,11 +341,11 @@ export default function MobileSeekerProfilePage() {
                 </div>
               </section>
 
-              {/* Section 04: Language & Quick Links */}
+              {/* Section 03: Language & Quick Links */}
               <section className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-2xs space-y-3">
                 <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2">
                   <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold">
-                    {isVi ? "04. ỨNG DỤNG & QUYỀN RIÊNG TƯ" : "04. APPLICATION & PRIVACY"}
+                    {isVi ? "03. ỨNG DỤNG & QUYỀN RIÊNG TƯ" : "03. APPLICATION & PRIVACY"}
                   </span>
                 </div>
 
