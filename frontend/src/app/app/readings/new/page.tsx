@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
-import { SpreadTemplate, TarotDeck, Persona } from "@/types/api";
+import { SpreadTemplate, TarotDeck } from "@/types/api";
 
 export default function MobileSpreadConfigPage() {
   const router = useRouter();
@@ -17,7 +17,6 @@ export default function MobileSpreadConfigPage() {
   const [decks, setDecks] = useState<TarotDeck[]>([]);
   const [selectedSpreadId, setSelectedSpreadId] = useState<string>("S-02");
   const [selectedDeckId, setSelectedDeckId] = useState<string>("ED-01");
-  const [selectedPersona, setSelectedPersona] = useState<Persona>("MYSTIC_SAGE");
   const [question, setQuestion] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -44,7 +43,6 @@ export default function MobileSpreadConfigPage() {
       const res = await apiClient.readings.create({
         spreadId: selectedSpreadId,
         deckId: selectedDeckId,
-        persona: selectedPersona,
         question: question.trim() || undefined,
         inputMode: "CARD_DRAW"
       });
@@ -56,24 +54,6 @@ export default function MobileSpreadConfigPage() {
       setIsSubmitting(false);
     }
   };
-
-  const personaOptions = [
-    {
-      id: "MYSTIC_SAGE" as Persona,
-      title: isVi ? "Nhà Hiền Triết" : "Mystic Sage",
-      desc: isVi ? "Tri thức cổ điển & thấu thị" : "Classical wisdom & insight",
-    },
-    {
-      id: "PRACTICAL_COACH" as Persona,
-      title: isVi ? "Cố Vấn Thực Tiễn" : "Action Coach",
-      desc: isVi ? "Định hướng hành động cụ thể" : "Pragmatic actions & steps",
-    },
-    {
-      id: "SHADOW_EXPLORER" as Persona,
-      title: isVi ? "Khai Phá Tiềm Thức" : "Shadow Work",
-      desc: isVi ? "Soi rọi góc khuất & nội tâm" : "Subconscious & hidden layers",
-    },
-  ];
 
   return (
     <div className="max-w-[430px] mx-auto min-h-screen bg-surface flex flex-col border-x border-outline-variant pb-20">
@@ -201,36 +181,10 @@ export default function MobileSpreadConfigPage() {
           </div>
         </div>
 
-        {/* Step 3: Reader Persona */}
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
-              {isVi ? "03. HÌNH TƯỢNG GIỌNG ĐỌC AI" : "03. AI READER PERSONA"}
-            </span>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {personaOptions.map((p) => {
-              const active = p.id === selectedPersona;
-              return (
-                <div
-                  key={p.id}
-                  onClick={() => setSelectedPersona(p.id)}
-                  className={`p-2.5 rounded-lg border text-center cursor-pointer transition-all ${
-                    active ? "bg-white border-2 border-primary shadow-xs" : "bg-white border-outline-variant"
-                  }`}
-                >
-                  <div className="text-xs font-bold font-headline text-on-surface">{p.title}</div>
-                  <div className="text-[9px] text-slate-400 mt-0.5 leading-tight">{p.desc}</div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Step 4: Inquiry Prompt */}
+        {/* Step 3: Inquiry Prompt */}
         <div className="space-y-2">
           <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
-            {isVi ? "04. CÂU HỎI & VẤN ĐỀ (TÙY CHỌN)" : "04. INQUIRY & QUESTION (OPTIONAL)"}
+            {isVi ? "03. CÂU HỎI & VẤN ĐỀ (TÙY CHỌN)" : "03. INQUIRY & QUESTION (OPTIONAL)"}
           </span>
           <textarea
             rows={3}
@@ -245,21 +199,31 @@ export default function MobileSpreadConfigPage() {
           />
         </div>
 
-        {/* Action Button */}
-        <button
-          onClick={handleCreateSession}
-          disabled={isSubmitting}
-          className="w-full py-3.5 bg-primary text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-primary-hover shadow-sm transition-all"
-        >
-          {isSubmitting ? (
-            <span>{isVi ? "Đang khởi tạo phiên đọc..." : "Initializing session..."}</span>
-          ) : (
-            <>
-              <span>{isVi ? "Tiến Hành Rút Bài (Tactile Draw)" : "Proceed to Card Draw (Tactile Draw)"}</span>
-              <span>→</span>
-            </>
-          )}
-        </button>
+        {/* Action Buttons */}
+        <div className="space-y-2.5">
+          <button
+            onClick={handleCreateSession}
+            disabled={isSubmitting}
+            className="w-full py-3.5 bg-primary text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-primary-hover shadow-sm transition-all"
+          >
+            {isSubmitting ? (
+              <span>{isVi ? "Đang khởi tạo phiên đọc..." : "Initializing session..."}</span>
+            ) : (
+              <>
+                <span>{isVi ? "Tiến Hành Rút Bài (Tactile Draw)" : "Proceed to Card Draw (Tactile Draw)"}</span>
+                <span>→</span>
+              </>
+            )}
+          </button>
+
+          <Link
+            href="/app/readings/manual"
+            className="w-full py-2.5 bg-white border border-outline-variant hover:border-primary text-on-surface text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors"
+          >
+            <span className="material-symbols-outlined text-sm text-primary">grid_view</span>
+            <span>{isVi ? "Tra Cứu 78 Lá Bài Tarot" : "Browse 78-Card Tarot Reference"}</span>
+          </Link>
+        </div>
       </main>
 
       <MobileBottomNav activeTab="oracle" />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
@@ -8,7 +8,21 @@ import { apiClient } from "@/services/apiClient";
 import { ReadingSessionDto, DrawnCardDto } from "@/types/api";
 import { TAROT_CARDS } from "@/data/tarotCards";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { cleanAiText, splitAiParagraphs } from "@/utils/formatAiText";
+import { splitAiParagraphs } from "@/utils/formatAiText";
+
+const MAX_TOTAL_CARDS = 10;
+
+function isSameLocalDay(dateString?: string): boolean {
+  if (!dateString) return false;
+  const d = new Date(dateString);
+  if (Number.isNaN(d.getTime())) return false;
+  const now = new Date();
+  return (
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate()
+  );
+}
 
 export default function MobileReadingReportPage() {
   const params = useParams();
@@ -18,67 +32,92 @@ export default function MobileReadingReportPage() {
 
   const [session, setSession] = useState<ReadingSessionDto | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedCardDetail, setSelectedCardDetail] = useState<DrawnCardDto | null>(null);
   const [isSendingChat, setIsSendingChat] = useState(false);
   const [isClarifying, setIsClarifying] = useState(false);
+  const [clarifierError, setClarifierError] = useState<string | null>(null);
+  const [clarifierSuccess, setClarifierSuccess] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [questionInput, setQuestionInput] = useState("");
   const [chatMessages, setChatMessages] = useState<
     Array<{ sender: "user" | "ai"; text: string }>
   >([]);
 
+  const syncMessagesFromSession = (s: ReadingSessionDto) => {
+    if (s.messages && s.messages.length > 0) {
+      setChatMessages(
+        s.messages.map((m) => ({
+          sender: m.sender === "AI_READER" ? "ai" : "user",
+          text: m.content
+        }))
+      );
+    } else {
+      setChatMessages([]);
+    }
+  };
+
   useEffect(() => {
     async function loadSession() {
       try {
         setLoading(true);
+        setClarifierError(null);
         if (readingId && readingId !== "demo-session") {
           const res = await apiClient.readings.getById(readingId);
           if (res.code === 200 && res.data) {
             setSession(res.data);
-            if (res.data.messages && res.data.messages.length > 0) {
-              setChatMessages(
-                res.data.messages.map((m) => ({
-                  sender: m.sender === "AI_READER" ? "ai" : "user",
-                  text: m.content
-                }))
-              );
-            }
+            syncMessagesFromSession(res.data);
             return;
           }
         }
 
-        // Demo session handler
+        // Default route: find today's active session first
         const historyRes = await apiClient.readings.getHistory();
-        if (historyRes.code === 200 && historyRes.data.length > 0) {
-          const existing = historyRes.data[0];
-          setSession(existing);
-          if (existing.messages && existing.messages.length > 0) {
-            setChatMessages(
-              existing.messages.map((m) => ({
-                sender: m.sender === "AI_READER" ? "ai" : "user",
-                text: m.content
-              }))
-            );
+        const validHistory =
+          historyRes.code === 200 && Array.isArray(historyRes.data)
+            ? historyRes.data.filter((s) => s.drawnCards && s.drawnCards.length > 0)
+            : [];
+        const todaySession = validHistory.find((s) => isSameLocalDay(s.createdAt));
+
+        if (todaySession) {
+          setSession(todaySession);
+          syncMessagesFromSession(todaySession);
+          return;
+        }
+
+        // Check today's daily draw if no other session exists today
+        const dailyRes = await apiClient.readings.getDailyDraw(locale, false);
+        if (
+          dailyRes.data &&
+          dailyRes.data.drawnCards &&
+          dailyRes.data.drawnCards.length > 0 &&
+          isSameLocalDay(dailyRes.data.createdAt)
+        ) {
+          setSession(dailyRes.data);
+          syncMessagesFromSession(dailyRes.data);
+          return;
+        }
+
+        // Otherwise create a live 3-card session for today via Supabase
+        const createRes = await apiClient.readings.create({
+          spreadId: "S-02",
+          deckId: "ED-01",
+          question: isVi
+            ? "Định hướng phát triển và thấu thị năng lượng"
+            : "Trajectory of development and energy clarity",
+          inputMode: "CARD_DRAW"
+        });
+        if (createRes.data) {
+          let active = createRes.data;
+          if (!active.drawnCards || active.drawnCards.length === 0) {
+            const drawRes = await apiClient.readings.drawCards(active.id);
+            if (drawRes.data) active = drawRes.data;
           }
-        } else {
-          // If no history, create a live 3-card session via Supabase
-          const createRes = await apiClient.readings.create({
-            spreadId: "S-02",
-            deckId: "ED-01",
-            question: isVi ? "Định hướng phát triển và thấu thị năng lượng" : "Trajectory of development and energy clarity",
-            inputMode: "CARD_DRAW"
-          });
-          if (createRes.data) {
-            let active = createRes.data;
-            if (!active.drawnCards || active.drawnCards.length === 0) {
-              const drawRes = await apiClient.readings.drawCards(active.id);
-              if (drawRes.data) active = drawRes.data;
-            }
-            if (!active.aiInterpretation) {
-              const interpRes = await apiClient.readings.interpret(active.id);
-              if (interpRes.data) active = interpRes.data;
-            }
-            setSession(active);
+          if (!active.aiInterpretation) {
+            const interpRes = await apiClient.readings.interpret(active.id);
+            if (interpRes.data) active = interpRes.data;
           }
+          setSession(active);
+          syncMessagesFromSession(active);
         }
       } catch (err) {
         console.error("Failed to load reading report session:", err);
@@ -87,7 +126,23 @@ export default function MobileReadingReportPage() {
       }
     }
     loadSession();
-  }, [readingId, isVi]);
+  }, [readingId, locale, isVi]);
+
+  const isTodaySession = useMemo(() => {
+    if (!session?.createdAt) return true;
+    return isSameLocalDay(session.createdAt);
+  }, [session?.createdAt]);
+
+  const sessionDateLabel = useMemo(() => {
+    if (!session?.createdAt) return "";
+    const d = new Date(session.createdAt);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleDateString(isVi ? "vi-VN" : "en-US", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    });
+  }, [session?.createdAt, isVi]);
 
   const handleSendChat = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,29 +184,46 @@ export default function MobileReadingReportPage() {
     }
   };
 
-  const MAX_TOTAL_CARDS = 10;
-
   const handleDrawClarifier = async () => {
-    if (!session || isClarifying || (session.drawnCards?.length || 0) >= MAX_TOTAL_CARDS) return;
+    if (!session || isClarifying) return;
+    if (!isTodaySession) {
+      setClarifierError(
+        isVi
+          ? "Phiên trải bài của ngày cũ chỉ có thể xem lại luận giải, không thể rút thêm lá bài bổ sung."
+          : "Past-day sessions are read-only; you cannot draw additional clarifier cards."
+      );
+      return;
+    }
+    if ((session.drawnCards?.length || 0) >= MAX_TOTAL_CARDS) return;
+
     setIsClarifying(true);
+    setClarifierError(null);
+    setClarifierSuccess(false);
+
     try {
       // 1. Call Backend Clarifier endpoint to draw from Supabase, save to drawn_cards, and generate AI interpretation
       const res = await apiClient.readings.drawClarifier(session.id);
+      if (res.code >= 400) {
+        setClarifierError(
+          res.message ||
+            (isVi
+              ? "Không thể rút thêm lá làm rõ cho phiên trải bài này."
+              : "Unable to draw another clarifier card for this session.")
+        );
+        return;
+      }
+
       if (res.data && res.data.drawnCards && res.data.drawnCards.length > 0) {
         setSession(res.data);
+        setClarifierSuccess(true);
+        setTimeout(() => setClarifierSuccess(false), 4000);
         if (res.data.messages && res.data.messages.length > 0) {
-          setChatMessages(
-            res.data.messages.map((m) => ({
-              sender: m.sender === "AI_READER" ? "ai" : "user",
-              text: m.content
-            }))
-          );
+          syncMessagesFromSession(res.data);
         }
         return;
       }
 
-      // 2. Fallback if backend has not reloaded yet: draw an unused card and append at the bottom
-      if ((session.drawnCards?.length || 0) >= MAX_TOTAL_CARDS) return;
+      // 2. Offline-only fallback for today's session when backend returned empty payload
       const usedIds = new Set((session.drawnCards || []).map((dc) => Number((dc.card as any)?.id)));
       const availableCards = TAROT_CARDS.filter((c) => !usedIds.has(c.id));
       const clarifierCard = availableCards[Math.floor(Math.random() * availableCards.length)] || TAROT_CARDS[0];
@@ -196,6 +268,8 @@ export default function MobileReadingReportPage() {
             }
           : prev
       );
+      setClarifierSuccess(true);
+      setTimeout(() => setClarifierSuccess(false), 4000);
 
       const cardName = isVi ? clarifierCard.nameVi : clarifierCard.nameEn;
       const orientText = isReversed ? (isVi ? "Ngược" : "Reversed") : (isVi ? "Xuôi" : "Upright");
@@ -210,6 +284,9 @@ export default function MobileReadingReportPage() {
       }
     } catch (err) {
       console.error("Error drawing clarifier:", err);
+      setClarifierError(
+        isVi ? "Có lỗi xảy ra khi rút lá bài làm rõ." : "Error while drawing clarifier card."
+      );
     } finally {
       setIsClarifying(false);
     }
@@ -230,21 +307,8 @@ export default function MobileReadingReportPage() {
 
   const drawnCards = session.drawnCards || [];
   const spreadName = isVi
-    ? session.spreadTemplate?.nameVi || "Trải Bài 3 Lá"
-    : session.spreadTemplate?.nameEn || "3-Card Spread";
-
-  // Calculate Elemental Balance dynamically
-  const elementCounts: Record<string, number> = { Fire: 0, Earth: 0, Air: 0, Water: 0 };
-  drawnCards.forEach((dc) => {
-    const el = dc.card?.element || "Fire";
-    if (elementCounts[el] !== undefined) elementCounts[el]++;
-    else elementCounts.Fire++;
-  });
-  const totalCards = drawnCards.length || 1;
-  const firePct = Math.round((elementCounts.Fire / totalCards) * 100);
-  const earthPct = Math.round((elementCounts.Earth / totalCards) * 100);
-  const airPct = Math.round((elementCounts.Air / totalCards) * 100);
-  const waterPct = Math.max(0, 100 - (firePct + earthPct + airPct));
+    ? session.spreadNameVi || session.spreadTemplate?.nameVi || "Trải Bài 3 Lá"
+    : session.spreadNameEn || session.spreadTemplate?.nameEn || "3-Card Spread";
 
   return (
     <div className="bg-[#FAF9F6] text-[#0F172A] font-body min-h-screen flex justify-center selection:bg-emerald-100 selection:text-emerald-900">
@@ -260,13 +324,13 @@ export default function MobileReadingReportPage() {
           </Link>
           <div className="flex flex-col items-center text-center px-1">
             <h1 className="font-headline font-bold text-sm tracking-tight text-slate-900 leading-tight">
-              {isVi ? "Báo Cáo Tổng Hợp" : "Synthesis Report"}
+              {isVi ? "Bàn Trải & Luận Giải" : "Reading Workbench"}
             </h1>
             <span className="text-[10px] text-slate-500 truncate max-w-[170px] font-mono">
               {spreadName}
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {/* Language Switcher */}
             <div className="flex items-center border border-[#E2E8F0] rounded text-[10px] font-mono overflow-hidden shadow-xs">
               <button
@@ -294,19 +358,47 @@ export default function MobileReadingReportPage() {
             >
               <span className="material-symbols-outlined text-xl">share</span>
             </Link>
-
-            <Link
-              href="/app/profile"
-              className="text-slate-600 hover:text-primary transition-colors p-1 rounded hover:bg-slate-100"
-              title={isVi ? "Hồ sơ cá nhân" : "Seeker Profile"}
-            >
-              <span className="material-symbols-outlined text-xl">person</span>
-            </Link>
           </div>
         </header>
 
+        {/* Sub-Toolbar: Date Status + Quick Actions (+ New Reading & Calendar Journal) */}
+        <div className="px-4 py-2 bg-[#F8FAFC] border-b border-[#E2E8F0] flex items-center justify-between gap-2">
+          <span
+            className={`font-mono text-[10px] px-2 py-0.5 rounded border truncate ${
+              isTodaySession
+                ? "bg-emerald-50 text-emerald-700 border-emerald-200 font-semibold"
+                : "bg-amber-50 text-amber-800 border-amber-200 font-semibold"
+            }`}
+          >
+            {sessionDateLabel ? `${sessionDateLabel} · ` : ""}
+            {isTodaySession
+              ? isVi
+                ? "Hôm Nay"
+                : "Today"
+              : isVi
+              ? "Ngày Cũ · Chỉ Xem"
+              : "Past Day · Read-Only"}
+          </span>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Link
+              href="/app/readings/new"
+              className="px-2 py-1 bg-white border border-[#E2E8F0] hover:border-primary rounded text-[10px] font-mono font-semibold text-slate-700 hover:text-primary transition-colors"
+            >
+              {isVi ? "+ Trải Mới" : "+ New"}
+            </Link>
+            <Link
+              href="/app/journal"
+              className="px-2 py-1 bg-primary hover:bg-primary-hover text-white rounded text-[10px] font-mono font-semibold flex items-center gap-1 transition-colors"
+            >
+              <span className="material-symbols-outlined text-[12px]">calendar_month</span>
+              <span>{isVi ? "Lịch" : "Journal"}</span>
+            </Link>
+          </div>
+        </div>
+
         {/* 3. Main Reading Content Scroll */}
-        <main className="p-4 space-y-6">
+        <main className="p-4 space-y-5">
           {/* Question Banner */}
           {session.question && (
             <div className="p-3 bg-white border border-[#E2E8F0] rounded-xl shadow-2xs">
@@ -319,41 +411,11 @@ export default function MobileReadingReportPage() {
             </div>
           )}
 
-          {/* Section 01: Elemental Synthesis */}
-          <section className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-xs">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-600">
-                {isVi ? "01. ĐỘNG LỰC NGUYÊN TỐ (SUPABASE)" : "01. Elemental Dynamics (Supabase)"}
-              </h3>
-              <span className="text-[10px] font-mono text-primary font-semibold">
-                {isVi ? `Hỏa ${firePct}% · Thổ ${earthPct}%` : `Fire ${firePct}% · Earth ${earthPct}%`}
-              </span>
-            </div>
-            <div className="grid grid-cols-4 gap-2 text-center text-xs font-mono">
-              <div className="p-2 bg-amber-50/70 border border-amber-200/60 rounded-lg">
-                <span className="block text-amber-900 font-bold">{firePct}%</span>
-                <span className="text-[10px] text-amber-700">{isVi ? "Lửa 🔥" : "Fire 🔥"}</span>
-              </div>
-              <div className="p-2 bg-emerald-50/70 border border-emerald-200/60 rounded-lg">
-                <span className="block text-emerald-900 font-bold">{earthPct}%</span>
-                <span className="text-[10px] text-emerald-700">{isVi ? "Đất 🌿" : "Earth 🌿"}</span>
-              </div>
-              <div className="p-2 bg-slate-100 border border-slate-200 rounded-lg">
-                <span className="block text-slate-800 font-bold">{airPct}%</span>
-                <span className="text-[10px] text-slate-600">{isVi ? "Khí 💨" : "Air 💨"}</span>
-              </div>
-              <div className="p-2 bg-blue-50/50 border border-blue-200/50 rounded-lg">
-                <span className="block text-blue-900 font-bold">{waterPct}%</span>
-                <span className="text-[10px] text-blue-600">{isVi ? "Nước 💧" : "Water 💧"}</span>
-              </div>
-            </div>
-          </section>
-
-          {/* Section 02: Position-by-Position Analysis */}
+          {/* Section 01: Position-by-Position Analysis (Tap card for details) */}
           <section className="space-y-3">
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
-                {isVi ? "02. PHÂN TÍCH CHI TIẾT CÁC LÁ BÀI" : "02. Arcana Breakdown"}
+                {isVi ? "01. CÁC LÁ BÀI TRONG PHIÊN" : "01. DRAWN CARDS MATRIX"}
               </h3>
               <span className="shrink-0 whitespace-nowrap text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
                 {drawnCards.length}/{MAX_TOTAL_CARDS} {isVi ? "LÁ" : "CARDS"}
@@ -365,40 +427,44 @@ export default function MobileReadingReportPage() {
               const staticMatch = TAROT_CARDS.find((c) => c.id === Number(card?.id));
               const cardName = isVi ? card?.nameVi || staticMatch?.nameVi : card?.nameEn || staticMatch?.nameEn;
               const posName = isVi ? dc.positionNameVi : dc.positionNameEn;
-              const imgUrl = card?.imageUrl || (card as any)?.image || staticMatch?.image || "/decks/rider-waite-1909/cards/00_the_fool.webp";
+              const imgUrl =
+                card?.imageUrl || (card as any)?.image || staticMatch?.image || "/decks/rider-waite-1909/cards/00_the_fool.webp";
               const meaning = dc.isReversed
-                ? (isVi
-                    ? card?.meaningReversedVi || (card as any)?.summaryVi || staticMatch?.meaningUprightVi
-                    : card?.meaningReversedEn || (card as any)?.summaryEn || staticMatch?.meaningUprightEn)
-                : (isVi
-                    ? card?.meaningUprightVi || (card as any)?.summaryVi || staticMatch?.meaningUprightVi
-                    : card?.meaningUprightEn || (card as any)?.summaryEn || staticMatch?.meaningUprightEn);
+                ? isVi
+                  ? card?.meaningReversedVi || (card as any)?.summaryVi || staticMatch?.meaningUprightVi
+                  : card?.meaningReversedEn || (card as any)?.summaryEn || staticMatch?.meaningUprightEn
+                : isVi
+                ? card?.meaningUprightVi || (card as any)?.summaryVi || staticMatch?.meaningUprightVi
+                : card?.meaningUprightEn || (card as any)?.summaryEn || staticMatch?.meaningUprightEn;
               const keywords = dc.isReversed
-                ? (isVi
-                    ? card?.keywordsReversedVi || staticMatch?.keywordsVi
-                    : card?.keywordsReversedEn || staticMatch?.keywordsEn)
-                : (isVi
-                    ? card?.keywordsUprightVi || staticMatch?.keywordsVi
-                    : card?.keywordsUprightEn || staticMatch?.keywordsEn);
+                ? isVi
+                  ? card?.keywordsReversedVi || staticMatch?.keywordsVi
+                  : card?.keywordsReversedEn || staticMatch?.keywordsEn
+                : isVi
+                ? card?.keywordsUprightVi || staticMatch?.keywordsVi
+                : card?.keywordsUprightEn || staticMatch?.keywordsEn;
               const stepNum = String(idx + 1).padStart(2, "0");
 
               return (
                 <div
                   key={dc.id || idx}
-                  className={`bg-white border rounded-xl p-4 space-y-3 shadow-xs ${
+                  onClick={() => setSelectedCardDetail(dc)}
+                  className={`bg-white border rounded-xl p-4 space-y-3 shadow-xs cursor-pointer hover:border-primary transition-all ${
                     dc.isClarifier ? "border-amber-400 bg-amber-50/20" : "border-[#E2E8F0]"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className={`text-[10px] font-mono uppercase tracking-widest font-bold ${
-                      dc.isClarifier ? "text-amber-700" : "text-primary"
-                    }`}>
+                    <span
+                      className={`text-[10px] font-mono uppercase tracking-widest font-bold ${
+                        dc.isClarifier ? "text-amber-700" : "text-primary"
+                      }`}
+                    >
                       {dc.isClarifier
                         ? `✦ ${isVi ? `VỊ TRÍ ${stepNum} · LÁ BÀI LÀM RÕ (CLARIFIER)` : `POSITION ${stepNum} · CLARIFIER CARD`}`
                         : `VỊ TRÍ ${stepNum} · ${posName}`}
                     </span>
                     <span className="text-[10px] font-mono text-slate-400">
-                      {dc.isReversed ? (isVi ? "NGƯỢC ↓" : "REVERSED ↓") : (isVi ? "XUÔI ↑" : "UPRIGHT ↑")}
+                      {dc.isReversed ? (isVi ? "NGƯỢC ↓" : "REVERSED ↓") : isVi ? "XUÔI ↑" : "UPRIGHT ↑"}
                     </span>
                   </div>
                   <div className="flex gap-3 items-start">
@@ -413,7 +479,7 @@ export default function MobileReadingReportPage() {
                       <h4 className="font-headline font-bold text-base text-slate-900">
                         {cardName}
                       </h4>
-                      <p className="text-xs text-slate-600 leading-relaxed">
+                      <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">
                         {meaning}
                       </p>
                       {keywords && (
@@ -427,33 +493,80 @@ export default function MobileReadingReportPage() {
               );
             })}
 
-            {/* Full-width Clarifier Draw Action Button at the bottom of the card list */}
-            <button
-              type="button"
-              disabled={isClarifying || drawnCards.length >= MAX_TOTAL_CARDS}
-              onClick={handleDrawClarifier}
-              className="w-full border border-dashed border-primary/60 bg-white hover:bg-emerald-50/60 rounded-xl px-4 py-3 flex items-center justify-center text-primary text-xs font-mono font-bold transition-all shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
+            {/* Clarifier Draw Slot with Today-only & 10-card Limit */}
+            <div
+              className={`p-3.5 border rounded-xl space-y-2 shadow-2xs ${
+                !isTodaySession ? "bg-amber-50/50 border-amber-200" : "bg-white border-dashed border-primary/50"
+              }`}
             >
-              <span>
-                {drawnCards.length >= MAX_TOTAL_CARDS
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[10px] font-bold text-slate-700 uppercase">
+                  {isVi
+                    ? `Lá Làm Rõ Trong Ngày (${drawnCards.length}/${MAX_TOTAL_CARDS})`
+                    : `Daily Clarifier (${drawnCards.length}/${MAX_TOTAL_CARDS})`}
+                </span>
+                {!isTodaySession && (
+                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold">
+                    {isVi ? "ĐÃ KHÓA" : "LOCKED"}
+                  </span>
+                )}
+              </div>
+
+              <p className="text-[11px] text-slate-500 leading-snug">
+                {!isTodaySession
                   ? isVi
-                    ? "Đã đạt giới hạn tối đa (10/10 lá)"
-                    : "Maximum limit reached (10/10 cards)"
-                  : isClarifying
+                    ? `Phiên này thuộc ngày ${sessionDateLabel || "trước đây"}. Khi đã sang ngày mới, bạn chỉ có thể xem lại luận giải và không thể rút thêm lá bổ sung.`
+                    : `This session belongs to ${sessionDateLabel || "a past day"}. Past-day readings are view-only.`
+                  : clarifierError
+                  ? clarifierError
+                  : clarifierSuccess
                   ? isVi
-                    ? "Đang rút lá bài làm rõ..."
-                    : "Drawing clarifier card..."
+                    ? "✓ Đã rút thành công thêm 1 lá Làm Rõ và tự động lưu vào Lịch Nhật Ký!"
+                    : "✓ Clarifier card drawn and saved to your Calendar Journal!"
+                  : drawnCards.length >= MAX_TOTAL_CARDS
+                  ? isVi
+                    ? "Đã đạt giới hạn tối đa 10 lá bài trong phiên hôm nay."
+                    : "Maximum limit of 10 cards for today's session reached."
                   : isVi
-                  ? "Rút Lá Bài Làm Rõ (5 CR)"
-                  : "Draw Clarifier Card (5 CR)"}
-              </span>
-            </button>
+                  ? `Hôm nay bạn còn có thể rút thêm tối đa ${MAX_TOTAL_CARDS - drawnCards.length} lá bổ sung cho phiên này.`
+                  : `You can draw up to ${MAX_TOTAL_CARDS - drawnCards.length} more clarifier cards today.`}
+              </p>
+
+              <button
+                type="button"
+                disabled={!isTodaySession || isClarifying || drawnCards.length >= MAX_TOTAL_CARDS}
+                onClick={handleDrawClarifier}
+                className={`w-full rounded-lg px-4 py-2.5 flex items-center justify-center text-xs font-mono font-bold transition-all disabled:cursor-not-allowed ${
+                  !isTodaySession
+                    ? "bg-slate-200 text-slate-500"
+                    : "bg-primary hover:bg-primary-hover text-white disabled:opacity-50"
+                }`}
+              >
+                <span>
+                  {!isTodaySession
+                    ? isVi
+                      ? "Phiên Ngày Cũ · Chỉ Xem Luận Giải"
+                      : "Past Day · View Only"
+                    : drawnCards.length >= MAX_TOTAL_CARDS
+                    ? isVi
+                      ? "Đã Đủ 10/10 Lá"
+                      : "Max 10/10 Cards"
+                    : isClarifying
+                    ? isVi
+                      ? "Đang rút lá bài làm rõ..."
+                      : "Drawing clarifier card..."
+                    : isVi
+                    ? "Rút Lá Bài Làm Rõ"
+                    : "Draw Clarifier Card"}
+                </span>
+              </button>
+            </div>
           </section>
 
-          {/* Section 03: Core Synthesis Thesis */}
+          {/* Section 02: Core Synthesis Thesis */}
           <section className="bg-white border-2 border-primary/80 rounded-xl p-5 shadow-xs space-y-2">
             <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold">
-              {isVi ? "03. LUẬN ĐIỂM TỔNG HỢP CỐT LÕI (GEMINI AI)" : "03. SYNTHESIS THESIS (GEMINI AI)"}
+              {isVi ? "02. LUẬN ĐIỂM TỔNG HỢP CỐT LÕI (GEMINI AI)" : "02. SYNTHESIS THESIS (GEMINI AI)"}
             </span>
             <h3 className="font-headline font-bold text-lg text-slate-900">
               {isVi ? "Thông Điệp Cốt Lõi Từ Vũ Trụ" : "Core Oracle Synthesis"}
@@ -471,10 +584,10 @@ export default function MobileReadingReportPage() {
             </div>
           </section>
 
-          {/* Section 04: Tactical Action Advice */}
+          {/* Section 03: Tactical Action Advice */}
           <section className="bg-white border border-[#E2E8F0] rounded-xl p-4 space-y-3 shadow-xs">
             <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
-              {isVi ? "04. KHUYẾN NGHỊ HÀNH ĐỘNG THỰC TẾ" : "04. Actionable Steps"}
+              {isVi ? "03. KHUYẾN NGHỊ HÀNH ĐỘNG THỰC TẾ" : "03. Actionable Steps"}
             </h3>
             <ul className="space-y-2 text-xs text-slate-700">
               <li className="flex items-start gap-2">
@@ -489,15 +602,15 @@ export default function MobileReadingReportPage() {
                 <span className="font-mono text-primary font-bold">2.</span>
                 <span>
                   {isVi
-                    ? "Ghi chép lại các nghiệm chứng trong ngày vào nhật ký để theo dõi chu kỳ năng lượng."
-                    : "Log daily reflections in the journal ledger to trace recurrent energetic cycles."}
+                    ? "Mọi diễn biến của phiên trải bài hôm nay tự động được lưu trong Nhật Ký Lịch Ngày."
+                    : "Today's reading session is automatically preserved in your Calendar Journal."}
                 </span>
               </li>
             </ul>
             <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] font-mono text-slate-500">
-              <span>
-                {isVi ? "Đồng bộ Supabase & Gemini Live" : "Synced with Supabase & Gemini"}
-              </span>
+              <Link href="/app/journal" className="text-primary hover:underline font-semibold">
+                {isVi ? "← Xem Lịch Nhật Ký" : "← Calendar Journal"}
+              </Link>
               <Link
                 href={`/app/readings/${session.id}/share`}
                 className="text-primary hover:underline font-semibold"
@@ -508,7 +621,70 @@ export default function MobileReadingReportPage() {
           </section>
         </main>
 
-        {/* 4. Floating AI Chat Bubble & Popup Window */}
+        {/* 4. Card Detail Modal Popup (same feature as Web Workbench) */}
+        {selectedCardDetail && (
+          <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-xl max-w-[390px] w-full p-5 shadow-xl border border-[#E2E8F0] relative">
+              <button
+                type="button"
+                onClick={() => setSelectedCardDetail(null)}
+                className="absolute top-3 right-3 text-slate-400 hover:text-slate-700 text-lg leading-none"
+              >
+                ×
+              </button>
+              <div className="flex gap-3.5 items-start">
+                <img
+                  src={
+                    (selectedCardDetail.card as any)?.imageUrl ||
+                    (selectedCardDetail.card as any)?.image ||
+                    "/decks/rider-waite-1909/cards/00_the_fool.webp"
+                  }
+                  alt={(selectedCardDetail.card as any)?.nameEn || ""}
+                  className={`w-20 h-34 object-cover rounded border border-slate-200 shadow-sm shrink-0 ${
+                    selectedCardDetail.isReversed ? "rotate-180" : ""
+                  }`}
+                />
+                <div className="space-y-1.5 flex-1 min-w-0">
+                  <div className="text-[10px] font-mono text-primary uppercase font-bold">
+                    {isVi ? selectedCardDetail.positionNameVi : selectedCardDetail.positionNameEn}
+                  </div>
+                  <h3 className="font-headline font-bold text-base text-slate-900">
+                    {(selectedCardDetail.card as any)?.number} —{" "}
+                    {isVi
+                      ? (selectedCardDetail.card as any)?.nameVi
+                      : (selectedCardDetail.card as any)?.nameEn}
+                  </h3>
+                  <div className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded inline-block">
+                    {selectedCardDetail.isReversed
+                      ? isVi
+                        ? "Vị trí: Ngược"
+                        : "Orientation: Reversed"
+                      : isVi
+                      ? "Vị trí: Xuôi"
+                      : "Orientation: Upright"}
+                  </div>
+                  <p className="text-xs text-slate-600 pt-1 leading-relaxed">
+                    {selectedCardDetail.isReversed
+                      ? isVi
+                        ? (selectedCardDetail.card as any)?.meaningReversedVi ||
+                          (selectedCardDetail.card as any)?.summaryVi ||
+                          (selectedCardDetail.card as any)?.meaningUprightVi
+                        : (selectedCardDetail.card as any)?.meaningReversedEn ||
+                          (selectedCardDetail.card as any)?.summaryEn ||
+                          (selectedCardDetail.card as any)?.meaningUprightEn
+                      : isVi
+                      ? (selectedCardDetail.card as any)?.meaningUprightVi ||
+                        (selectedCardDetail.card as any)?.summaryVi
+                      : (selectedCardDetail.card as any)?.meaningUprightEn ||
+                        (selectedCardDetail.card as any)?.summaryEn}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 5. Floating AI Chat Bubble & Popup Window */}
         {!isChatOpen ? (
           <div className="fixed bottom-20 left-0 right-0 max-w-[420px] mx-auto px-4 pointer-events-none z-40 flex justify-end">
             <button
