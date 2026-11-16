@@ -292,7 +292,7 @@ export default function MobileDailyHomePage() {
           </Link>
 
           <Link
-            href="/login"
+            href="/app/auth"
             className="w-7 h-7 rounded border border-outline-variant bg-slate-50 hover:bg-emerald-50 hover:border-primary text-slate-700 hover:text-primary flex items-center justify-center transition-colors"
             title={isVi ? "Đăng nhập / Tài khoản" : "Login / Account"}
           >
@@ -552,6 +552,13 @@ export default function MobileDailyHomePage() {
           >
             <span className="material-symbols-outlined text-sm text-primary">space_dashboard</span>
             <span>{isVi ? "Mở Bàn Trải Bài & Hỏi Đáp AI (Workbench)" : "Open Reading Workbench & AI Chat"}</span>
+          </Link>
+          <Link
+            href="/app/journal"
+            className="w-full py-2.5 bg-white border border-outline-variant text-on-surface text-xs font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-slate-50"
+          >
+            <span className="material-symbols-outlined text-sm text-primary">calendar_month</span>
+            <span>{isVi ? "Mở Lịch Nhật Ký Trải Bài" : "Open Calendar Journal"}</span>
           </Link>
         </div>
       </main>

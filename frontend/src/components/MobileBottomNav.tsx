@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 
 interface MobileBottomNavProps {
-  activeTab?: "home" | "oracle" | "journal" | "decks" | "billing" | "profile";
+  activeTab?: "home" | "oracle" | "journal" | "decks" | "billing" | "profile" | "auth";
 }
 
 export default function MobileBottomNav({
@@ -14,7 +14,7 @@ export default function MobileBottomNav({
   const isVi = locale === "vi";
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-3 py-2 bg-white/95 backdrop-blur-md border-t border-x border-outline-variant max-w-[430px] mx-auto shadow-sm">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-2 py-2 bg-white/95 backdrop-blur-md border-t border-x border-outline-variant max-w-[430px] mx-auto shadow-sm">
       <Link
         href="/app/home"
         className={`flex flex-col items-center justify-center py-1 transition-colors ${
@@ -22,7 +22,7 @@ export default function MobileBottomNav({
         }`}
       >
         <span className="material-symbols-outlined text-xl">spa</span>
-        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">{t.mobileNav.sanctuary}</span>
+        <span className="font-label text-[9px] uppercase tracking-wider mt-0.5">{t.mobileNav.sanctuary}</span>
       </Link>
       <Link
         href="/app/readings/new"
@@ -31,32 +31,45 @@ export default function MobileBottomNav({
         }`}
       >
         <span className="material-symbols-outlined text-xl">style</span>
-        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">{t.mobileNav.oracle}</span>
+        <span className="font-label text-[9px] uppercase tracking-wider mt-0.5">{t.mobileNav.oracle}</span>
+      </Link>
+      <Link
+        href="/app/journal"
+        className={`flex flex-col items-center justify-center py-1 transition-colors ${
+          activeTab === "journal" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
+        }`}
+      >
+        <span className="material-symbols-outlined text-xl">calendar_month</span>
+        <span className="font-label text-[9px] uppercase tracking-wider mt-0.5">
+          {isVi ? "Nhật Ký" : "Journal"}
+        </span>
       </Link>
       <Link
         href="/app/decks"
         className={`flex flex-col items-center justify-center py-1 transition-colors ${
-          activeTab === "decks" || activeTab === "journal" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
+          activeTab === "decks" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
         }`}
       >
-        <span className="material-symbols-outlined text-xl">menu_book</span>
-        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">{t.mobileNav.decks}</span>
+        <span className="material-symbols-outlined text-xl">collections_bookmark</span>
+        <span className="font-label text-[9px] uppercase tracking-wider mt-0.5">{t.mobileNav.decks}</span>
       </Link>
       <Link
         href="/app/profile"
         className={`flex flex-col items-center justify-center py-1 transition-colors ${
-          activeTab === "profile" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
+          activeTab === "profile" || activeTab === "billing" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
         }`}
       >
         <span className="material-symbols-outlined text-xl">person</span>
-        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">{t.mobileNav.profile}</span>
+        <span className="font-label text-[9px] uppercase tracking-wider mt-0.5">{t.mobileNav.profile}</span>
       </Link>
       <Link
-        href="/login"
-        className="flex flex-col items-center justify-center py-1 text-on-surface-variant font-normal hover:text-primary transition-colors"
+        href="/app/auth"
+        className={`flex flex-col items-center justify-center py-1 transition-colors ${
+          activeTab === "auth" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-primary"
+        }`}
       >
         <span className="material-symbols-outlined text-xl">login</span>
-        <span className="font-label text-[10px] uppercase tracking-wider mt-0.5">
+        <span className="font-label text-[9px] uppercase tracking-wider mt-0.5">
           {isVi ? "Đăng Nhập" : "Login"}
         </span>
       </Link>

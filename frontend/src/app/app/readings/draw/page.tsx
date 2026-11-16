@@ -1,12 +1,27 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
 import { ReadingSessionDto, DrawnCardDto } from "@/types/api";
+import { splitAiParagraphs } from "@/utils/formatAiText";
+
+const MAX_TOTAL_CARDS = 10;
+
+function isSameLocalDay(dateString?: string): boolean {
+  if (!dateString) return false;
+  const d = new Date(dateString);
+  if (Number.isNaN(d.getTime())) return false;
+  const now = new Date();
+  return (
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate()
+  );
+}
 
 function TactileDrawContent() {
   const searchParams = useSearchParams();
@@ -18,8 +33,9 @@ function TactileDrawContent() {
   const [loading, setLoading] = useState(true);
   const [isDrawing, setIsDrawing] = useState(false);
   const [isInterpreting, setIsInterpreting] = useState(false);
-  const [journalSaved, setJournalSaved] = useState(false);
-  const [userNote, setUserNote] = useState("");
+  const [isDrawingClarifier, setIsDrawingClarifier] = useState(false);
+  const [clarifierError, setClarifierError] = useState<string | null>(null);
+  const [clarifierSuccess, setClarifierSuccess] = useState(false);
 
   useEffect(() => {
     async function initSession() {
@@ -28,15 +44,21 @@ function TactileDrawContent() {
           const res = await apiClient.readings.getById(sessionIdParam);
           if (res.code === 200) setSession(res.data);
         } else {
-          // If no sessionId in query, get latest or create 3-card demo
+          // Prefer today's reading session first; otherwise create one for today
           const historyRes = await apiClient.readings.getHistory();
-          if (historyRes.code === 200 && historyRes.data.length > 0) {
-            setSession(historyRes.data[0]);
+          const todaySession =
+            historyRes.code === 200 && Array.isArray(historyRes.data)
+              ? historyRes.data.find((s) => isSameLocalDay(s.createdAt))
+              : null;
+          if (todaySession) {
+            setSession(todaySession);
           } else {
             const createRes = await apiClient.readings.create({
               spreadId: "S-02",
               deckId: "ED-01",
-              question: "What clarity should I welcome today?"
+              question: isVi
+                ? "Định hướng phát triển và chuyển hóa năng lượng hôm nay"
+                : "What clarity should I welcome today?"
             });
             if (createRes.code === 201) setSession(createRes.data);
           }
@@ -48,7 +70,12 @@ function TactileDrawContent() {
       }
     }
     initSession();
-  }, [sessionIdParam]);
+  }, [sessionIdParam, isVi]);
+
+  const isTodaySession = useMemo(() => {
+    if (!session?.createdAt) return true;
+    return isSameLocalDay(session.createdAt);
+  }, [session?.createdAt]);
 
   const handleDrawCards = async () => {
     if (!session || isDrawing) return;
@@ -73,13 +100,45 @@ function TactileDrawContent() {
     }
   };
 
-  const handleSaveJournal = async () => {
-    if (!session || journalSaved) return;
+  const handleDrawClarifier = async () => {
+    if (!session || isDrawingClarifier) return;
+    if (!isTodaySession) {
+      setClarifierError(
+        isVi
+          ? "Phiên trải bài của ngày cũ chỉ có thể xem lại luận giải, không thể rút thêm lá bổ sung."
+          : "Past-day sessions are read-only; additional clarifiers cannot be drawn."
+      );
+      return;
+    }
+    if ((session.drawnCards?.length || 0) >= MAX_TOTAL_CARDS) return;
+
+    setIsDrawingClarifier(true);
+    setClarifierError(null);
+    setClarifierSuccess(false);
+
     try {
-      await apiClient.readings.saveJournal(session.id, userNote || (isVi ? "Ghi chép chiêm nghiệm trải bài" : "Empirical reflection on reading"));
-      setJournalSaved(true);
+      const res = await apiClient.readings.drawClarifier(session.id);
+      if (res.code >= 400) {
+        setClarifierError(
+          res.message ||
+            (isVi
+              ? "Không thể rút thêm lá làm rõ cho phiên trải bài này."
+              : "Unable to draw another clarifier card.")
+        );
+        return;
+      }
+      if (res.data && res.data.drawnCards && res.data.drawnCards.length > 0) {
+        setSession(res.data);
+        setClarifierSuccess(true);
+        setTimeout(() => setClarifierSuccess(false), 4000);
+      }
     } catch (err) {
-      console.error("Error saving to journal:", err);
+      console.error("Error drawing clarifier on mobile draw page:", err);
+      setClarifierError(
+        isVi ? "Có lỗi kết nối khi rút lá làm rõ." : "Connection error while drawing clarifier."
+      );
+    } finally {
+      setIsDrawingClarifier(false);
     }
   };
 
@@ -96,14 +155,16 @@ function TactileDrawContent() {
     );
   }
 
-  const hasDrawn = session.drawnCards && session.drawnCards.length > 0;
+  const drawnCards = session.drawnCards || [];
+  const hasDrawn = drawnCards.length > 0;
   const spreadCount = session.spreadTemplate.cardCount;
+  const totalSlots = hasDrawn ? Math.max(spreadCount, drawnCards.length) : spreadCount;
   const spreadName = isVi
     ? session.spreadTemplate.nameVi || session.spreadTemplate.nameEn
     : session.spreadTemplate.nameEn;
 
   return (
-    <div className="max-w-[430px] mx-auto min-h-screen bg-surface flex flex-col border-x border-outline-variant pb-20">
+    <div className="max-w-[430px] mx-auto min-h-screen bg-surface flex flex-col border-x border-outline-variant pb-24">
       {/* Top Header */}
       <header className="px-4 py-3 bg-white border-b border-outline-variant flex items-center justify-between sticky top-0 z-40">
         <Link href="/app/readings/new" className="flex items-center gap-1 text-xs text-slate-500 hover:text-on-surface">
@@ -140,7 +201,7 @@ function TactileDrawContent() {
       {/* Main Draw Surface */}
       <main className="p-4 flex-1 flex flex-col space-y-5">
         {/* Question Banner */}
-        <div className="p-3 bg-white border border-outline-variant rounded-lg space-y-0.5">
+        <div className="p-3 bg-white border border-outline-variant rounded-lg space-y-1">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
               {isVi ? "CÂU HỎI TRẢI BÀI" : "INQUIRY QUESTION"}
@@ -148,8 +209,8 @@ function TactileDrawContent() {
             <span className="text-[10px] font-mono text-primary font-semibold">
               {hasDrawn
                 ? isVi
-                  ? "ĐÃ RÚT BÀI"
-                  : "COMPLETED"
+                  ? `ĐÃ RÚT ${drawnCards.length}/${MAX_TOTAL_CARDS} LÁ`
+                  : `${drawnCards.length}/${MAX_TOTAL_CARDS} DRAWN`
                 : isVi
                 ? "CHỜ RÚT BÀI"
                 : "AWAITING DRAW"}
@@ -160,22 +221,36 @@ function TactileDrawContent() {
           </p>
         </div>
 
-        {/* Spread Slots Grid */}
-        <div className={`grid gap-2 ${spreadCount === 1 ? "grid-cols-1 max-w-[180px] mx-auto" : spreadCount === 3 ? "grid-cols-3" : "grid-cols-2 md:grid-cols-3"}`}>
-          {Array.from({ length: spreadCount }).map((_, idx) => {
-            const drawn = session.drawnCards[idx] as DrawnCardDto | undefined;
+        {/* Spread Slots Grid (includes clarifier cards if drawn) */}
+        <div
+          className={`grid gap-2 ${
+            totalSlots === 1
+              ? "grid-cols-1 max-w-[180px] mx-auto"
+              : totalSlots === 3
+              ? "grid-cols-3"
+              : "grid-cols-2 sm:grid-cols-3"
+          }`}
+        >
+          {Array.from({ length: totalSlots }).map((_, idx) => {
+            const drawn = drawnCards[idx] as DrawnCardDto | undefined;
             const pos = session.spreadTemplate.parsedPositions?.[idx] || {
               index: idx,
-              name_en: `Position ${idx + 1}`,
-              name_vi: `Vị trí ${idx + 1}`
+              name_en: drawn?.isClarifier ? "Clarifier Insight" : `Position ${idx + 1}`,
+              name_vi: drawn?.isClarifier ? "Lá Làm Rõ" : `Vị trí ${idx + 1}`
             };
-            const posName = isVi ? pos.name_vi || pos.name_en : pos.name_en;
+            const posName = isVi
+              ? drawn?.positionNameVi || pos.name_vi || pos.name_en
+              : drawn?.positionNameEn || pos.name_en;
 
             return (
               <div
-                key={idx}
+                key={drawn?.id || idx}
                 className={`p-2 bg-white border rounded-lg text-center shadow-xs flex flex-col items-center justify-between min-h-[140px] transition-all ${
-                  drawn ? "border-primary bg-emerald-50/20" : "border-dashed border-slate-300"
+                  drawn?.isClarifier
+                    ? "border-amber-400 bg-amber-50/20"
+                    : drawn
+                    ? "border-primary bg-emerald-50/20"
+                    : "border-dashed border-slate-300"
                 }`}
               >
                 <span className="text-[9px] font-mono text-slate-500 uppercase tracking-tight block truncate w-full">
@@ -194,10 +269,12 @@ function TactileDrawContent() {
                     <div className="text-[10px] font-headline font-bold text-on-surface mt-1 truncate max-w-[100px]">
                       {isVi ? drawn.card.nameVi || drawn.card.nameEn : drawn.card.nameEn}
                     </div>
-                    <span className={`text-[8px] font-mono font-semibold px-1 py-0.2 rounded mt-0.5 ${
-                      drawn.isReversed ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
-                    }`}>
-                      {drawn.isReversed ? (isVi ? "Ngược" : "Reversed") : (isVi ? "Xuôi" : "Upright")}
+                    <span
+                      className={`text-[8px] font-mono font-semibold px-1 py-0.2 rounded mt-0.5 ${
+                        drawn.isReversed ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
+                      }`}
+                    >
+                      {drawn.isReversed ? (isVi ? "Ngược" : "Reversed") : isVi ? "Xuôi" : "Upright"}
                     </span>
                   </div>
                 ) : (
@@ -240,19 +317,87 @@ function TactileDrawContent() {
                   ? "Đang xáo bài và rút năng lượng..."
                   : "Shuffling deck & drawing cards..."
                 : isVi
-                ? "Rút Toàn Bộ Trải Bài Ngay ✨"
-                : "Draw Full Spread Now ✨"}
+                ? "Rút Toàn Bộ Trải Bài Ngay"
+                : "Draw Full Spread Now"}
             </button>
           </div>
         )}
 
-        {/* AI Interpretation Box */}
+        {/* AI Interpretation & Clarifier Actions */}
         {hasDrawn && (
-          <div className="space-y-4 pt-2">
+          <div className="space-y-4 pt-1">
+            {/* Clarifier Slot */}
+            <div
+              className={`p-3.5 border rounded-xl space-y-2.5 ${
+                !isTodaySession ? "bg-amber-50/50 border-amber-200" : "bg-white border-dashed border-primary/50"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[10px] uppercase font-bold text-slate-700">
+                  {isVi
+                    ? `LÁ LÀM RÕ TRONG NGÀY (${drawnCards.length}/${MAX_TOTAL_CARDS})`
+                    : `DAILY CLARIFIER (${drawnCards.length}/${MAX_TOTAL_CARDS})`}
+                </span>
+                {!isTodaySession && (
+                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold">
+                    {isVi ? "ĐÃ KHÓA" : "LOCKED"}
+                  </span>
+                )}
+              </div>
+
+              <p className="text-[11px] text-slate-500 leading-snug">
+                {!isTodaySession
+                  ? isVi
+                    ? "Phiên này thuộc ngày quá khứ nên chỉ có thể xem lại luận giải."
+                    : "Past-day readings are view-only and cannot draw additional cards."
+                  : clarifierError
+                  ? clarifierError
+                  : clarifierSuccess
+                  ? isVi
+                    ? "✓ Đã rút thêm 1 lá Làm Rõ và tự động lưu vào Nhật Ký Lịch Ngày."
+                    : "✓ Clarifier card drawn and saved to Calendar Journal."
+                  : drawnCards.length >= MAX_TOTAL_CARDS
+                  ? isVi
+                    ? "Đã đạt giới hạn tối đa 10 lá bài cho phiên hôm nay."
+                    : "Maximum limit of 10 cards reached for today."
+                  : isVi
+                  ? `Còn có thể rút thêm tối đa ${MAX_TOTAL_CARDS - drawnCards.length} lá bổ sung trong hôm nay.`
+                  : `You can draw up to ${MAX_TOTAL_CARDS - drawnCards.length} more clarifier cards today.`}
+              </p>
+
+              <button
+                type="button"
+                onClick={handleDrawClarifier}
+                disabled={!isTodaySession || isDrawingClarifier || drawnCards.length >= MAX_TOTAL_CARDS}
+                className={`w-full py-2.5 rounded-lg text-xs font-mono font-bold transition-all disabled:cursor-not-allowed ${
+                  !isTodaySession
+                    ? "bg-slate-200 text-slate-500"
+                    : "bg-emerald-50 border border-primary/40 text-primary hover:bg-emerald-100 disabled:opacity-50"
+                }`}
+              >
+                {!isTodaySession
+                  ? isVi
+                    ? "Phiên Ngày Cũ · Chỉ Xem"
+                    : "Past Day · View Only"
+                  : drawnCards.length >= MAX_TOTAL_CARDS
+                  ? isVi
+                    ? "Đã Đủ 10/10 Lá"
+                    : "Max 10/10 Cards"
+                  : isDrawingClarifier
+                  ? isVi
+                    ? "Đang rút lá làm rõ..."
+                    : "Drawing clarifier..."
+                  : isVi
+                  ? "+ Rút Thêm 1 Lá Làm Rõ (Clarifier)"
+                  : "+ Draw 1 Clarifier Card"}
+              </button>
+            </div>
+
+            {/* AI Synthesis Report */}
             <div className="p-4 bg-white border border-outline-variant rounded-lg space-y-3 shadow-xs">
               <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                 <span className="font-mono text-[10px] uppercase text-primary font-bold">
-                  {isVi ? "TỔNG HỢP AI" : "AI SYNTHESIS"} · {session.persona}
+                  {isVi ? "LUẬN GIẢI TỔNG HỢP · GEMINI AI" : "AI SYNTHESIS · GEMINI AI"}
                 </span>
                 <span className="text-[10px] font-mono text-slate-400">
                   {isInterpreting
@@ -260,8 +405,8 @@ function TactileDrawContent() {
                       ? "Đang phân tích..."
                       : "Analyzing..."
                     : isVi
-                    ? "GIẢI NGHĨA HOÀN TẤT"
-                    : "INTERPRETATION COMPLETE"}
+                    ? "ĐÃ LƯU LỊCH NGÀY"
+                    : "AUTO-SAVED"}
                 </span>
               </div>
 
@@ -275,53 +420,38 @@ function TactileDrawContent() {
                   </p>
                 </div>
               ) : (
-                <div className="text-xs text-slate-700 leading-relaxed whitespace-pre-line font-body">
-                  {session.aiInterpretation}
+                <div className="text-xs text-slate-700 leading-relaxed font-body space-y-2.5">
+                  {splitAiParagraphs(
+                    session.aiInterpretation ||
+                      session.aiSynthesisResult ||
+                      (isVi
+                        ? "Năng lượng các lá bài mở ra góc nhìn rõ ràng cho bước tiếp theo của bạn."
+                        : "The cards illuminate a clear perspective for your next step.")
+                  ).map((para, pIdx) => (
+                    <p key={pIdx}>{para}</p>
+                  ))}
                 </div>
               )}
             </div>
 
-            {/* Reflection & Journal Note */}
-            <div className="p-4 bg-white border border-outline-variant rounded-lg space-y-3">
-              <span className="font-mono text-[10px] uppercase text-slate-400 font-bold block">
-                {isVi
-                  ? "NHẬT KÝ & SUY NGẪM CÁ NHÂN"
-                  : "PERSONAL JOURNAL & REFLECTION"}
-              </span>
-              <textarea
-                rows={3}
-                value={userNote}
-                onChange={(e) => setUserNote(e.target.value)}
-                placeholder={
-                  isVi
-                    ? "Ghi lại cảm nhận hoặc bài học nghiệm ra từ trải bài này..."
-                    : "Record your reflections and observations from this reading..."
-                }
-                className="w-full p-3 text-xs border border-outline-variant rounded-lg bg-[#FAF9F6] focus:bg-white focus:outline-none focus:border-primary leading-relaxed"
-              />
-
-              <div className="flex justify-between items-center pt-1">
-                <Link href="/journal" className="text-xs font-mono text-primary hover:underline">
-                  {isVi ? "Xem Toàn Bộ Sổ Nhật Ký →" : "View Complete Journal →"}
-                </Link>
-                <button
-                  onClick={handleSaveJournal}
-                  disabled={journalSaved}
-                  className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
-                    journalSaved
-                      ? "bg-emerald-100 text-emerald-800"
-                      : "bg-slate-900 text-white hover:bg-slate-800"
-                  }`}
-                >
-                  {journalSaved
-                    ? isVi
-                      ? "✓ Đã Lưu Vào Sổ"
-                      : "✓ Saved to Journal"
-                    : isVi
-                    ? "Lưu Nhật Ký"
-                    : "Save Journal"}
-                </button>
-              </div>
+            {/* Navigation Actions */}
+            <div className="space-y-2">
+              <Link
+                href={`/app/readings/${session.id}`}
+                className="w-full py-3 bg-primary hover:bg-primary-hover text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-2 shadow-sm transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm">space_dashboard</span>
+                <span>
+                  {isVi ? "Mở Bàn Trải Bài & Hỏi Đáp AI →" : "Open Reading Workbench & AI Chat →"}
+                </span>
+              </Link>
+              <Link
+                href="/app/journal"
+                className="w-full py-2.5 bg-white border border-outline-variant hover:border-primary text-on-surface text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm text-primary">calendar_month</span>
+                <span>{isVi ? "Xem Lịch Nhật Ký →" : "View Calendar Journal →"}</span>
+              </Link>
             </div>
           </div>
         )}
