@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
-import { getGoogleWebClientId, isNativeCapacitor, signInWithNativeGoogle } from "@/services/googleSignIn";
+import {
+  getGoogleWebClientId,
+  isNativeCapacitor,
+  isNativeSocialLoginAvailable,
+  signInWithNativeGoogle,
+} from "@/services/googleSignIn";
 
 interface GoogleSignInButtonProps {
   locale: "vi" | "en";
@@ -19,18 +24,29 @@ export default function GoogleSignInButton({
 }: GoogleSignInButtonProps) {
   const isVi = locale === "vi";
   const [isNative, setIsNative] = useState(false);
+  const [nativePluginReady, setNativePluginReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const clientId = getGoogleWebClientId();
 
   useEffect(() => {
-    setIsNative(isNativeCapacitor());
+    const native = isNativeCapacitor();
+    setIsNative(native);
+    setNativePluginReady(native ? isNativeSocialLoginAvailable() : false);
   }, []);
 
   const handleNativeSignIn = async () => {
     if (busy || disabled) return;
+    if (!nativePluginReady) {
+      onError(
+        isVi
+          ? "Bản APK Android hiện tại chưa tích hợp plugin đăng nhập Google native. Vui lòng cập nhật APK mới nhất hoặc đăng nhập bằng Email/Mật khẩu."
+          : "This Android APK build does not include the native Google Sign-In plugin yet. Please install the latest APK build or sign in with Email/Password."
+      );
+      return;
+    }
     setBusy(true);
     try {
-      const idToken = await signInWithNativeGoogle();
+      const idToken = await signInWithNativeGoogle(locale);
       await onIdToken(idToken);
     } catch (err: any) {
       onError(
