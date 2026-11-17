@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
 import { ReadingSessionDto, DrawnCardDto } from "@/types/api";
 import { TAROT_CARDS } from "@/data/tarotCards";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import RequireAuthGate from "@/components/auth/RequireAuthGate";
 import { splitAiParagraphs } from "@/utils/formatAiText";
 
 const MAX_TOTAL_CARDS = 10;
@@ -24,9 +25,10 @@ function isSameLocalDay(dateString?: string): boolean {
   );
 }
 
-export default function MobileReadingReportPage() {
+function MobileReadingReportContent() {
   const params = useParams();
-  const readingId = (params?.id as string) || "demo-session";
+  const router = useRouter();
+  const readingId = (params?.id as string) || "";
   const { locale, setLocale } = useLanguage();
   const isVi = locale === "vi";
 
@@ -63,70 +65,38 @@ export default function MobileReadingReportPage() {
         setClarifierError(null);
         if (readingId && readingId !== "demo-session") {
           const res = await apiClient.readings.getById(readingId);
-          if (res.code === 200 && res.data) {
+          if (res.code === 200 && res.data && res.data.drawnCards && res.data.drawnCards.length > 0) {
             setSession(res.data);
             syncMessagesFromSession(res.data);
             return;
           }
         }
 
-        // Default route: find today's active session first
-        const historyRes = await apiClient.readings.getHistory();
-        const validHistory =
-          historyRes.code === 200 && Array.isArray(historyRes.data)
-            ? historyRes.data.filter((s) => s.drawnCards && s.drawnCards.length > 0)
-            : [];
-        const todaySession = validHistory.find((s) => isSameLocalDay(s.createdAt));
-
-        if (todaySession) {
-          setSession(todaySession);
-          syncMessagesFromSession(todaySession);
-          return;
-        }
-
-        // Check today's daily draw if no other session exists today
-        const dailyRes = await apiClient.readings.getDailyDraw(locale, false);
+        // If invalid ID or legacy demo route, check today's flipped daily draw
+        const dailyRes = await apiClient.readings.checkDailyDraw(locale);
         if (
           dailyRes.data &&
+          dailyRes.data.id &&
           dailyRes.data.drawnCards &&
-          dailyRes.data.drawnCards.length > 0 &&
-          isSameLocalDay(dailyRes.data.createdAt)
+          dailyRes.data.drawnCards.length > 0
         ) {
           setSession(dailyRes.data);
           syncMessagesFromSession(dailyRes.data);
+          router.replace(`/app/readings/${dailyRes.data.id}`);
           return;
         }
 
-        // Otherwise create a live 3-card session for today via Supabase
-        const createRes = await apiClient.readings.create({
-          spreadId: "S-02",
-          deckId: "ED-01",
-          question: isVi
-            ? "Định hướng phát triển và thấu thị năng lượng"
-            : "Trajectory of development and energy clarity",
-          inputMode: "CARD_DRAW"
-        });
-        if (createRes.data) {
-          let active = createRes.data;
-          if (!active.drawnCards || active.drawnCards.length === 0) {
-            const drawRes = await apiClient.readings.drawCards(active.id);
-            if (drawRes.data) active = drawRes.data;
-          }
-          if (!active.aiInterpretation) {
-            const interpRes = await apiClient.readings.interpret(active.id);
-            if (interpRes.data) active = interpRes.data;
-          }
-          setSession(active);
-          syncMessagesFromSession(active);
-        }
+        // No active daily reading found -> return to Mobile Home to flip today's card
+        router.replace("/app/home");
       } catch (err) {
         console.error("Failed to load reading report session:", err);
+        router.replace("/app/home");
       } finally {
         setLoading(false);
       }
     }
     loadSession();
-  }, [readingId, locale, isVi]);
+  }, [readingId, locale, router]);
 
   const isTodaySession = useMemo(() => {
     if (!session?.createdAt) return true;
@@ -350,14 +320,6 @@ export default function MobileReadingReportPage() {
                 VI
               </button>
             </div>
-
-            <Link
-              href={`/app/readings/${session.id}/share`}
-              className="text-slate-600 hover:text-slate-900 transition-colors p-1 rounded hover:bg-slate-100"
-              title={isVi ? "Xuất Ấn Phẩm Poster" : "Export Specimen Poster"}
-            >
-              <span className="material-symbols-outlined text-xl">share</span>
-            </Link>
           </div>
         </header>
 
@@ -382,17 +344,11 @@ export default function MobileReadingReportPage() {
 
           <div className="flex items-center gap-1.5 shrink-0">
             <Link
-              href="/app/readings/new"
-              className="px-2 py-1 bg-white border border-[#E2E8F0] hover:border-primary rounded text-[10px] font-mono font-semibold text-slate-700 hover:text-primary transition-colors"
-            >
-              {isVi ? "+ Trải Mới" : "+ New"}
-            </Link>
-            <Link
               href="/app/journal"
-              className="px-2 py-1 bg-primary hover:bg-primary-hover text-white rounded text-[10px] font-mono font-semibold flex items-center gap-1 transition-colors"
+              className="px-2.5 py-1 bg-primary hover:bg-primary-hover text-white rounded text-[10px] font-mono font-semibold flex items-center gap-1 transition-colors"
             >
               <span className="material-symbols-outlined text-[12px]">calendar_month</span>
-              <span>{isVi ? "Lịch" : "Journal"}</span>
+              <span>{isVi ? "Lịch Nhật Ký" : "Journal"}</span>
             </Link>
           </div>
         </div>
@@ -611,19 +567,16 @@ export default function MobileReadingReportPage() {
               <Link href="/app/journal" className="text-primary hover:underline font-semibold">
                 {isVi ? "← Xem Lịch Nhật Ký" : "← Calendar Journal"}
               </Link>
-              <Link
-                href={`/app/readings/${session.id}/share`}
-                className="text-primary hover:underline font-semibold"
-              >
-                {isVi ? "Xuất Thẻ Chia Sẻ →" : "Export Share Card →"}
-              </Link>
+              <span>
+                {isVi ? "Đồng bộ Supabase & Gemini AI" : "Synced with Supabase"}
+              </span>
             </div>
           </section>
         </main>
 
         {/* 4. Card Detail Modal Popup (same feature as Web Workbench) */}
         {selectedCardDetail && (
-          <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[60] bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
             <div className="bg-white rounded-xl max-w-[390px] w-full p-5 shadow-xl border border-[#E2E8F0] relative">
               <button
                 type="button"
@@ -705,8 +658,8 @@ export default function MobileReadingReportPage() {
             </button>
           </div>
         ) : (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-[2px] p-2 sm:p-4">
-            <div className="w-full max-w-[410px] h-[78vh] max-h-[640px] bg-white border border-[#E2E8F0] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
+          <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-[2px] p-3 sm:p-4">
+            <div className="w-full max-w-[410px] h-[82dvh] max-h-[640px] bg-white border border-[#E2E8F0] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
               {/* Popup Header */}
               <div className="px-4 py-3 bg-[#FAF9F6] border-b border-[#E2E8F0] flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-2.5">
@@ -818,5 +771,13 @@ export default function MobileReadingReportPage() {
         <MobileBottomNav activeTab="oracle" />
       </div>
     </div>
+  );
+}
+
+export default function MobileReadingReportPage() {
+  return (
+    <RequireAuthGate authPath="/app/auth">
+      <MobileReadingReportContent />
+    </RequireAuthGate>
   );
 }

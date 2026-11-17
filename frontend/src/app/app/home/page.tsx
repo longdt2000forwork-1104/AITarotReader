@@ -1,30 +1,50 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import { apiClient } from "@/services/apiClient";
 import { MysticProfileDto, WalletBalanceDto, ReadingSessionDto } from "@/types/api";
-import { TAROT_CARDS, TarotCard } from "@/data/tarotCards";
+import { TAROT_CARDS } from "@/data/tarotCards";
 import { getAiGuidancePreview } from "@/utils/formatAiText";
 
-export default function MobileDailyHomePage() {
+function MobileDailyHomeContent() {
   const { locale, setLocale, t } = useLanguage();
+  const { user, status: authStatus } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const isVi = locale === "vi";
 
   const [profile, setProfile] = useState<MysticProfileDto | null>(null);
   const [wallet, setWallet] = useState<WalletBalanceDto | null>(null);
   const [dailySession, setDailySession] = useState<ReadingSessionDto | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isFlipping, setIsFlipping] = useState(false);
   const [isGuidanceExpanded, setIsGuidanceExpanded] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
   const [claimToast, setClaimToast] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const [todayDateStr, setTodayDateStr] = useState("");
+  const autoFlipTriggeredRef = useRef(false);
+
+  const cacheKey = user?.id ? `ai_tarot_daily_draw_${user.id}` : null;
 
   const zodiacMap: Record<string, string> = {
+    ARIES: "Bạch Dương",
+    TAURUS: "Kim Ngưu",
+    GEMINI: "Song Tử",
+    CANCER: "Cự Giải",
+    LEO: "Sư Tử",
+    VIRGO: "Xử Nữ",
+    LIBRA: "Thiên Bình",
+    SCORPIO: "Bọ Cạp",
+    SAGITTARIUS: "Nhân Mã",
+    CAPRICORN: "Ma Kết",
+    AQUARIUS: "Bảo Bình",
+    PISCES: "Song Ngư",
     Aries: "Bạch Dương",
     Taurus: "Kim Ngưu",
     Gemini: "Song Tử",
@@ -56,37 +76,12 @@ export default function MobileDailyHomePage() {
     }
   };
 
-  // Check if today's card has already been flipped in Supabase (never draws a card)
-  const checkTodayDailyStatus = async (hasSyncCache: boolean = false) => {
-    if (!hasSyncCache) {
-      setIsLoading(true);
+  // Called ONLY when authenticated user explicitly taps to flip the face-down card
+  const handleFlipCard = useCallback(async (force: boolean = false) => {
+    if (authStatus !== "authenticated") {
+      router.push(`/app/auth?next=${encodeURIComponent("/app/home?flip=1")}`);
+      return;
     }
-    try {
-      const todayKey = getTodayDateKey();
-      const res = await apiClient.readings.checkDailyDraw(locale);
-      if (res.data && res.data.drawnCards && res.data.drawnCards.length > 0) {
-        setDailySession(res.data);
-        if (typeof window !== "undefined") {
-          localStorage.setItem(
-            "ai_tarot_daily_draw",
-            JSON.stringify({ dateKey: todayKey, session: res.data })
-          );
-        }
-      } else {
-        setDailySession(null);
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("ai_tarot_daily_draw");
-        }
-      }
-    } catch (err) {
-      console.warn("Failed to check daily draw status in app/home:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Called ONLY when user explicitly taps to flip the face-down card
-  const handleFlipCard = async (force: boolean = false) => {
     if (isFlipping) return;
     setIsFlipping(true);
     setIsGuidanceExpanded(false);
@@ -95,9 +90,9 @@ export default function MobileDailyHomePage() {
       const res = await apiClient.readings.flipDailyDraw(locale, force);
       if (res.data && res.data.drawnCards && res.data.drawnCards.length > 0) {
         setDailySession(res.data);
-        if (typeof window !== "undefined") {
+        if (typeof window !== "undefined" && cacheKey) {
           localStorage.setItem(
-            "ai_tarot_daily_draw",
+            cacheKey,
             JSON.stringify({ dateKey: todayKey, session: res.data })
           );
         }
@@ -107,7 +102,7 @@ export default function MobileDailyHomePage() {
     } finally {
       setIsFlipping(false);
     }
-  };
+  }, [authStatus, cacheKey, isFlipping, locale, router]);
 
   useEffect(() => {
     setMounted(true);
@@ -125,11 +120,23 @@ export default function MobileDailyHomePage() {
   }, [isVi]);
 
   useEffect(() => {
+    if (authStatus === "loading") {
+      setIsLoading(true);
+      return;
+    }
+    if (authStatus === "unauthenticated" || !user) {
+      setProfile(null);
+      setWallet(null);
+      setDailySession(null);
+      setIsLoading(false);
+      return;
+    }
+
     const todayKey = getTodayDateKey();
     let hasSyncCache = false;
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && cacheKey) {
       try {
-        const cached = localStorage.getItem("ai_tarot_daily_draw");
+        const cached = localStorage.getItem(cacheKey);
         if (cached) {
           const parsed = JSON.parse(cached);
           if (parsed && parsed.dateKey === todayKey && parsed.session?.drawnCards?.length > 0) {
@@ -137,7 +144,7 @@ export default function MobileDailyHomePage() {
             setIsLoading(false);
             hasSyncCache = true;
           } else {
-            localStorage.removeItem("ai_tarot_daily_draw");
+            localStorage.removeItem(cacheKey);
           }
         }
       } catch {
@@ -145,43 +152,73 @@ export default function MobileDailyHomePage() {
       }
     }
 
+    let active = true;
     async function loadData() {
+      if (!hasSyncCache) setIsLoading(true);
       try {
-        const [profRes, walletRes] = await Promise.all([
+        const [profRes, walletRes, dailyRes] = await Promise.all([
           apiClient.profile.getMysticProfile(),
-          apiClient.wallet.getBalance()
+          apiClient.wallet.getBalance(),
+          apiClient.readings.checkDailyDraw(locale),
         ]);
-        if (profRes.code === 200) setProfile(profRes.data);
-        if (walletRes.code === 200) setWallet(walletRes.data);
+        if (!active) return;
+        if (profRes.code === 200 && profRes.data) setProfile(profRes.data);
+        if (walletRes.code === 200 && walletRes.data) setWallet(walletRes.data);
+        if (dailyRes.data && dailyRes.data.drawnCards && dailyRes.data.drawnCards.length > 0) {
+          setDailySession(dailyRes.data);
+          if (typeof window !== "undefined" && cacheKey) {
+            localStorage.setItem(
+              cacheKey,
+              JSON.stringify({ dateKey: todayKey, session: dailyRes.data })
+            );
+          }
+        } else {
+          setDailySession(null);
+          if (typeof window !== "undefined" && cacheKey) {
+            localStorage.removeItem(cacheKey);
+          }
+          if (searchParams.get("flip") === "1" && !autoFlipTriggeredRef.current) {
+            autoFlipTriggeredRef.current = true;
+            router.replace("/app/home");
+            await handleFlipCard(false);
+          }
+        }
       } catch (err) {
         console.error("Failed to load initial home data:", err);
+      } finally {
+        if (active) setIsLoading(false);
       }
     }
     loadData();
-    checkTodayDailyStatus(hasSyncCache);
 
-    // Automatically reset to face-down at 00:00 midnight if page stays open
     let currentKey = todayKey;
     const interval = setInterval(() => {
       const newKey = getTodayDateKey();
       if (newKey !== currentKey) {
         currentKey = newKey;
         setDailySession(null);
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("ai_tarot_daily_draw");
+        if (typeof window !== "undefined" && cacheKey) {
+          localStorage.removeItem(cacheKey);
         }
       }
     }, 15000);
 
-    return () => clearInterval(interval);
-  }, [locale]);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [authStatus, user, cacheKey, locale, searchParams, router, handleFlipCard]);
 
   const handleClaimReward = async () => {
+    if (authStatus !== "authenticated") {
+      router.push(`/app/auth?next=${encodeURIComponent("/app/home")}`);
+      return;
+    }
     if (isClaiming) return;
     setIsClaiming(true);
     try {
       const res = await apiClient.wallet.claimDailyReward();
-      if (res.code === 200) {
+      if (res.code === 200 && res.data) {
         setWallet(res.data);
         setClaimToast(isVi ? "Đã nhận +10 Crystal phước lành ngày mới!" : "Claimed +10 Daily Crystal Blessing!");
         setTimeout(() => setClaimToast(null), 3500);
@@ -194,13 +231,15 @@ export default function MobileDailyHomePage() {
     }
   };
 
-  const sunSignDisplay = profile?.sunSign
+  const rawZodiac = profile?.zodiacSign || profile?.sunSign;
+  const sunSignDisplay = rawZodiac
     ? isVi
-      ? zodiacMap[profile.sunSign] || profile.sunSign
-      : profile.sunSign
+      ? zodiacMap[rawZodiac] || rawZodiac
+      : rawZodiac
     : isVi
-    ? "Bạch Dương"
-    : "Aries";
+    ? "Tarot"
+    : "Seeker";
+  const displayName = user?.fullName || user?.email?.split("@")[0] || (isVi ? "Khách" : "Guest");
 
   // Card resolution (only when drawn card exists from today's session)
   const drawnCardData = dailySession?.drawnCards?.[0];
@@ -235,19 +274,23 @@ export default function MobileDailyHomePage() {
       {/* Top Hairline App Bar */}
       <header className="px-4 py-3 bg-white border-b border-outline-variant flex items-center justify-between sticky top-0 z-40">
         <Link
-          href="/app/profile"
-          className="flex items-center gap-2 group hover:opacity-90 transition-opacity"
-          title={isVi ? "Mở Hồ Sơ Cá Nhân" : "Open Seeker Profile"}
+          href={authStatus === "authenticated" ? "/app/profile" : "/app/auth"}
+          className="flex items-center gap-2 group hover:opacity-90 transition-opacity min-w-0"
+          title={authStatus === "authenticated" ? (isVi ? "Mở Hồ Sơ Cá Nhân" : "Open Seeker Profile") : (isVi ? "Đăng nhập" : "Sign In")}
         >
-          <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 group-hover:border-primary flex items-center justify-center text-xs font-serif font-bold text-slate-800 transition-colors">
-            ✦
+          <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 group-hover:border-primary flex items-center justify-center text-xs font-serif font-bold text-slate-800 transition-colors shrink-0">
+            {authStatus === "authenticated" && user ? displayName.charAt(0).toUpperCase() : "✦"}
           </div>
-          <div>
-            <div className="text-xs font-bold text-on-surface group-hover:text-primary leading-tight transition-colors">
-              Aria • {sunSignDisplay}
+          <div className="min-w-0">
+            <div className="text-xs font-bold text-on-surface group-hover:text-primary leading-tight transition-colors truncate max-w-[140px]">
+              {displayName} • {sunSignDisplay}
             </div>
             <div className="text-[10px] font-mono text-slate-400">
-              {isVi ? "Số Đường Đời " : "Life Path "} {profile ? profile.lifePathNumber : "7"}
+              {authStatus === "authenticated"
+                ? `${isVi ? "Số Đường Đời " : "Life Path "}${profile?.lifePathNumber ?? "—"}`
+                : isVi
+                ? "Chạm để đăng nhập"
+                : "Tap to sign in"}
             </div>
           </div>
         </Link>
@@ -275,29 +318,33 @@ export default function MobileDailyHomePage() {
             </button>
           </div>
 
-          <Link
-            href="/app/billing"
-            className="flex items-center gap-1 px-2 py-0.5 bg-[#FEF3C7] text-[#B45309] border border-amber-200 rounded text-xs font-mono font-semibold"
-          >
-            <span className="material-symbols-outlined text-[13px]">toll</span>
-            <span>{wallet ? wallet.balance : 85} CR</span>
-          </Link>
+          {authStatus === "authenticated" && user ? (
+            <>
+              <Link
+                href="/app/billing"
+                className="flex items-center gap-1 px-2 py-0.5 bg-[#FEF3C7] text-[#B45309] border border-amber-200 rounded text-xs font-mono font-semibold"
+              >
+                <span className="material-symbols-outlined text-[13px]">toll</span>
+                <span>{wallet ? wallet.balance : user.crystalBalance} CR</span>
+              </Link>
 
-          <Link
-            href="/app/profile"
-            className="w-7 h-7 rounded border border-outline-variant bg-slate-50 hover:bg-emerald-50 hover:border-primary text-slate-700 hover:text-primary flex items-center justify-center transition-colors"
-            title={isVi ? "Hồ sơ cá nhân" : "Profile"}
-          >
-            <span className="material-symbols-outlined text-base">person</span>
-          </Link>
-
-          <Link
-            href="/app/auth"
-            className="w-7 h-7 rounded border border-outline-variant bg-slate-50 hover:bg-emerald-50 hover:border-primary text-slate-700 hover:text-primary flex items-center justify-center transition-colors"
-            title={isVi ? "Đăng nhập / Tài khoản" : "Login / Account"}
-          >
-            <span className="material-symbols-outlined text-base">login</span>
-          </Link>
+              <Link
+                href="/app/profile"
+                className="w-7 h-7 rounded border border-outline-variant bg-slate-50 hover:bg-emerald-50 hover:border-primary text-slate-700 hover:text-primary flex items-center justify-center transition-colors"
+                title={isVi ? "Hồ sơ cá nhân" : "Profile"}
+              >
+                <span className="material-symbols-outlined text-base">person</span>
+              </Link>
+            </>
+          ) : (
+            <Link
+              href="/app/auth"
+              className="px-2.5 py-1 rounded bg-slate-900 hover:bg-primary text-white text-[11px] font-semibold flex items-center gap-1 transition-colors"
+            >
+              <span className="material-symbols-outlined text-[14px]">login</span>
+              <span>{isVi ? "Đăng nhập" : "Sign In"}</span>
+            </Link>
+          )}
         </div>
       </header>
 
@@ -539,20 +586,35 @@ export default function MobileDailyHomePage() {
 
         {/* Action Buttons */}
         <div className="space-y-2 pt-2">
-          <Link
-            href="/app/readings/new"
-            className="w-full py-3 bg-primary text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-primary-hover shadow-sm"
-          >
-            <span className="material-symbols-outlined text-sm">auto_awesome</span>
-            <span>{isVi ? "Bắt Đầu Trải Bài Mới (3 Lá)" : "Begin New Reading (3-Card)"}</span>
-          </Link>
-          <Link
-            href={`/app/readings/${dailySession?.id || "demo-session"}`}
-            className="w-full py-2.5 bg-white border border-outline-variant text-on-surface text-xs font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-slate-50"
-          >
-            <span className="material-symbols-outlined text-sm text-primary">space_dashboard</span>
-            <span>{isVi ? "Mở Bàn Trải Bài & Hỏi Đáp AI (Workbench)" : "Open Reading Workbench & AI Chat"}</span>
-          </Link>
+          {dailySession?.id ? (
+            <Link
+              href={`/app/readings/${dailySession.id}`}
+              className="w-full py-3 bg-primary text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-primary-hover shadow-sm"
+            >
+              <span className="material-symbols-outlined text-sm">space_dashboard</span>
+              <span>
+                {isVi ? "Rút Thêm Lá Bổ Sung & Hỏi Đáp AI" : "Draw Clarifiers & Open AI Chat"}
+              </span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => handleFlipCard(false)}
+              disabled={isFlipping || isLoading}
+              className="w-full py-3 bg-primary text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-primary-hover shadow-sm disabled:opacity-50"
+            >
+              <span className="material-symbols-outlined text-sm">touch_app</span>
+              <span>
+                {isFlipping
+                  ? isVi
+                    ? "Đang lật bài hôm nay..."
+                    : "Flipping today's card..."
+                  : isVi
+                  ? "Lật Bài Hôm Nay Để Mở Phiên"
+                  : "Flip Today's Card to Begin"}
+              </span>
+            </button>
+          )}
           <Link
             href="/app/journal"
             className="w-full py-2.5 bg-white border border-outline-variant text-on-surface text-xs font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-slate-50"
@@ -566,5 +628,13 @@ export default function MobileDailyHomePage() {
       {/* Global Mobile Bottom Navigation */}
       <MobileBottomNav activeTab="home" />
     </div>
+  );
+}
+
+export default function MobileDailyHomePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#FAF9F6]" />}>
+      <MobileDailyHomeContent />
+    </Suspense>
   );
 }

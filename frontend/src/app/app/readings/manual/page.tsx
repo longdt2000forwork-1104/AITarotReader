@@ -71,9 +71,9 @@ export default function MobileCatalogPickerPage() {
     <div className="max-w-[430px] mx-auto min-h-screen bg-[#FAF9F6] flex flex-col border-x border-outline-variant pb-24">
       {/* Top Header */}
       <header className="px-4 py-3 bg-white border-b border-outline-variant flex items-center justify-between sticky top-0 z-40">
-        <Link href="/app/decks" className="flex items-center gap-1 text-xs text-slate-500 hover:text-on-surface">
+        <Link href="/app/home" className="flex items-center gap-1 text-xs text-slate-500 hover:text-on-surface">
           <span className="material-symbols-outlined text-base">arrow_back</span>
-          <span>{isVi ? "Bộ Bài" : "Decks"}</span>
+          <span>{isVi ? "Trang Chủ" : "Home"}</span>
         </Link>
         <span className="font-mono text-xs font-semibold text-on-surface uppercase">
           {isVi ? "TRA CỨU 78 LÁ BÀI" : "78-CARD CATALOG"}
@@ -140,8 +140,8 @@ export default function MobileCatalogPickerPage() {
           <span>
             {isVi ? `Hiển thị ${filteredCards.length} lá bài` : `Showing ${filteredCards.length} cards`}
           </span>
-          <Link href="/app/readings/new" className="text-primary font-semibold hover:underline">
-            {isVi ? "Bắt Đầu Trải Bài →" : "New Reading →"}
+          <Link href="/app/home" className="text-primary font-semibold hover:underline">
+            {isVi ? "Về Lật Bài Hôm Nay →" : "Daily Card →"}
           </Link>
         </div>
 
@@ -176,7 +176,7 @@ export default function MobileCatalogPickerPage() {
 
       {/* Card Meaning Inspection Modal */}
       {selectedCard && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[60] bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-xl max-w-[390px] w-full p-5 shadow-xl border border-outline-variant relative space-y-3">
             <button
               type="button"
@@ -210,7 +210,7 @@ export default function MobileCatalogPickerPage() {
         </div>
       )}
 
-      <MobileBottomNav activeTab="decks" />
+      <MobileBottomNav activeTab="catalog" />
     </div>
   );
 }

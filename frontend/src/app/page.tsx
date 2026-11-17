@@ -1,22 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import EditorialHeader from "@/components/EditorialHeader";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import { apiClient } from "@/services/apiClient";
-import { TAROT_CARDS, TarotCard } from "@/data/tarotCards";
+import { TAROT_CARDS } from "@/data/tarotCards";
 import { ReadingSessionDto } from "@/types/api";
 import { getAiGuidancePreview } from "@/utils/formatAiText";
 
-export default function EditorialPortalPage() {
+function EditorialPortalContent() {
   const { t, locale } = useLanguage();
+  const { user, status: authStatus } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const isVi = locale === "vi";
 
   const [dailySession, setDailySession] = useState<ReadingSessionDto | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isFlipping, setIsFlipping] = useState(false);
   const [isGuidanceExpanded, setIsGuidanceExpanded] = useState(false);
+  const autoFlipTriggeredRef = useRef(false);
+
+  const cacheKey = user?.id ? `ai_tarot_daily_draw_${user.id}` : null;
 
   const getTodayDateKey = (): string => {
     try {
@@ -35,37 +43,12 @@ export default function EditorialPortalPage() {
     }
   };
 
-  // Only check if today's card (since 00:00) was already flipped in Supabase (never draws a new card)
-  const checkTodayDailyStatus = async (hasSyncCache: boolean = false) => {
-    if (!hasSyncCache) {
-      setIsLoading(true);
+  // Called ONLY when the authenticated user explicitly clicks to flip the face-down card
+  const handleFlipCard = useCallback(async (force: boolean = false) => {
+    if (authStatus !== "authenticated") {
+      router.push(`/auth?next=${encodeURIComponent("/?flip=1")}`);
+      return;
     }
-    try {
-      const todayKey = getTodayDateKey();
-      const res = await apiClient.readings.checkDailyDraw(locale);
-      if (res.data && res.data.drawnCards && res.data.drawnCards.length > 0) {
-        setDailySession(res.data);
-        if (typeof window !== "undefined") {
-          localStorage.setItem(
-            "ai_tarot_daily_draw",
-            JSON.stringify({ dateKey: todayKey, session: res.data })
-          );
-        }
-      } else {
-        setDailySession(null);
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("ai_tarot_daily_draw");
-        }
-      }
-    } catch (err) {
-      console.warn("Failed to check daily tarot card status:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Called ONLY when the user explicitly clicks to flip the face-down card (or redraw)
-  const handleFlipCard = async (force: boolean = false) => {
     if (isFlipping) return;
     setIsFlipping(true);
     setIsGuidanceExpanded(false);
@@ -74,9 +57,9 @@ export default function EditorialPortalPage() {
       const res = await apiClient.readings.flipDailyDraw(locale, force);
       if (res.data && res.data.drawnCards && res.data.drawnCards.length > 0) {
         setDailySession(res.data);
-        if (typeof window !== "undefined") {
+        if (typeof window !== "undefined" && cacheKey) {
           localStorage.setItem(
-            "ai_tarot_daily_draw",
+            cacheKey,
             JSON.stringify({ dateKey: todayKey, session: res.data })
           );
         }
@@ -86,14 +69,24 @@ export default function EditorialPortalPage() {
     } finally {
       setIsFlipping(false);
     }
-  };
+  }, [authStatus, cacheKey, isFlipping, locale, router]);
 
   useEffect(() => {
+    if (authStatus === "loading") {
+      setIsLoading(true);
+      return;
+    }
+    if (authStatus === "unauthenticated" || !user) {
+      setDailySession(null);
+      setIsLoading(false);
+      return;
+    }
+
     const todayKey = getTodayDateKey();
     let hasSyncCache = false;
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && cacheKey) {
       try {
-        const cached = localStorage.getItem("ai_tarot_daily_draw");
+        const cached = localStorage.getItem(cacheKey);
         if (cached) {
           const parsed = JSON.parse(cached);
           if (parsed && parsed.dateKey === todayKey && parsed.session?.drawnCards?.length > 0) {
@@ -101,7 +94,7 @@ export default function EditorialPortalPage() {
             setIsLoading(false);
             hasSyncCache = true;
           } else {
-            localStorage.removeItem("ai_tarot_daily_draw");
+            localStorage.removeItem(cacheKey);
           }
         }
       } catch {
@@ -109,7 +102,39 @@ export default function EditorialPortalPage() {
       }
     }
 
-    checkTodayDailyStatus(hasSyncCache);
+    let active = true;
+    async function syncDaily() {
+      if (!hasSyncCache) setIsLoading(true);
+      try {
+        const res = await apiClient.readings.checkDailyDraw(locale);
+        if (!active) return;
+        if (res.data && res.data.drawnCards && res.data.drawnCards.length > 0) {
+          setDailySession(res.data);
+          if (typeof window !== "undefined" && cacheKey) {
+            localStorage.setItem(
+              cacheKey,
+              JSON.stringify({ dateKey: todayKey, session: res.data })
+            );
+          }
+        } else {
+          setDailySession(null);
+          if (typeof window !== "undefined" && cacheKey) {
+            localStorage.removeItem(cacheKey);
+          }
+          if (searchParams.get("flip") === "1" && !autoFlipTriggeredRef.current) {
+            autoFlipTriggeredRef.current = true;
+            router.replace("/");
+            await handleFlipCard(false);
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to check daily tarot card status:", err);
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    }
+
+    syncDaily();
 
     // Automatically reset to face-down at 00:00 midnight if page stays open
     let currentKey = todayKey;
@@ -118,14 +143,17 @@ export default function EditorialPortalPage() {
       if (newKey !== currentKey) {
         currentKey = newKey;
         setDailySession(null);
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("ai_tarot_daily_draw");
+        if (typeof window !== "undefined" && cacheKey) {
+          localStorage.removeItem(cacheKey);
         }
       }
     }, 15000);
 
-    return () => clearInterval(interval);
-  }, [locale]);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [authStatus, user, cacheKey, locale, searchParams, router, handleFlipCard]);
 
   // Resolve current active card (only when drawnCardData is available from today's draw)
   const drawnCardData = dailySession?.drawnCards?.[0];
@@ -199,7 +227,7 @@ export default function EditorialPortalPage() {
       {/* MAIN EDITORIAL CANVASES (1280px+ Wide Responsive Layout) */}
       <main suppressHydrationWarning className="flex-1 max-w-[1440px] w-full mx-auto border-x border-outline-variant flex flex-col bg-white">
         {/* 2-COLUMN HERO EDITORIAL GRID */}
-        <section className="grid grid-cols-1 lg:grid-cols-12 min-h-[580px] border-b border-outline-variant">
+        <section className="flex-1 grid grid-cols-1 lg:grid-cols-12 min-h-[580px] border-b border-outline-variant">
           {/* LEFT EDITORIAL SECTION (60% on desktop) */}
           <div className="lg:col-span-7 p-8 md:p-12 lg:p-16 bg-[#FAF9F6] border-b lg:border-b-0 lg:border-r border-outline-variant flex flex-col justify-between">
             <div>
@@ -223,13 +251,35 @@ export default function EditorialPortalPage() {
 
               {/* Action Buttons */}
               <div className="mt-8 flex flex-wrap items-center gap-4">
-                <Link
-                  href="/workbench/demo-session"
-                  className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-sm font-medium px-6 py-3.5 rounded-lg transition-all active:scale-[0.98]"
-                >
-                  <span>{t.portal.openWorkbench}</span>
-                  <span className="material-symbols-outlined text-base">arrow_forward</span>
-                </Link>
+                {dailySession?.id ? (
+                  <Link
+                    href={`/workbench/${dailySession.id}`}
+                    className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-sm font-medium px-6 py-3.5 rounded-lg transition-all active:scale-[0.98]"
+                  >
+                    <span>
+                      {isVi ? "Rút Thêm Lá Bổ Sung & Hỏi Đáp AI" : "Draw Clarifiers & Open Workbench"}
+                    </span>
+                    <span className="material-symbols-outlined text-base">arrow_forward</span>
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleFlipCard(false)}
+                    disabled={isFlipping || isLoading}
+                    className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-sm font-medium px-6 py-3.5 rounded-lg transition-all active:scale-[0.98] disabled:opacity-50"
+                  >
+                    <span>
+                      {isFlipping
+                        ? isVi
+                          ? "Đang lật bài hôm nay..."
+                          : "Flipping today's card..."
+                        : isVi
+                        ? "Lật Mở Lá Bài Hôm Nay"
+                        : "Flip Today's Card"}
+                    </span>
+                    <span className="material-symbols-outlined text-base">touch_app</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -615,145 +665,19 @@ export default function EditorialPortalPage() {
             </div>
 
             {/* Specimen Action Footer */}
-            <div className="mt-8 pt-4 border-t border-outline-variant flex items-center justify-between">
-              <Link
-                href="/studio-billing"
-                className="text-xs font-mono font-medium text-slate-600 hover:text-on-surface flex items-center gap-1.5 transition-colors"
-              >
-                <span className="material-symbols-outlined text-sm">file_download</span>
-                <span>{t.portal.exportPoster}</span>
-              </Link>
-              <Link
-                href={`/workbench/${dailySession?.id || "demo-session"}`}
-                className="text-xs font-semibold text-primary hover:text-emerald-700 flex items-center gap-1 group transition-colors"
-              >
-                <span>{t.portal.viewReport}</span>
-                <span className="material-symbols-outlined text-sm transition-transform group-hover:translate-x-0.5">
-                  chevron_right
-                </span>
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* BOTTOM SECTION: SPREAD ARCHITECTURE SPECIFICATION TABLE */}
-        <section className="border-b border-outline-variant bg-white">
-          <div className="px-6 lg:px-8 py-3 bg-[#F8FAFC] border-b border-outline-variant flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-slate-400 text-sm">grid_view</span>
-              <span className="font-mono text-xs uppercase tracking-widest text-slate-600 font-medium">
-                {t.portal.spreadHeader}
-              </span>
-            </div>
-            <span className="font-mono text-[11px] text-slate-400">{t.portal.spreadSub}</span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-outline-variant">
-            {/* Spread Card 1 */}
-            <div className="p-6 lg:p-7 flex flex-col justify-between hover:bg-slate-50/60 transition-colors group">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-mono text-xs text-primary font-bold">01 PROTOCOL</span>
-                  <span className="text-[11px] font-mono text-slate-400">1 CARD</span>
-                </div>
-                <h3 className="font-headline font-bold text-lg text-on-surface group-hover:text-primary transition-colors">
-                  {t.portal.protocol1Title}
-                </h3>
-                <p className="text-xs text-[#475569] leading-relaxed mt-2.5">
-                  {t.portal.protocol1Desc}
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between">
-                <span className="font-mono text-xs font-semibold text-slate-500">{t.portal.rateFree}</span>
+            {dailySession?.id && (
+              <div className="mt-8 pt-4 border-t border-outline-variant flex items-center justify-end">
                 <Link
-                  href="/app/readings/draw"
-                  className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1 transition-colors"
+                  href={`/workbench/${dailySession.id}`}
+                  className="text-xs font-semibold text-primary hover:text-emerald-700 flex items-center gap-1 group transition-colors"
                 >
-                  <span>{t.portal.deploy}</span>
-                  <span className="material-symbols-outlined text-xs">arrow_outward</span>
-                </Link>
-              </div>
-            </div>
-
-            {/* Spread Card 2 */}
-            <div className="p-6 lg:p-7 flex flex-col justify-between hover:bg-slate-50/60 transition-colors group">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-mono text-xs text-primary font-bold">02 PROTOCOL</span>
-                  <span className="text-[11px] font-mono text-slate-400">3 CARDS</span>
-                </div>
-                <h3 className="font-headline font-bold text-lg text-on-surface group-hover:text-primary transition-colors">
-                  {t.portal.protocol2Title}
-                </h3>
-                <p className="text-xs text-[#475569] leading-relaxed mt-2.5">
-                  {t.portal.protocol2Desc}
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between">
-                <span className="font-mono text-xs font-semibold text-slate-500">{t.portal.rate10}</span>
-                <Link
-                  href="/workbench/demo-session"
-                  className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1 transition-colors"
-                >
-                  <span>{t.portal.deploy}</span>
-                  <span className="material-symbols-outlined text-xs">arrow_outward</span>
-                </Link>
-              </div>
-            </div>
-
-            {/* Spread Card 3 */}
-            <div className="p-6 lg:p-7 flex flex-col justify-between hover:bg-slate-50/60 transition-colors group">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-mono text-xs text-primary font-bold">03 PROTOCOL</span>
-                  <span className="text-[11px] font-mono text-slate-400">5 CARDS</span>
-                </div>
-                <h3 className="font-headline font-bold text-lg text-on-surface group-hover:text-primary transition-colors">
-                  {t.portal.protocol3Title}
-                </h3>
-                <p className="text-xs text-[#475569] leading-relaxed mt-2.5">
-                  {t.portal.protocol3Desc}
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between">
-                <span className="font-mono text-xs font-semibold text-slate-500">{t.portal.rate15}</span>
-                <Link
-                  href="/workbench/demo-session"
-                  className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1 transition-colors"
-                >
-                  <span>{t.portal.deploy}</span>
-                  <span className="material-symbols-outlined text-xs">arrow_outward</span>
-                </Link>
-              </div>
-            </div>
-
-            {/* Spread Card 4 */}
-            <div className="p-6 lg:p-7 flex flex-col justify-between hover:bg-slate-50/60 transition-colors group">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-mono text-xs text-primary font-bold">04 PROTOCOL</span>
-                  <span className="px-2 py-0.5 bg-slate-900 text-white font-mono text-[10px] font-bold rounded">
-                    25 CR / PRO
+                  <span>{t.portal.viewReport}</span>
+                  <span className="material-symbols-outlined text-sm transition-transform group-hover:translate-x-0.5">
+                    chevron_right
                   </span>
-                </div>
-                <h3 className="font-headline font-bold text-lg text-on-surface group-hover:text-primary transition-colors">
-                  {t.portal.protocol4Title}
-                </h3>
-                <p className="text-xs text-[#475569] leading-relaxed mt-2.5">
-                  {t.portal.protocol4Desc}
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between">
-                <span className="font-mono text-xs font-semibold text-slate-500">{t.portal.rate25}</span>
-                <Link
-                  href="/workbench/demo-session"
-                  className="text-xs font-medium text-on-surface hover:text-primary flex items-center gap-1 transition-colors"
-                >
-                  <span>{t.portal.deploy}</span>
-                  <span className="material-symbols-outlined text-xs">arrow_outward</span>
                 </Link>
               </div>
-            </div>
+            )}
           </div>
         </section>
 
@@ -768,12 +692,17 @@ export default function EditorialPortalPage() {
             <Link href="/catalog-picker" className="hover:text-on-surface underline transition-colors">
               {t.portal.browseManual}
             </Link>
-            <Link href="/decks-archive" className="hover:text-on-surface underline transition-colors">
-              {t.portal.contactSheet}
-            </Link>
           </div>
         </section>
       </main>
     </>
+  );
+}
+
+export default function EditorialPortalPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#FAF9F6]" />}>
+      <EditorialPortalContent />
+    </Suspense>
   );
 }

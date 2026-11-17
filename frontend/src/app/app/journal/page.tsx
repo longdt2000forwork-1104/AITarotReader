@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import RequireAuthGate from "@/components/auth/RequireAuthGate";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
 import { ReadingSessionDto } from "@/types/api";
@@ -20,7 +21,7 @@ function toLocalDateKey(input: Date | string): string {
   return `${year}-${month}-${day}`;
 }
 
-export default function MobileCalendarJournalPage() {
+function MobileCalendarJournalContent() {
   const { locale, setLocale } = useLanguage();
   const isVi = locale === "vi";
   const router = useRouter();
@@ -384,10 +385,10 @@ export default function MobileCalendarJournalPage() {
               </p>
               {selectedDateKey === todayKey && (
                 <Link
-                  href="/app/readings/new"
+                  href="/app/home"
                   className="inline-block px-3.5 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-hover shadow-xs"
                 >
-                  {isVi ? "Bắt Đầu Trải Bài Mới →" : "Start New Reading →"}
+                  {isVi ? "Về Trang Chủ Lật Bài Hôm Nay →" : "Flip Today's Card →"}
                 </Link>
               )}
             </div>
@@ -495,5 +496,13 @@ export default function MobileCalendarJournalPage() {
 
       <MobileBottomNav activeTab="journal" />
     </div>
+  );
+}
+
+export default function MobileCalendarJournalPage() {
+  return (
+    <RequireAuthGate authPath="/app/auth">
+      <MobileCalendarJournalContent />
+    </RequireAuthGate>
   );
 }

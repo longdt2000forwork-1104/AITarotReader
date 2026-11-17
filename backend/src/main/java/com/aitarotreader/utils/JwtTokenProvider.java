@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -18,14 +19,19 @@ import java.util.UUID;
 public class JwtTokenProvider {
 
     private final SecretKey key;
+    @Getter
     private final long expirationMs;
+    @Getter
     private final long refreshExpirationMs;
 
     public JwtTokenProvider(
             @Value("${app.jwt.secret}") String secret,
             @Value("${app.jwt.expiration-ms}") long expirationMs,
             @Value("${app.jwt.refresh-expiration-ms}") long refreshExpirationMs) {
-        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        if (secret == null || secret.trim().length() < 32) {
+            throw new IllegalStateException("JWT_SECRET must be configured and at least 32 characters long");
+        }
+        this.key = Keys.hmacShaKeyFor(secret.trim().getBytes(StandardCharsets.UTF_8));
         this.expirationMs = expirationMs;
         this.refreshExpirationMs = refreshExpirationMs;
     }
@@ -42,6 +48,10 @@ public class JwtTokenProvider {
                 .expiration(expiryDate)
                 .signWith(key)
                 .compact();
+    }
+
+    public long getExpirationSeconds() {
+        return Math.max(1L, expirationMs / 1000L);
     }
 
     public UUID getUserIdFromToken(String token) {

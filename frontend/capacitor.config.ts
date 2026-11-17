@@ -9,6 +9,14 @@ const config: CapacitorConfig = {
     cleartext: false,
     androidScheme: 'https',
   },
+  plugins: {
+    CapacitorCookies: {
+      enabled: true,
+    },
+    CapacitorHttp: {
+      enabled: true,
+    },
+  },
 };
 
 export default config;

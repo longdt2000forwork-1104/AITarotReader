@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import RequireAuthGate from "@/components/auth/RequireAuthGate";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
 import { WalletBalanceDto } from "@/types/api";
 
-export default function MobileBillingPage() {
+function MobileBillingContent() {
   const { locale, setLocale } = useLanguage();
   const isVi = locale === "vi";
 
@@ -148,8 +149,8 @@ export default function MobileBillingPage() {
             </h3>
             <p className="text-xs text-[#475569] mt-1">
               {isVi
-                ? "Hỏi đáp đào sâu vô hạn, mở khóa toàn bộ 5 bộ bài Tarot lịch sử, xuất poster/PDF 300 DPI độ phân giải cao."
-                : "Unlimited follow-up questions, all 5 Tarot deck editions unlocked, high-res PDF/poster exports."}
+                ? "Hỏi đáp đào sâu vô hạn, rút tối đa 10 lá làm rõ mỗi ngày và lưu trữ trọn vẹn Nhật Ký Lịch Ngày."
+                : "Unlimited AI follow-up questions, up to 10 clarifier cards daily, and full Calendar Journal sync."}
             </p>
           </div>
           <ul className="text-xs text-slate-600 space-y-1.5 pt-1">
@@ -160,7 +161,7 @@ export default function MobileBillingPage() {
             <li className="flex items-center gap-2">
               <span className="material-symbols-outlined text-sm text-primary">check</span>
               <span>
-                {isVi ? "Quyền dùng bộ bài Swiss Geometric & Thủy Mặc Sumi-e" : "Access to Swiss Geometric & Sumi-e decks"}
+                {isVi ? "Lưu trữ toàn bộ lịch sử luận giải trên Supabase Cloud" : "Full reading history archived on Supabase Cloud"}
               </span>
             </li>
             <li className="flex items-center gap-2">
@@ -225,5 +226,13 @@ export default function MobileBillingPage() {
 
       <MobileBottomNav activeTab="profile" />
     </div>
+  );
+}
+
+export default function MobileBillingPage() {
+  return (
+    <RequireAuthGate authPath="/app/auth">
+      <MobileBillingContent />
+    </RequireAuthGate>
   );
 }

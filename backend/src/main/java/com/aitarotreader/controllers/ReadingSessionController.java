@@ -97,8 +97,10 @@ public class ReadingSessionController {
 
     @Operation(summary = "Get reading session details by id")
     @GetMapping({"/sessions/{id}", "/{id}"})
-    public ResponseEntity<ApiResponse<ReadingSessionDto>> getSessionById(@PathVariable UUID id) {
-        ReadingSessionDto session = readingSessionService.getSessionById(id);
+    public ResponseEntity<ApiResponse<ReadingSessionDto>> getSessionById(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UUID userId) {
+        ReadingSessionDto session = readingSessionService.getSessionById(id, userId);
         return ResponseEntity.ok(ApiResponse.ok(session));
     }
 
@@ -137,20 +139,5 @@ public class ReadingSessionController {
             @AuthenticationPrincipal UUID userId) {
         List<Map<String, Object>> entries = readingSessionService.getJournalList(userId);
         return ResponseEntity.ok(ApiResponse.ok(entries));
-    }
-
-    @Operation(summary = "Generate shareable card metadata and social preview links")
-    @PostMapping({"/sessions/{id}/share-card", "/{id}/share-card"})
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getShareCardMetadata(@PathVariable UUID id) {
-        ReadingSessionDto session = readingSessionService.getSessionById(id);
-        Map<String, Object> shareData = Map.of(
-                "sessionId", session.getId(),
-                "spreadName", session.getSpreadNameVi() != null ? session.getSpreadNameVi() : "Trải bài Tarot",
-                "cardCount", session.getDrawnCards() != null ? session.getDrawnCards().size() : 0,
-                "shareUrl", "https://aitarotreader.com/app/readings/" + session.getId() + "/share",
-                "previewImageUrl", session.getDrawnCards() != null && !session.getDrawnCards().isEmpty()
-                        ? session.getDrawnCards().get(0).getCard().getImageUrl() : "/decks/rider-waite-1909/cards/00_the_fool.webp"
-        );
-        return ResponseEntity.ok(ApiResponse.ok("Share card metadata generated", shareData));
     }
 }

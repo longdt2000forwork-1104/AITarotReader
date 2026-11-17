@@ -148,6 +148,7 @@ export interface MysticProfileDto {
   preferredBackId?: string;
   personaCode?: string;
   allowAiContext?: boolean;
+  focusAreas?: string[];
   aiContextNotes?: string;
   locale?: string;
 }
@@ -158,12 +159,14 @@ export interface UpdateMysticProfileRequest {
   birthCity?: string;
   birthZodiac?: string;
   zodiacSign?: string;
+  lifePathNumber?: number;
   dominantArchetype?: string;
   readingStyle?: string;
   preferredDeckId?: string;
   preferredBackId?: string;
   personaCode?: string;
   allowAiContext?: boolean;
+  focusAreas?: string[];
   aiContextNotes?: string;
   locale?: string;
 }
@@ -186,13 +189,21 @@ export interface UserDto {
   id: string;
   email: string;
   fullName: string;
-  role: "ROLE_USER" | "ROLE_ADMIN";
+  locale?: string;
+  role: "USER" | "ADMIN" | "ROLE_USER" | "ROLE_ADMIN";
   tier: "FREE" | "PRO" | "SEEKER";
   crystalBalance: number;
+  avatarUrl?: string;
+  emailVerified?: boolean;
+  hasPassword?: boolean;
+  hasGoogle?: boolean;
+  lastLoginAt?: string;
 }
 
 export interface AuthResponse {
-  accessToken: string;
-  tokenType: string;
-  user: UserDto;
+  accessToken?: string;
+  tokenType?: string;
+  expiresInSeconds?: number;
+  requiresVerification?: boolean;
+  user?: UserDto;
 }

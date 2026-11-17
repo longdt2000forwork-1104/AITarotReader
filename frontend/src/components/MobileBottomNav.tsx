@@ -2,75 +2,83 @@
 
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 
 interface MobileBottomNavProps {
-  activeTab?: "home" | "oracle" | "journal" | "decks" | "billing" | "profile" | "auth";
+  activeTab?: "home" | "oracle" | "catalog" | "journal" | "decks" | "billing" | "profile" | "auth";
 }
 
 export default function MobileBottomNav({
   activeTab = "home",
 }: MobileBottomNavProps) {
-  const { t, locale } = useLanguage();
+  const { locale } = useLanguage();
+  const { status } = useAuth();
   const isVi = locale === "vi";
+  const isAuthenticated = status === "authenticated";
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-2 py-2 bg-white/95 backdrop-blur-md border-t border-x border-outline-variant max-w-[430px] mx-auto shadow-sm">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-4 gap-1 items-center px-2 py-2 bg-white/95 backdrop-blur-md border-t border-x border-outline-variant max-w-[430px] mx-auto shadow-sm">
       <Link
         href="/app/home"
-        className={`flex flex-col items-center justify-center py-1 transition-colors ${
-          activeTab === "home" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
+        className={`flex flex-col items-center justify-center py-1 px-1 min-w-0 transition-colors ${
+          activeTab === "home" || activeTab === "oracle"
+            ? "text-primary font-semibold"
+            : "text-on-surface-variant font-normal hover:text-on-surface"
         }`}
       >
         <span className="material-symbols-outlined text-xl">spa</span>
-        <span className="font-label text-[9px] uppercase tracking-wider mt-0.5">{t.mobileNav.sanctuary}</span>
+        <span className="font-label text-[10px] leading-tight tracking-normal truncate max-w-full mt-0.5">
+          {isVi ? "Trang Chủ" : "Home"}
+        </span>
       </Link>
+
       <Link
-        href="/app/readings/new"
-        className={`flex flex-col items-center justify-center py-1 transition-colors ${
-          activeTab === "oracle" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
+        href="/app/readings/manual"
+        className={`flex flex-col items-center justify-center py-1 px-1 min-w-0 transition-colors ${
+          activeTab === "catalog"
+            ? "text-primary font-semibold"
+            : "text-on-surface-variant font-normal hover:text-on-surface"
         }`}
       >
-        <span className="material-symbols-outlined text-xl">style</span>
-        <span className="font-label text-[9px] uppercase tracking-wider mt-0.5">{t.mobileNav.oracle}</span>
+        <span className="material-symbols-outlined text-xl">grid_view</span>
+        <span className="font-label text-[10px] leading-tight tracking-normal truncate max-w-full mt-0.5">
+          {isVi ? "78 Lá" : "78 Cards"}
+        </span>
       </Link>
+
       <Link
         href="/app/journal"
-        className={`flex flex-col items-center justify-center py-1 transition-colors ${
-          activeTab === "journal" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
+        className={`flex flex-col items-center justify-center py-1 px-1 min-w-0 transition-colors ${
+          activeTab === "journal"
+            ? "text-primary font-semibold"
+            : "text-on-surface-variant font-normal hover:text-on-surface"
         }`}
       >
         <span className="material-symbols-outlined text-xl">calendar_month</span>
-        <span className="font-label text-[9px] uppercase tracking-wider mt-0.5">
+        <span className="font-label text-[10px] leading-tight tracking-normal truncate max-w-full mt-0.5">
           {isVi ? "Nhật Ký" : "Journal"}
         </span>
       </Link>
+
       <Link
-        href="/app/decks"
-        className={`flex flex-col items-center justify-center py-1 transition-colors ${
-          activeTab === "decks" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
+        href={isAuthenticated ? "/app/profile" : "/app/auth"}
+        className={`flex flex-col items-center justify-center py-1 px-1 min-w-0 transition-colors ${
+          activeTab === "profile" || activeTab === "billing" || activeTab === "auth"
+            ? "text-primary font-semibold"
+            : "text-on-surface-variant font-normal hover:text-on-surface"
         }`}
       >
-        <span className="material-symbols-outlined text-xl">collections_bookmark</span>
-        <span className="font-label text-[9px] uppercase tracking-wider mt-0.5">{t.mobileNav.decks}</span>
-      </Link>
-      <Link
-        href="/app/profile"
-        className={`flex flex-col items-center justify-center py-1 transition-colors ${
-          activeTab === "profile" || activeTab === "billing" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-on-surface"
-        }`}
-      >
-        <span className="material-symbols-outlined text-xl">person</span>
-        <span className="font-label text-[9px] uppercase tracking-wider mt-0.5">{t.mobileNav.profile}</span>
-      </Link>
-      <Link
-        href="/app/auth"
-        className={`flex flex-col items-center justify-center py-1 transition-colors ${
-          activeTab === "auth" ? "text-primary font-semibold" : "text-on-surface-variant font-normal hover:text-primary"
-        }`}
-      >
-        <span className="material-symbols-outlined text-xl">login</span>
-        <span className="font-label text-[9px] uppercase tracking-wider mt-0.5">
-          {isVi ? "Đăng Nhập" : "Login"}
+        <span className="material-symbols-outlined text-xl">
+          {isAuthenticated ? "person" : "login"}
+        </span>
+        <span className="font-label text-[10px] leading-tight tracking-normal truncate max-w-full mt-0.5">
+          {isAuthenticated
+            ? isVi
+              ? "Hồ Sơ"
+              : "Profile"
+            : isVi
+            ? "Đăng Nhập"
+            : "Sign In"}
         </span>
       </Link>
     </nav>
