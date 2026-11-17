@@ -12,6 +12,11 @@ public enum ErrorCode {
     NOT_FOUND(HttpStatus.NOT_FOUND, "ERR_NOT_FOUND", "Requested resource was not found"),
     USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "ERR_USER_EXISTS", "User with this email already exists"),
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "ERR_INVALID_CREDENTIALS", "Invalid email or password"),
+    EMAIL_NOT_VERIFIED(HttpStatus.FORBIDDEN, "ERR_EMAIL_NOT_VERIFIED", "Email address has not been verified yet"),
+    INVALID_GOOGLE_TOKEN(HttpStatus.UNAUTHORIZED, "ERR_INVALID_GOOGLE_TOKEN", "Google ID token is invalid or email is not verified"),
+    TOKEN_EXPIRED_OR_USED(HttpStatus.BAD_REQUEST, "ERR_TOKEN_EXPIRED_OR_USED", "Token is invalid, expired, or has already been used"),
+    REFRESH_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "ERR_REFRESH_TOKEN_INVALID", "Refresh token is invalid, expired, or revoked"),
+    TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "ERR_TOO_MANY_REQUESTS", "Too many requests. Please wait a moment and try again"),
     INSUFFICIENT_CRYSTALS(HttpStatus.PAYMENT_REQUIRED, "ERR_INSUFFICIENT_CRYSTALS", "Not enough crystals for this reading spread"),
     FOLLOW_UP_LIMIT_REACHED(HttpStatus.BAD_REQUEST, "ERR_FOLLOW_UP_LIMIT", "Maximum follow-up question limit reached for this session");
 

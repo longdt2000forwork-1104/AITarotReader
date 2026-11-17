@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import RequireAuthGate from "@/components/auth/RequireAuthGate";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
 import { WalletBalanceDto } from "@/types/api";
 
-export default function MobileBillingPage() {
+function MobileBillingContent() {
   const { locale, setLocale } = useLanguage();
   const isVi = locale === "vi";
 
@@ -225,5 +226,13 @@ export default function MobileBillingPage() {
 
       <MobileBottomNav activeTab="profile" />
     </div>
+  );
+}
+
+export default function MobileBillingPage() {
+  return (
+    <RequireAuthGate authPath="/app/auth">
+      <MobileBillingContent />
+    </RequireAuthGate>
   );
 }

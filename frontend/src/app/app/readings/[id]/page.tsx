@@ -8,6 +8,7 @@ import { apiClient } from "@/services/apiClient";
 import { ReadingSessionDto, DrawnCardDto } from "@/types/api";
 import { TAROT_CARDS } from "@/data/tarotCards";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import RequireAuthGate from "@/components/auth/RequireAuthGate";
 import { splitAiParagraphs } from "@/utils/formatAiText";
 
 const MAX_TOTAL_CARDS = 10;
@@ -24,7 +25,7 @@ function isSameLocalDay(dateString?: string): boolean {
   );
 }
 
-export default function MobileReadingReportPage() {
+function MobileReadingReportContent() {
   const params = useParams();
   const router = useRouter();
   const readingId = (params?.id as string) || "";
@@ -770,5 +771,13 @@ export default function MobileReadingReportPage() {
         <MobileBottomNav activeTab="oracle" />
       </div>
     </div>
+  );
+}
+
+export default function MobileReadingReportPage() {
+  return (
+    <RequireAuthGate authPath="/app/auth">
+      <MobileReadingReportContent />
+    </RequireAuthGate>
   );
 }

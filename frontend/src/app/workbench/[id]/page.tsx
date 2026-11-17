@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import EditorialHeader from "@/components/EditorialHeader";
+import RequireAuthGate from "@/components/auth/RequireAuthGate";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
 import { ReadingSessionDto, DrawnCardDto } from "@/types/api";
@@ -26,7 +27,7 @@ function isSameLocalDay(dateString?: string): boolean {
   );
 }
 
-export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
+function ReadingWorkbenchContent({ params }: WorkbenchPageProps) {
   const { locale, t } = useLanguage();
   const isVi = locale === "vi";
   const router = useRouter();
@@ -785,5 +786,13 @@ export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
         </div>
       )}
     </>
+  );
+}
+
+export default function ReadingWorkbenchPage({ params }: WorkbenchPageProps) {
+  return (
+    <RequireAuthGate authPath="/auth">
+      <ReadingWorkbenchContent params={params} />
+    </RequireAuthGate>
   );
 }

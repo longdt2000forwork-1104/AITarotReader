@@ -1,7 +1,6 @@
 package com.aitarotreader.repositories;
 
-import com.aitarotreader.entities.*;
-
+import com.aitarotreader.entities.ReadingSession;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,5 +13,6 @@ import java.util.UUID;
 @Repository
 public interface ReadingSessionRepository extends JpaRepository<ReadingSession, UUID> {
     Page<ReadingSession> findByUserIdOrderByCreatedAtDesc(UUID userId, Pageable pageable);
+    List<ReadingSession> findByUserIdOrderByCreatedAtDesc(UUID userId);
     List<ReadingSession> findByUserIdAndCreatedAtAfter(UUID userId, Instant after);
 }

@@ -9,6 +9,8 @@
 3. **Quy Tắc Prompt & Định Dạng Đầu Ra Luận Giải AI (Editorial Anti-AI Copywriting):**
    - Mọi prompt gửi tới LLM (Gemini AI) và chuỗi fallback **TUYỆT ĐỐI KHÔNG** yêu cầu hoặc xuất ký tự Markdown thô (`###`, `##`, `#`, `**`, `*`, `__`, `---`) hay spam emoji/icon; phải viết tự nhiên, điềm tĩnh như biên tập viên và chia thành từng đoạn ngắn (2–3 câu/đoạn) cách nhau bằng dòng trống (`\n\n`).
    - Trên UI, mọi khối luận giải/AI Guidance phải làm sạch qua `cleanAiText` / `splitAiParagraphs` (`frontend/src/utils/formatAiText.ts`), phân đoạn rõ ràng, và thu gọn nội dung dài kèm nút **"Xem thêm / Thu gọn"**.
+4. **Triển Khai Đồng Bộ Web ↔ Mobile App (Feature Parity):**
+   - Mọi tính năng mới hoặc luồng xác thực/bảo vệ route bắt buộc phải được triển khai **đồng thời** trên cả Website (`SCR-W*`, bao gồm `/auth/verify-email`, `/auth/forgot-password`, `/auth/reset-password`) và Mobile App (`/app/*`, bao gồm `/app/auth/verify-email`, `/app/auth/forgot-password`, `/app/auth/reset-password`).
 
 ## Quy Tắc Cơ Sở Dữ Liệu: Supabase Cloud PostgreSQL 17
 1. **Luôn luôn sử dụng Supabase:**

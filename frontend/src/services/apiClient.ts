@@ -10,7 +10,6 @@ import {
   UpdateMysticProfileRequest,
   WalletBalanceDto,
   UserDto,
-  AuthResponse,
   DrawnCardDto,
   SessionMessageDto
 } from "@/types/api";
@@ -19,83 +18,15 @@ import {
   MOCK_CARDS,
   MOCK_DECKS,
   MOCK_SPREADS,
-  MOCK_USER,
-  MOCK_MYSTIC_PROFILE,
-  MOCK_WALLET,
   MOCK_SESSIONS,
   MOCK_JOURNAL_ENTRIES
 } from "./mockData";
 import { TAROT_CARDS } from "@/data/tarotCards";
+import { authApi } from "./authApi";
 
-// USE_MOCK defaults to FALSE: always connect to real backend & Supabase database
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_API === "true";
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
-// Helper for local storage persistence
-function getStorageItem<T>(key: string, defaultValue: T): T {
-  if (typeof window === "undefined") return defaultValue;
-  try {
-    const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : defaultValue;
-  } catch {
-    return defaultValue;
-  }
-}
-
-function setStorageItem<T>(key: string, value: T): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // Ignore quota errors
-  }
-}
-
-// Ensure JWT token is present for authenticated requests to Supabase backend
-let authPromise: Promise<string | null> | null = null;
-async function ensureAuthToken(): Promise<string | null> {
-  if (typeof window === "undefined") return null;
-  const existingToken = localStorage.getItem("tarot_access_token");
-  if (existingToken && existingToken !== "null" && existingToken !== "undefined") {
-    return existingToken;
-  }
-
-  if (authPromise) return authPromise;
-
-  authPromise = (async () => {
-    try {
-      const res = await fetch(`${BASE_URL}/api/v1/auth/google`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          idToken: "live-seeker-token",
-          email: "seeker@aitarotreader.com",
-          name: "Seeker of Truth"
-        })
-      });
-      if (res.ok) {
-        const json = await res.json();
-        const token = json?.data?.accessToken;
-        if (token) {
-          localStorage.setItem("tarot_access_token", token);
-          if (json.data.user) {
-            setStorageItem("tarot_user", json.data.user);
-          }
-          return token;
-        }
-      }
-    } catch (e) {
-      console.warn("Auto-provisioning session token warning:", e);
-    } finally {
-      authPromise = null;
-    }
-    return null;
-  })();
-
-  return authPromise;
-}
-
-// Unified fetch wrapper that connects to the real Spring Boot backend + Supabase database
+// Unified fetch wrapper that calls same-origin Next.js proxy (/api/backend/*) with httpOnly cookies
 async function requestApi<T>(
   path: string,
   options: RequestInit = {},
@@ -111,25 +42,39 @@ async function requestApi<T>(
   }
 
   try {
-    const token = await ensureAuthToken();
     const headers = new Headers(options.headers || {});
     if (!headers.has("Content-Type") && options.body && typeof options.body === "string") {
       headers.set("Content-Type", "application/json");
     }
-    if (token && !headers.has("Authorization")) {
-      headers.set("Authorization", `Bearer ${token}`);
-    }
 
-    const res = await fetch(`${BASE_URL}${path}`, {
+    const proxyPath = path.startsWith("/api/backend")
+      ? path
+      : `/api/backend${path.startsWith("/") ? "" : "/"}${path}`;
+
+    const res = await fetch(proxyPath, {
       ...options,
-      headers
+      credentials: "include",
+      headers,
+      cache: "no-store"
     });
 
     const json = await res.json().catch(() => null);
 
+    if (res.status === 401) {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("auth:unauthorized"));
+      }
+      return {
+        code: 401,
+        message: json?.message || "Authentication required",
+        data: null as unknown as T,
+        timestamp: json?.timestamp || new Date().toISOString()
+      };
+    }
+
     if (!res.ok) {
       console.warn(`[Supabase API] ${options.method || "GET"} ${path} returned status ${res.status}:`, json);
-      if (fallbackData !== undefined) {
+      if (fallbackData !== undefined && res.status >= 500) {
         return {
           code: res.status,
           message: json?.message || "Using fallback",
@@ -183,7 +128,6 @@ function normalizeReadingSession(session: any, fallbackSpreadId = "S-02", fallba
   const status = session.status || "CREATED";
   const createdAt = session.createdAt || new Date().toISOString();
 
-  // Ensure spreadTemplate is complete
   let spreadTemplate = session.spreadTemplate;
   if (!spreadTemplate || !spreadTemplate.parsedPositions) {
     const spreadId = session.spreadId || (spreadTemplate && spreadTemplate.id) || fallbackSpreadId;
@@ -199,14 +143,12 @@ function normalizeReadingSession(session: any, fallbackSpreadId = "S-02", fallba
     };
   }
 
-  // Ensure deck is complete
   let deck = session.deck;
   if (!deck) {
     const deckId = session.deckId || fallbackDeckId;
     deck = MOCK_DECKS.find((d) => d.id === deckId) || MOCK_DECKS[0];
   }
 
-  // Ensure drawn cards have valid structure
   const rawCards = session.drawnCards || [];
   const drawnCards: DrawnCardDto[] = rawCards.map((dc: any, idx: number) => {
     const pos = spreadTemplate?.parsedPositions?.[idx] || {
@@ -232,7 +174,6 @@ function normalizeReadingSession(session: any, fallbackSpreadId = "S-02", fallba
     createdAt: m.createdAt || new Date().toISOString()
   }));
 
-  // Reconcile any Clarifier cards mentioned in chat messages that were not persisted in drawnCards
   const existingNamesVi = new Set(
     drawnCards.map((dc) => (dc.card?.nameVi || "").toLowerCase()).filter(Boolean)
   );
@@ -240,7 +181,6 @@ function normalizeReadingSession(session: any, fallbackSpreadId = "S-02", fallba
     drawnCards.map((dc) => (dc.card?.nameEn || "").toLowerCase()).filter(Boolean)
   );
 
-  // Track chronological order of clarifier cards from chat messages (oldest message -> newest message)
   const clarifierOrderMap = new Map<number, number>();
   let orderCounter = 0;
 
@@ -260,7 +200,6 @@ function normalizeReadingSession(session: any, fallbackSpreadId = "S-02", fallba
         (viLower && lowerText.includes(viLower)) || (enLower && lowerText.includes(enLower));
       if (!mentioned) continue;
 
-      // Ignore if it is an initial/base card
       const isBaseCard = drawnCards.some(
         (dc) =>
           !dc.isClarifier &&
@@ -312,7 +251,6 @@ function normalizeReadingSession(session: any, fallbackSpreadId = "S-02", fallba
     }
   }
 
-  // Sort drawnCards: base cards first (by positionIndex), then clarifier cards in strict chronological order (newest at the bottom)
   const baseCards = drawnCards
     .filter((dc) => !dc.isClarifier)
     .sort((a, b) => (a.positionIndex ?? 0) - (b.positionIndex ?? 0));
@@ -356,52 +294,28 @@ function normalizeReadingSession(session: any, fallbackSpreadId = "S-02", fallba
 }
 
 // ----------------------------------------------------------------------
-// Unified Live API Client Connected Directly to Supabase
+// Unified Live API Client Connected via Cookie-Authenticated Proxy
 // ----------------------------------------------------------------------
 export const apiClient = {
   // 1. Auth Module
   auth: {
     async getCurrentUser(): Promise<ApiResponse<UserDto>> {
-      return requestApi<UserDto>("/api/v1/auth/me", {}, MOCK_USER);
-    },
-
-    async login(email: string, password = "secretPassword123"): Promise<ApiResponse<AuthResponse>> {
-      const res = await requestApi<AuthResponse>(
-        "/api/v1/auth/google",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            idToken: "user-session-token",
-            email,
-            name: email.split("@")[0]
-          })
-        },
-        {
-          accessToken: "mock_jwt_token_sample",
-          tokenType: "Bearer",
-          user: { ...MOCK_USER, email }
-        }
-      );
-
-      if (res.code === 200 && res.data?.accessToken) {
-        localStorage.setItem("tarot_access_token", res.data.accessToken);
-        if (res.data.user) {
-          setStorageItem("tarot_user", res.data.user);
-        }
-      }
-      return res;
+      const res = await authApi.me();
+      return {
+        code: res.status,
+        message: res.message,
+        data: res.data as UserDto,
+        timestamp: new Date().toISOString()
+      };
     },
 
     async logout(): Promise<ApiResponse<boolean>> {
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("tarot_access_token");
-        localStorage.removeItem("tarot_user");
-      }
+      await authApi.logout();
       return { code: 200, message: "Logged out", data: true, timestamp: new Date().toISOString() };
     }
   },
 
-  // 2. Tarot Catalog Module (Direct from Supabase PostgreSQL Database)
+  // 2. Tarot Catalog Module (Public catalog endpoints)
   tarot: {
     async getCards(arcana?: string, suit?: string): Promise<ApiResponse<TarotCardDto[]>> {
       const params = new URLSearchParams();
@@ -438,7 +352,7 @@ export const apiClient = {
     }
   },
 
-  // 3. Reading Session Module (Saved directly in Supabase reading_sessions & drawn_cards)
+  // 3. Reading Session Module (Authenticated user only)
   readings: {
     async create(req: CreateReadingSessionRequest): Promise<ApiResponse<ReadingSessionDto>> {
       const payload = {
@@ -459,24 +373,7 @@ export const apiClient = {
         const normalized = normalizeReadingSession(res.data, req.spreadId, req.deckId);
         return { ...res, code: res.code || 201, data: normalized };
       }
-
-      // Local fallback if backend temporarily unreachable
-      const spread = MOCK_SPREADS.find((s) => s.id === req.spreadId) || MOCK_SPREADS[1];
-      const deck = MOCK_DECKS.find((d) => d.id === req.deckId) || MOCK_DECKS[0];
-      const fallbackSession: ReadingSessionDto = {
-        id: `RS-${Date.now().toString().slice(-4)}`,
-        sessionCode: `SESSION-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-        status: "CREATED",
-        question: req.question || "General energetic guidance and spiritual clarity.",
-        inputMode: req.inputMode || "CARD_DRAW",
-        persona: req.persona || "MYSTIC_SAGE",
-        spreadTemplate: spread,
-        deck,
-        drawnCards: [],
-        messages: [],
-        createdAt: new Date().toISOString()
-      };
-      return { code: 201, message: "Session created (Fallback)", data: fallbackSession, timestamp: new Date().toISOString() };
+      return res;
     },
 
     async getById(id: string): Promise<ApiResponse<ReadingSessionDto>> {
@@ -484,8 +381,7 @@ export const apiClient = {
       if (res.data) {
         return { ...res, data: normalizeReadingSession(res.data) };
       }
-      const fallback = MOCK_SESSIONS.find((s) => s.id === id || s.sessionCode === id) || MOCK_SESSIONS[0];
-      return { code: 200, message: "OK", data: fallback, timestamp: new Date().toISOString() };
+      return res;
     },
 
     async drawCards(sessionId: string): Promise<ApiResponse<ReadingSessionDto>> {
@@ -493,9 +389,7 @@ export const apiClient = {
       if (res.data) {
         return { ...res, data: normalizeReadingSession(res.data) };
       }
-      // Fallback
-      const session = MOCK_SESSIONS[0];
-      return { code: 200, message: "Cards drawn", data: session, timestamp: new Date().toISOString() };
+      return res;
     },
 
     async interpret(sessionId: string): Promise<ApiResponse<ReadingSessionDto>> {
@@ -503,9 +397,7 @@ export const apiClient = {
       if (res.data) {
         return { ...res, data: normalizeReadingSession(res.data) };
       }
-      // Fallback
-      const session = MOCK_SESSIONS[0];
-      return { code: 200, message: "Interpretation generated", data: session, timestamp: new Date().toISOString() };
+      return res;
     },
 
     async drawClarifier(sessionId: string): Promise<ApiResponse<ReadingSessionDto>> {
@@ -523,7 +415,6 @@ export const apiClient = {
       });
 
       if (res.data) {
-        // Backend returns ReadingSessionDto containing messages list
         const msgs = res.data.messages || [];
         const lastAiMsg = [...msgs].reverse().find((m: any) => m.role === "AI_READER" || m.sender === "AI_READER");
         if (lastAiMsg && lastAiMsg.content) {
@@ -555,13 +446,7 @@ export const apiClient = {
         }
       }
 
-      const fallbackMsg: SessionMessageDto = {
-        id: `MSG-${Date.now()}-A`,
-        sender: "AI_READER",
-        content: `Dựa trên năng lượng của lá bài và câu hỏi của bạn: "${userMessage}", vũ trụ khuyên bạn hãy tin tưởng vào trực giác nội tâm.`,
-        createdAt: new Date().toISOString()
-      };
-      return { code: 200, message: "Reply sent", data: fallbackMsg, timestamp: new Date().toISOString() };
+      return res as unknown as ApiResponse<SessionMessageDto>;
     },
 
     async saveJournal(sessionId: string, notes: string, tags: string[] = []): Promise<ApiResponse<JournalEntryDto>> {
@@ -569,6 +454,9 @@ export const apiClient = {
         method: "PUT",
         body: JSON.stringify({ reflectionNote: notes, notes, moodTags: tags, tags })
       });
+      if (res.code === 401) {
+        return res;
+      }
 
       const entry: JournalEntryDto = {
         id: `JN-${Date.now().toString().slice(-4)}`,
@@ -583,24 +471,30 @@ export const apiClient = {
         cardCount: 3,
         createdAt: new Date().toISOString()
       };
-      return { code: 201, message: "Saved to journal", data: entry, timestamp: new Date().toISOString() };
+      return { code: res.code || 200, message: "Saved to journal", data: entry, timestamp: new Date().toISOString() };
     },
 
     async getHistory(): Promise<ApiResponse<ReadingSessionDto[]>> {
+      if (USE_MOCK) {
+        return { code: 200, message: "OK (Mock)", data: MOCK_SESSIONS, timestamp: new Date().toISOString() };
+      }
       const res = await requestApi<any[]>("/api/v1/readings/history");
       if (res.data && Array.isArray(res.data)) {
         const normalized = res.data.map((s) => normalizeReadingSession(s));
         return { ...res, data: normalized };
       }
-      return { code: 200, message: "OK", data: MOCK_SESSIONS, timestamp: new Date().toISOString() };
+      return { ...res, data: [] };
     },
 
     async getJournal(): Promise<ApiResponse<JournalEntryDto[]>> {
+      if (USE_MOCK) {
+        return { code: 200, message: "OK (Mock)", data: MOCK_JOURNAL_ENTRIES, timestamp: new Date().toISOString() };
+      }
       const res = await requestApi<JournalEntryDto[]>("/api/v1/readings/journal");
-      if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+      if (res.data && Array.isArray(res.data)) {
         return res;
       }
-      return { code: 200, message: "OK", data: MOCK_JOURNAL_ENTRIES, timestamp: new Date().toISOString() };
+      return { ...res, data: [] };
     },
 
     async checkDailyDraw(locale: string = "vi"): Promise<ApiResponse<ReadingSessionDto | null>> {
@@ -633,44 +527,40 @@ export const apiClient = {
     }
   },
 
-  // 4. Mystic Profile Module (Direct from Supabase mystic_profiles table)
+  // 4. Mystic Profile Module
   profile: {
     async getMysticProfile(): Promise<ApiResponse<MysticProfileDto>> {
-      return requestApi<MysticProfileDto>("/api/v1/profile/mystic", {}, MOCK_MYSTIC_PROFILE);
+      return requestApi<MysticProfileDto>("/api/v1/profile/mystic", {});
     },
 
     async updateMysticProfile(data: UpdateMysticProfileRequest): Promise<ApiResponse<MysticProfileDto>> {
-      return requestApi<MysticProfileDto>(
-        "/api/v1/profile/mystic",
-        {
-          method: "PUT",
-          body: JSON.stringify(data)
-        },
-        { ...MOCK_MYSTIC_PROFILE, ...data }
-      );
+      return requestApi<MysticProfileDto>("/api/v1/profile/mystic", {
+        method: "PUT",
+        body: JSON.stringify(data)
+      });
     }
   },
 
-  // 5. Crystal Wallet Module (Direct from Supabase users.crystal_balance)
+  // 5. Crystal Wallet Module
   wallet: {
     async getBalance(): Promise<ApiResponse<WalletBalanceDto>> {
-      const res = await requestApi<any>("/api/v1/wallet/balance", {}, MOCK_WALLET);
+      const res = await requestApi<any>("/api/v1/wallet/balance", {});
       if (res.data) {
-        const balance = res.data.balance !== undefined ? res.data.balance : res.data.crystalBalance || 20;
+        const balance = res.data.balance !== undefined ? res.data.balance : res.data.crystalBalance ?? 20;
         const normalized: WalletBalanceDto = {
           balance,
           tier: (res.data.tier as "FREE" | "PRO" | "SEEKER") || "FREE",
-          transactions: MOCK_WALLET.transactions
+          transactions: []
         };
         return { ...res, data: normalized };
       }
-      return { code: 200, message: "OK", data: MOCK_WALLET, timestamp: new Date().toISOString() };
+      return res;
     },
 
     async claimDailyReward(): Promise<ApiResponse<WalletBalanceDto>> {
       const res = await requestApi<any>("/api/v1/wallet/daily-reward", { method: "POST" });
       if (res.data) {
-        const balance = res.data.balance !== undefined ? res.data.balance : res.data.crystalBalance || 30;
+        const balance = res.data.balance !== undefined ? res.data.balance : res.data.crystalBalance ?? 30;
         const normalized: WalletBalanceDto = {
           balance,
           tier: (res.data.tier as "FREE" | "PRO" | "SEEKER") || "FREE",
@@ -681,18 +571,12 @@ export const apiClient = {
               type: "DAILY_REWARD",
               description: "Daily Dawn Login Blessing",
               createdAt: new Date().toISOString()
-            },
-            ...MOCK_WALLET.transactions
+            }
           ]
         };
         return { ...res, code: 200, data: normalized };
       }
-      const updatedBalance = MOCK_WALLET.balance + 10;
-      const updatedWallet: WalletBalanceDto = {
-        ...MOCK_WALLET,
-        balance: updatedBalance
-      };
-      return { code: 200, message: "Daily reward claimed (+10 Crystals)", data: updatedWallet, timestamp: new Date().toISOString() };
+      return res;
     }
   }
 };

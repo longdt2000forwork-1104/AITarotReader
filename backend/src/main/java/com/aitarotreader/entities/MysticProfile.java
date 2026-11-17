@@ -51,6 +51,9 @@ public class MysticProfile {
     @Column(name = "allow_ai_context", nullable = false)
     private Boolean allowAiContext = true;
 
+    @Column(name = "focus_areas")
+    private String focusAreas;
+
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;

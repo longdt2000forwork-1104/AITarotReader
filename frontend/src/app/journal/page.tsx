@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import EditorialHeader from "@/components/EditorialHeader";
+import RequireAuthGate from "@/components/auth/RequireAuthGate";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
 import { ReadingSessionDto } from "@/types/api";
@@ -20,7 +21,7 @@ function toLocalDateKey(input: Date | string): string {
   return `${year}-${month}-${day}`;
 }
 
-export default function JournalPatternLedgerPage() {
+function JournalPatternLedgerContent() {
   const { locale } = useLanguage();
   const isVi = locale === "vi";
   const router = useRouter();
@@ -563,5 +564,13 @@ export default function JournalPatternLedgerPage() {
         </div>
       </main>
     </>
+  );
+}
+
+export default function JournalPatternLedgerPage() {
+  return (
+    <RequireAuthGate authPath="/auth">
+      <JournalPatternLedgerContent />
+    </RequireAuthGate>
   );
 }

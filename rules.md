@@ -13,6 +13,7 @@ Trước khi bắt tay vào bất kỳ tác vụ nào (sửa bug, thêm tính n�
 3. **Kiểm tra quy tắc Git & DB:** Nhánh mới bắt buộc có tiền tố `feat/`; Database bắt buộc dùng Supabase Cloud PostgreSQL 17 (`supabase` profile), nghiêm cấm H2.
 4. **Kiểm tra điều hướng nội bộ:** Đảm bảo các đường dẫn `<Link href="...">` không trỏ ra ngoài phạm vi phiên bản tương ứng hoặc trỏ tới route không tồn tại.
 5. **Kiểm tra Prompt & Định dạng văn bản AI:** Mọi prompt gọi LLM và UI hiển thị luận giải phải tuân thủ Mục 4 (không xuất ký tự Markdown thô `###`/`**`, phân đoạn thoáng, thu gọn nội dung dài kèm nút "Xem thêm / Thu gọn").
+6. **Kiểm tra tính năng đồng bộ Web ↔ App:** Mọi tính năng mới hoặc thay đổi nghiệp vụ phải được triển khai **đồng thời** trên cả Website (`SCR-W*`) và Mobile App (`/app/*`, `SCR-M*`) theo Mục 6.
 
 ---
 
@@ -60,6 +61,9 @@ Codebase `frontend/src/app/` phục vụ đồng thời **2 ứng dụng tách b
 | `SCR-W05` | `/studio-billing` | `frontend/src/app/studio-billing/page.tsx` | *(Đã lược bỏ — chuyển hướng về `/pricing`)* |
 | `SCR-W06` | `/decks-archive` | `frontend/src/app/decks-archive/page.tsx` | *(Đã lược bỏ — chuyển hướng về `/`)* |
 | `SCR-W07` | `/auth` | `frontend/src/app/auth/page.tsx` | Authentication & Mystic Onboarding |
+| `SCR-W07A` | `/auth/verify-email` | `frontend/src/app/auth/verify-email/page.tsx` | Xác thực địa chỉ Email (Web) |
+| `SCR-W07B` | `/auth/forgot-password` | `frontend/src/app/auth/forgot-password/page.tsx` | Quên mật khẩu (Web) |
+| `SCR-W07C` | `/auth/reset-password` | `frontend/src/app/auth/reset-password/page.tsx` | Đặt lại mật khẩu mới (Web) |
 | `SCR-W08` | `/settings/profile` | `frontend/src/app/settings/profile/page.tsx` | Seeker Profile, AI Memory & Settings |
 | `SCR-W09` | `/pricing` | `frontend/src/app/pricing/page.tsx` | Pricing Plans, Pro & Credit Store |
 
@@ -79,6 +83,9 @@ Codebase `frontend/src/app/` phục vụ đồng thời **2 ứng dụng tách b
 | `SCR-M07` | `/app/billing` | `frontend/src/app/app/billing/page.tsx` | Credit Ledger & Pro Plan |
 | `SCR-M08` | `/app/decks` | `frontend/src/app/app/decks/page.tsx` | *(Đã lược bỏ — chuyển hướng về `/app/home`)* |
 | `SCR-M09` | `/app/auth` | `frontend/src/app/app/auth/page.tsx` | Sign In, Register & Mystic Onboarding |
+| `SCR-M09A` | `/app/auth/verify-email` | `frontend/src/app/app/auth/verify-email/page.tsx` | Xác thực địa chỉ Email (Mobile App) |
+| `SCR-M09B` | `/app/auth/forgot-password` | `frontend/src/app/app/auth/forgot-password/page.tsx` | Quên mật khẩu (Mobile App) |
+| `SCR-M09C` | `/app/auth/reset-password` | `frontend/src/app/app/auth/reset-password/page.tsx` | Đặt lại mật khẩu mới (Mobile App) |
 | `SCR-M10` | `/app/profile` | `frontend/src/app/app/profile/page.tsx` | Seeker Profile & Mystic Settings |
 | `SCR-M11` | `/app/journal` | `frontend/src/app/app/journal/page.tsx` | Calendar Journal & Daily Sessions |
 
@@ -133,3 +140,10 @@ Codebase `frontend/src/app/` phục vụ đồng thời **2 ứng dụng tách b
 4. **Ngôn ngữ & Giám sát tác vụ:**
    - Luôn phản hồi và giải thích bằng **tiếng Việt**.
    - Không để bất kỳ tiến trình, background command hay test script nào chạy treo quá **5 phút**.
+
+---
+
+## 6. Quy Tắc Triển Khai Đồng Bộ Web & Mobile App (Feature Parity Policy)
+
+1. **Song song trên cả 2 nền tảng:** Mọi tính năng mới, luồng xác thực, bảo vệ route, hoặc thay đổi API phải được triển khai đồng thời trên cả **Website Desktop (`SCR-W*`)** và **Mobile App (`/app/*`, `SCR-M*`)** với logic dùng chung (`context/`, `services/`, `hooks/`, `utils/`) nhưng layout & navigation bar tách biệt hoàn toàn theo Mục 3.
+2. **Kiểm tra chéo trước khi hoàn tất:** Mỗi khi cập nhật một màn hình ở Web (ví dụ `/auth`, `/settings/profile`, `/`), bắt buộc rà soát và cập nhật màn hình tương ứng ở App (`/app/auth`, `/app/profile`, `/app/home`) và ngược lại.

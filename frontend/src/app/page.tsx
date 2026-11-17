@@ -1,22 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import EditorialHeader from "@/components/EditorialHeader";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import { apiClient } from "@/services/apiClient";
-import { TAROT_CARDS, TarotCard } from "@/data/tarotCards";
+import { TAROT_CARDS } from "@/data/tarotCards";
 import { ReadingSessionDto } from "@/types/api";
 import { getAiGuidancePreview } from "@/utils/formatAiText";
 
-export default function EditorialPortalPage() {
+function EditorialPortalContent() {
   const { t, locale } = useLanguage();
+  const { user, status: authStatus } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const isVi = locale === "vi";
 
   const [dailySession, setDailySession] = useState<ReadingSessionDto | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isFlipping, setIsFlipping] = useState(false);
   const [isGuidanceExpanded, setIsGuidanceExpanded] = useState(false);
+  const autoFlipTriggeredRef = useRef(false);
+
+  const cacheKey = user?.id ? `ai_tarot_daily_draw_${user.id}` : null;
 
   const getTodayDateKey = (): string => {
     try {
@@ -35,37 +43,12 @@ export default function EditorialPortalPage() {
     }
   };
 
-  // Only check if today's card (since 00:00) was already flipped in Supabase (never draws a new card)
-  const checkTodayDailyStatus = async (hasSyncCache: boolean = false) => {
-    if (!hasSyncCache) {
-      setIsLoading(true);
+  // Called ONLY when the authenticated user explicitly clicks to flip the face-down card
+  const handleFlipCard = useCallback(async (force: boolean = false) => {
+    if (authStatus !== "authenticated") {
+      router.push(`/auth?next=${encodeURIComponent("/?flip=1")}`);
+      return;
     }
-    try {
-      const todayKey = getTodayDateKey();
-      const res = await apiClient.readings.checkDailyDraw(locale);
-      if (res.data && res.data.drawnCards && res.data.drawnCards.length > 0) {
-        setDailySession(res.data);
-        if (typeof window !== "undefined") {
-          localStorage.setItem(
-            "ai_tarot_daily_draw",
-            JSON.stringify({ dateKey: todayKey, session: res.data })
-          );
-        }
-      } else {
-        setDailySession(null);
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("ai_tarot_daily_draw");
-        }
-      }
-    } catch (err) {
-      console.warn("Failed to check daily tarot card status:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Called ONLY when the user explicitly clicks to flip the face-down card (or redraw)
-  const handleFlipCard = async (force: boolean = false) => {
     if (isFlipping) return;
     setIsFlipping(true);
     setIsGuidanceExpanded(false);
@@ -74,9 +57,9 @@ export default function EditorialPortalPage() {
       const res = await apiClient.readings.flipDailyDraw(locale, force);
       if (res.data && res.data.drawnCards && res.data.drawnCards.length > 0) {
         setDailySession(res.data);
-        if (typeof window !== "undefined") {
+        if (typeof window !== "undefined" && cacheKey) {
           localStorage.setItem(
-            "ai_tarot_daily_draw",
+            cacheKey,
             JSON.stringify({ dateKey: todayKey, session: res.data })
           );
         }
@@ -86,14 +69,24 @@ export default function EditorialPortalPage() {
     } finally {
       setIsFlipping(false);
     }
-  };
+  }, [authStatus, cacheKey, isFlipping, locale, router]);
 
   useEffect(() => {
+    if (authStatus === "loading") {
+      setIsLoading(true);
+      return;
+    }
+    if (authStatus === "unauthenticated" || !user) {
+      setDailySession(null);
+      setIsLoading(false);
+      return;
+    }
+
     const todayKey = getTodayDateKey();
     let hasSyncCache = false;
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && cacheKey) {
       try {
-        const cached = localStorage.getItem("ai_tarot_daily_draw");
+        const cached = localStorage.getItem(cacheKey);
         if (cached) {
           const parsed = JSON.parse(cached);
           if (parsed && parsed.dateKey === todayKey && parsed.session?.drawnCards?.length > 0) {
@@ -101,7 +94,7 @@ export default function EditorialPortalPage() {
             setIsLoading(false);
             hasSyncCache = true;
           } else {
-            localStorage.removeItem("ai_tarot_daily_draw");
+            localStorage.removeItem(cacheKey);
           }
         }
       } catch {
@@ -109,7 +102,39 @@ export default function EditorialPortalPage() {
       }
     }
 
-    checkTodayDailyStatus(hasSyncCache);
+    let active = true;
+    async function syncDaily() {
+      if (!hasSyncCache) setIsLoading(true);
+      try {
+        const res = await apiClient.readings.checkDailyDraw(locale);
+        if (!active) return;
+        if (res.data && res.data.drawnCards && res.data.drawnCards.length > 0) {
+          setDailySession(res.data);
+          if (typeof window !== "undefined" && cacheKey) {
+            localStorage.setItem(
+              cacheKey,
+              JSON.stringify({ dateKey: todayKey, session: res.data })
+            );
+          }
+        } else {
+          setDailySession(null);
+          if (typeof window !== "undefined" && cacheKey) {
+            localStorage.removeItem(cacheKey);
+          }
+          if (searchParams.get("flip") === "1" && !autoFlipTriggeredRef.current) {
+            autoFlipTriggeredRef.current = true;
+            router.replace("/");
+            await handleFlipCard(false);
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to check daily tarot card status:", err);
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    }
+
+    syncDaily();
 
     // Automatically reset to face-down at 00:00 midnight if page stays open
     let currentKey = todayKey;
@@ -118,14 +143,17 @@ export default function EditorialPortalPage() {
       if (newKey !== currentKey) {
         currentKey = newKey;
         setDailySession(null);
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("ai_tarot_daily_draw");
+        if (typeof window !== "undefined" && cacheKey) {
+          localStorage.removeItem(cacheKey);
         }
       }
     }, 15000);
 
-    return () => clearInterval(interval);
-  }, [locale]);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [authStatus, user, cacheKey, locale, searchParams, router, handleFlipCard]);
 
   // Resolve current active card (only when drawnCardData is available from today's draw)
   const drawnCardData = dailySession?.drawnCards?.[0];
@@ -668,5 +696,13 @@ export default function EditorialPortalPage() {
         </section>
       </main>
     </>
+  );
+}
+
+export default function EditorialPortalPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#FAF9F6]" />}>
+      <EditorialPortalContent />
+    </Suspense>
   );
 }

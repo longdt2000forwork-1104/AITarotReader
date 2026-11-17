@@ -29,6 +29,13 @@ public class User {
     @Column(name = "password_hash")
     private String passwordHash;
 
+    @Column(name = "google_sub", unique = true)
+    private String googleSub;
+
+    @Builder.Default
+    @Column(name = "email_verified", nullable = false)
+    private Boolean emailVerified = false;
+
     @Column(name = "full_name")
     private String fullName;
 
@@ -52,6 +59,9 @@ public class User {
 
     @Column(name = "avatar_url")
     private String avatarUrl;
+
+    @Column(name = "last_login_at")
+    private Instant lastLoginAt;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
