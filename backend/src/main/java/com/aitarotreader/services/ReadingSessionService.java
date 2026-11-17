@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ReadingSessionService {
 
-    public static final UUID DEFAULT_SEEKER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     public static final ZoneId VIETNAM_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
     public Instant getStartOfToday() {
@@ -50,36 +49,27 @@ public class ReadingSessionService {
     private final TarotCatalogService catalogService;
     private final GeminiService geminiService;
 
-    @Transactional
-    public User getOrCreateEffectiveUser(UUID userId) {
-        UUID effectiveId = userId != null ? userId : DEFAULT_SEEKER_ID;
-        return userRepository.findById(effectiveId).orElseGet(() -> {
-            log.info("Provisioning default seeker user in Supabase: {}", effectiveId);
-            User defaultUser = User.builder()
-                    .id(effectiveId)
-                    .email("seeker@aitarotreader.com")
-                    .fullName("Seeker of Truth")
-                    .locale("vi")
-                    .crystalBalance(50)
-                    .tier(UserTier.FREE)
-                    .role(UserRole.USER)
-                    .build();
-            User saved = userRepository.save(defaultUser);
+    private User requireUser(UUID userId) {
+        if (userId == null) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED, "User not found"));
+    }
 
-            MysticProfile profile = MysticProfile.builder()
-                    .user(saved)
-                    .preferredDeckId("ED-01")
-                    .preferredBackId("classic-navy")
-                    .allowAiContext(true)
-                    .build();
-            mysticProfileRepository.save(profile);
-            return saved;
-        });
+    private ReadingSession requireOwnedSession(UUID sessionId, UUID userId) {
+        requireUser(userId);
+        ReadingSession session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "Session not found"));
+        if (session.getUser() == null || !userId.equals(session.getUser().getId())) {
+            throw new CustomException(ErrorCode.FORBIDDEN, "You do not have access to this reading session");
+        }
+        return session;
     }
 
     @Transactional
     public ReadingSessionDto createSession(UUID userId, CreateReadingSessionRequest request) {
-        User user = getOrCreateEffectiveUser(userId);
+        User user = requireUser(userId);
 
         SpreadTemplate spread = spreadRepository.findById(request.getSpreadId())
                 .orElseGet(() -> spreadRepository.findAll().stream().findFirst()
@@ -141,8 +131,7 @@ public class ReadingSessionService {
 
     @Transactional
     public ReadingSessionDto drawCards(UUID sessionId, UUID userId) {
-        ReadingSession session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "Session not found"));
+        ReadingSession session = requireOwnedSession(sessionId, userId);
 
         List<DrawnCard> existing = drawnCardRepository.findBySessionIdOrderByPositionIndexAsc(sessionId);
         if (existing != null && !existing.isEmpty()) {
@@ -195,8 +184,7 @@ public class ReadingSessionService {
 
     @Transactional
     public ReadingSessionDto interpret(UUID sessionId, UUID userId) {
-        ReadingSession session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "Session not found"));
+        ReadingSession session = requireOwnedSession(sessionId, userId);
 
         List<DrawnCard> drawnCards = drawnCardRepository.findBySessionIdOrderByPositionIndexAsc(sessionId);
         if (drawnCards == null || drawnCards.isEmpty()) {
@@ -218,16 +206,16 @@ public class ReadingSessionService {
 
     @Transactional(readOnly = true)
     public ReadingSessionDto getTodayDailyDraw(UUID userId) {
-        UUID effectiveId = userId != null ? userId : DEFAULT_SEEKER_ID;
+        User user = requireUser(userId);
         Instant startOfToday = getStartOfToday();
-        List<ReadingSession> todaySessions = sessionRepository.findByUserIdAndCreatedAtAfter(effectiveId, startOfToday);
+        List<ReadingSession> todaySessions = sessionRepository.findByUserIdAndCreatedAtAfter(user.getId(), startOfToday);
         ReadingSession existingDaily = todaySessions.stream()
                 .filter(s -> s.getSpread() != null && "S-01".equals(s.getSpread().getId()))
                 .max(Comparator.comparing(ReadingSession::getCreatedAt))
                 .orElse(null);
 
         if (existingDaily != null) {
-            log.info("Found existing flipped daily card for today (since 00:00 {}) for user {}: {}", startOfToday, effectiveId, existingDaily.getId());
+            log.info("Found existing flipped daily card for today (since 00:00 {}) for user {}: {}", startOfToday, user.getId(), existingDaily.getId());
             return toSessionDto(existingDaily);
         }
         return null;
@@ -240,7 +228,7 @@ public class ReadingSessionService {
 
     @Transactional
     public ReadingSessionDto performDailyDraw(UUID userId, boolean force) {
-        User user = getOrCreateEffectiveUser(userId);
+        User user = requireUser(userId);
 
         Instant startOfToday = getStartOfToday();
         if (!force) {
@@ -305,8 +293,7 @@ public class ReadingSessionService {
 
     @Transactional
     public ReadingSessionDto askFollowUpQuestion(UUID sessionId, UUID userId, FollowUpChatRequest request) {
-        ReadingSession session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "Session not found"));
+        ReadingSession session = requireOwnedSession(sessionId, userId);
 
         if (session.getMaxFollowUps() == null || session.getMaxFollowUps() < 10) {
             session.setMaxFollowUps(10);
@@ -355,8 +342,7 @@ public class ReadingSessionService {
 
     @Transactional
     public ReadingSessionDto drawClarifierCard(UUID sessionId, UUID userId) {
-        ReadingSession session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "Session not found"));
+        ReadingSession session = requireOwnedSession(sessionId, userId);
 
         Instant startOfToday = getStartOfToday();
         if (session.getCreatedAt() != null && session.getCreatedAt().isBefore(startOfToday)) {
@@ -457,8 +443,7 @@ public class ReadingSessionService {
 
     @Transactional
     public ReadingSessionDto saveJournal(UUID sessionId, UUID userId, SaveJournalRequest request) {
-        ReadingSession session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "Session not found"));
+        ReadingSession session = requireOwnedSession(sessionId, userId);
 
         JournalEntry journal = journalRepository.findById(sessionId).orElseGet(() -> JournalEntry.builder()
                 .session(session)
@@ -562,27 +547,23 @@ public class ReadingSessionService {
     }
 
     @Transactional
-    public ReadingSessionDto getSessionById(UUID sessionId) {
-        ReadingSession session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "Session not found"));
+    public ReadingSessionDto getSessionById(UUID sessionId, UUID userId) {
+        ReadingSession session = requireOwnedSession(sessionId, userId);
         ensureChronologicalClarifiers(session);
         return toSessionDto(session);
     }
 
     @Transactional(readOnly = true)
     public Page<ReadingSessionDto> getUserSessions(UUID userId, Pageable pageable) {
-        UUID effectiveId = userId != null ? userId : DEFAULT_SEEKER_ID;
-        return sessionRepository.findByUserIdOrderByCreatedAtDesc(effectiveId, pageable)
+        User user = requireUser(userId);
+        return sessionRepository.findByUserIdOrderByCreatedAtDesc(user.getId(), pageable)
                 .map(this::toSessionDto);
     }
 
     @Transactional(readOnly = true)
     public List<ReadingSessionDto> getAllUserSessionsList(UUID userId) {
-        UUID effectiveId = userId != null ? userId : DEFAULT_SEEKER_ID;
-        List<ReadingSession> sessions = sessionRepository.findAll().stream()
-                .filter(s -> s.getUser() == null || effectiveId.equals(s.getUser().getId()) || DEFAULT_SEEKER_ID.equals(s.getUser().getId()))
-                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
-                .collect(Collectors.toList());
+        User user = requireUser(userId);
+        List<ReadingSession> sessions = sessionRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
 
         Map<UUID, List<DrawnCard>> cardsBySession = drawnCardRepository.findAll().stream()
                 .filter(dc -> dc.getSession() != null && dc.getSession().getId() != null)
@@ -642,11 +623,8 @@ public class ReadingSessionService {
 
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getJournalList(UUID userId) {
-        UUID effectiveId = userId != null ? userId : DEFAULT_SEEKER_ID;
-        List<ReadingSession> sessions = sessionRepository.findAll().stream()
-                .filter(s -> s.getUser() == null || effectiveId.equals(s.getUser().getId()) || DEFAULT_SEEKER_ID.equals(s.getUser().getId()))
-                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
-                .collect(Collectors.toList());
+        User user = requireUser(userId);
+        List<ReadingSession> sessions = sessionRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
 
         Map<UUID, List<DrawnCard>> cardsBySession = drawnCardRepository.findAll().stream()
                 .filter(dc -> dc.getSession() != null && dc.getSession().getId() != null)

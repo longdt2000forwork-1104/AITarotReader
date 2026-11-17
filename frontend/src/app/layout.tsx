@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Be_Vietnam_Pro, Newsreader } from "next/font/google";
 import "material-symbols/outlined.css";
 import "./globals.css";
-import { LanguageProvider } from "@/context/LanguageContext";
+import AppProviders from "@/components/AppProviders";
 
 const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="vi" className={`${beVietnamPro.variable} ${newsreader.variable}`} suppressHydrationWarning>
       <body className="bg-surface text-on-surface font-body antialiased min-h-screen flex flex-col selection:bg-emerald-100 selection:text-emerald-900" suppressHydrationWarning>
-        <LanguageProvider>{children}</LanguageProvider>
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );

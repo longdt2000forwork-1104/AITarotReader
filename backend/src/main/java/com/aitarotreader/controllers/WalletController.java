@@ -1,14 +1,12 @@
 package com.aitarotreader.controllers;
 
-import com.aitarotreader.entities.*;
-import com.aitarotreader.dtos.*;
-import com.aitarotreader.services.*;
-import com.aitarotreader.repositories.*;
-import com.aitarotreader.utils.*;
-import com.aitarotreader.exceptions.*;
-
+import com.aitarotreader.entities.CrystalTransaction;
+import com.aitarotreader.entities.User;
+import com.aitarotreader.exceptions.CustomException;
+import com.aitarotreader.exceptions.ErrorCode;
+import com.aitarotreader.repositories.UserRepository;
+import com.aitarotreader.services.WalletService;
 import com.aitarotreader.utils.ApiResponse;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -29,19 +27,18 @@ import java.util.UUID;
 public class WalletController {
 
     private final WalletService walletService;
-    private final ReadingSessionService readingSessionService;
+    private final UserRepository userRepository;
 
     @Operation(summary = "Get current seeker's Crystal balance")
     @GetMapping("/balance")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getBalance(@AuthenticationPrincipal UUID userId) {
-        UUID effectiveId = userId != null ? userId : ReadingSessionService.DEFAULT_SEEKER_ID;
-        readingSessionService.getOrCreateEffectiveUser(effectiveId);
-        Integer balance = walletService.getBalance(effectiveId);
+        User user = requireAuthenticatedUser(userId);
+        Integer balance = walletService.getBalance(user.getId());
         return ResponseEntity.ok(ApiResponse.ok(Map.of(
-                "userId", effectiveId,
+                "userId", user.getId(),
                 "balance", balance,
                 "crystalBalance", balance,
-                "tier", "FREE",
+                "tier", user.getTier().name(),
                 "dailyFreeAvailable", true
         )));
     }
@@ -49,15 +46,14 @@ public class WalletController {
     @Operation(summary = "Claim daily login crystal reward (+10 Crystals)")
     @PostMapping("/daily-reward")
     public ResponseEntity<ApiResponse<Map<String, Object>>> claimDailyReward(@AuthenticationPrincipal UUID userId) {
-        UUID effectiveId = userId != null ? userId : ReadingSessionService.DEFAULT_SEEKER_ID;
-        readingSessionService.getOrCreateEffectiveUser(effectiveId);
-        walletService.creditCrystals(effectiveId, 10, "DAILY_REWARD", "daily-" + LocalDate.now(), "Daily Dawn Login Blessing");
-        Integer balance = walletService.getBalance(effectiveId);
+        User user = requireAuthenticatedUser(userId);
+        walletService.creditCrystals(user.getId(), 10, "DAILY_REWARD", "daily-" + LocalDate.now(), "Daily Dawn Login Blessing");
+        Integer balance = walletService.getBalance(user.getId());
         return ResponseEntity.ok(ApiResponse.ok("Daily reward claimed (+10 Crystals)", Map.of(
-                "userId", effectiveId,
+                "userId", user.getId(),
                 "balance", balance,
                 "crystalBalance", balance,
-                "tier", "FREE",
+                "tier", user.getTier().name(),
                 "dailyFreeAvailable", false
         )));
     }
@@ -68,9 +64,16 @@ public class WalletController {
             @AuthenticationPrincipal UUID userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        UUID effectiveId = userId != null ? userId : ReadingSessionService.DEFAULT_SEEKER_ID;
-        readingSessionService.getOrCreateEffectiveUser(effectiveId);
-        Page<CrystalTransaction> ledger = walletService.getLedger(effectiveId, PageRequest.of(page, size));
+        User user = requireAuthenticatedUser(userId);
+        Page<CrystalTransaction> ledger = walletService.getLedger(user.getId(), PageRequest.of(page, size));
         return ResponseEntity.ok(ApiResponse.ok(ledger));
+    }
+
+    private User requireAuthenticatedUser(UUID userId) {
+        if (userId == null) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED, "User not found"));
     }
 }

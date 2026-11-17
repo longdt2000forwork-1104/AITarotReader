@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import EditorialHeader from "@/components/EditorialHeader";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import { apiClient } from "@/services/apiClient";
 
 export default function PricingPlansStorePage() {
   const { locale } = useLanguage();
+  const { status: authStatus, user } = useAuth();
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("annual");
   const [selectedProduct, setSelectedProduct] = useState<{
     id: string;
@@ -25,22 +27,28 @@ export default function PricingPlansStorePage() {
   });
 
   const [paymentMethod, setPaymentMethod] = useState<"vietqr" | "stripe">("vietqr");
-  const [currentBalance, setCurrentBalance] = useState(45);
+  const [currentBalance, setCurrentBalance] = useState(0);
   const [transferSuccess, setTransferSuccess] = useState(false);
 
   useEffect(() => {
+    if (authStatus !== "authenticated") {
+      setCurrentBalance(0);
+      return;
+    }
     async function fetchBalance() {
       try {
         const res = await apiClient.wallet.getBalance();
         if (res.data) {
           setCurrentBalance(res.data.balance);
+        } else if (user) {
+          setCurrentBalance(user.crystalBalance);
         }
       } catch (err) {
         console.error("Failed to load wallet balance:", err);
       }
     }
     fetchBalance();
-  }, []);
+  }, [authStatus, user]);
 
   const handleCompleteOrder = () => {
     setTransferSuccess(true);

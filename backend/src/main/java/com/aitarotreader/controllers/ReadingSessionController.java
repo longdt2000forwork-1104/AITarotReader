@@ -97,8 +97,10 @@ public class ReadingSessionController {
 
     @Operation(summary = "Get reading session details by id")
     @GetMapping({"/sessions/{id}", "/{id}"})
-    public ResponseEntity<ApiResponse<ReadingSessionDto>> getSessionById(@PathVariable UUID id) {
-        ReadingSessionDto session = readingSessionService.getSessionById(id);
+    public ResponseEntity<ApiResponse<ReadingSessionDto>> getSessionById(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UUID userId) {
+        ReadingSessionDto session = readingSessionService.getSessionById(id, userId);
         return ResponseEntity.ok(ApiResponse.ok(session));
     }
 
