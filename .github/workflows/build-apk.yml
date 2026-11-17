@@ -74,6 +74,14 @@ jobs:
               CapacitorHttp: {
                 enabled: true,
               },
+              SocialLogin: {
+                providers: {
+                  google: true,
+                  facebook: false,
+                  apple: false,
+                  twitter: false,
+                },
+              },
             },
           };
 
@@ -88,11 +96,29 @@ jobs:
           fi
           npx cap sync android
 
+      - name: Restore fixed debug keystore (if configured)
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_DEBUG_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            mkdir -p ~/.android
+            echo "$KEYSTORE_B64" | base64 -d > ~/.android/debug.keystore
+            echo "Restored fixed debug keystore from ANDROID_DEBUG_KEYSTORE_BASE64."
+          else
+            echo "ANDROID_DEBUG_KEYSTORE_BASE64 not set; Gradle will generate a temporary debug.keystore."
+          fi
+
       - name: Build Android Debug APK
         working-directory: frontend/android
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug
+
+      - name: Print APK signing SHA-1
+        working-directory: frontend
+        run: |
+          echo "=== APK Signing Certificate (Copy SHA-1 to Google Cloud Console) ==="
+          keytool -printcert -jarfile android/app/build/outputs/apk/debug/app-debug.apk | grep -E "SHA1:|SHA256:" || keytool -printcert -jarfile android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4

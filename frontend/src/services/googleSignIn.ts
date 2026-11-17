@@ -12,11 +12,29 @@ export function isNativeCapacitor(): boolean {
   }
 }
 
+export function isNativeSocialLoginAvailable(): boolean {
+  if (!isNativeCapacitor()) return false;
+  try {
+    return Capacitor.isPluginAvailable("SocialLogin");
+  } catch {
+    return false;
+  }
+}
+
 export function getGoogleWebClientId(): string {
   return (process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "").trim();
 }
 
-export async function signInWithNativeGoogle(): Promise<string> {
+export async function signInWithNativeGoogle(locale: "vi" | "en" = "vi"): Promise<string> {
+  const isVi = locale === "vi";
+  if (!isNativeSocialLoginAvailable()) {
+    throw new Error(
+      isVi
+        ? "Bản APK Android hiện tại chưa tích hợp plugin đăng nhập Google native. Vui lòng build/cài bản APK mới nhất hoặc đăng nhập bằng Email/Mật khẩu."
+        : "This Android APK build does not include the native Google Sign-In plugin yet. Please install the latest APK build or sign in with Email/Password."
+    );
+  }
+
   const webClientId = getGoogleWebClientId();
   if (!webClientId) {
     throw new Error("NEXT_PUBLIC_GOOGLE_CLIENT_ID is not configured");
@@ -26,6 +44,7 @@ export async function signInWithNativeGoogle(): Promise<string> {
     await SocialLogin.initialize({
       google: {
         webClientId,
+        skipAuthOnlyAuthorizationAfterSignIn: true,
       },
     });
     nativeInitialized = true;
@@ -33,9 +52,7 @@ export async function signInWithNativeGoogle(): Promise<string> {
 
   const res = await SocialLogin.login({
     provider: "google",
-    options: {
-      scopes: ["email", "profile"],
-    },
+    options: {},
   });
 
   const result: any = res?.result;
