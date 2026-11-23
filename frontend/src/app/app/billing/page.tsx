@@ -5,11 +5,17 @@ import Link from "next/link";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import RequireAuthGate from "@/components/auth/RequireAuthGate";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import { apiClient } from "@/services/apiClient";
 import { WalletBalanceDto } from "@/types/api";
+import {
+  isDailyRewardClaimedToday,
+  markDailyRewardClaimedToday,
+} from "@/utils/dailyRewardCache";
 
 function MobileBillingContent() {
   const { locale, setLocale } = useLanguage();
+  const { user } = useAuth();
   const isVi = locale === "vi";
 
   const [wallet, setWallet] = useState<WalletBalanceDto | null>(null);
@@ -19,13 +25,18 @@ function MobileBillingContent() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    setClaimedDaily(isDailyRewardClaimedToday(user?.id));
     async function loadBalance() {
       try {
         setLoading(true);
         const res = await apiClient.wallet.getBalance();
         if (res.data) {
+          const claimedFromServer = res.data.dailyFreeAvailable === false;
+          if (claimedFromServer) {
+            markDailyRewardClaimedToday(user?.id);
+          }
           setWallet(res.data);
-          setClaimedDaily(res.data.dailyFreeAvailable === false);
+          setClaimedDaily(claimedFromServer || isDailyRewardClaimedToday(user?.id));
         }
       } catch (err) {
         console.error("Failed to load mobile wallet balance:", err);
@@ -34,7 +45,7 @@ function MobileBillingContent() {
       }
     }
     loadBalance();
-  }, []);
+  }, [user?.id]);
 
   const handleClaimDaily = async () => {
     if (claimedDaily || claimingDaily) return;
@@ -42,6 +53,7 @@ function MobileBillingContent() {
     try {
       const res = await apiClient.wallet.claimDailyReward();
       if (res.code === 200 && res.data) {
+        markDailyRewardClaimedToday(user?.id);
         setWallet(res.data);
         setClaimedDaily(true);
         setToastMessage(

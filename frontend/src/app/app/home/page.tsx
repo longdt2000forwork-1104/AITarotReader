@@ -10,6 +10,11 @@ import { apiClient } from "@/services/apiClient";
 import { MysticProfileDto, WalletBalanceDto, ReadingSessionDto } from "@/types/api";
 import { TAROT_CARDS } from "@/data/tarotCards";
 import { getAiGuidancePreview } from "@/utils/formatAiText";
+import {
+  clearDailyRewardCache,
+  isDailyRewardClaimedToday,
+  markDailyRewardClaimedToday,
+} from "@/utils/dailyRewardCache";
 
 function MobileDailyHomeContent() {
   const { locale, setLocale, t } = useLanguage();
@@ -20,6 +25,8 @@ function MobileDailyHomeContent() {
 
   const [profile, setProfile] = useState<MysticProfileDto | null>(null);
   const [wallet, setWallet] = useState<WalletBalanceDto | null>(null);
+  const [walletLoaded, setWalletLoaded] = useState(false);
+  const [claimedDaily, setClaimedDaily] = useState(false);
   const [dailySession, setDailySession] = useState<ReadingSessionDto | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isFlipping, setIsFlipping] = useState(false);
@@ -132,10 +139,15 @@ function MobileDailyHomeContent() {
     if (authStatus === "unauthenticated" || !user) {
       setProfile(null);
       setWallet(null);
+      setWalletLoaded(false);
+      setClaimedDaily(false);
       setDailySession(null);
       setIsLoading(false);
       return;
     }
+
+    const cachedClaimedToday = isDailyRewardClaimedToday(user.id);
+    setClaimedDaily(cachedClaimedToday);
 
     const todayKey = getTodayDateKey();
     let hasSyncCache = false;
@@ -168,7 +180,19 @@ function MobileDailyHomeContent() {
         ]);
         if (!active) return;
         if (profRes.code === 200 && profRes.data) setProfile(profRes.data);
-        if (walletRes.code === 200 && walletRes.data) setWallet(walletRes.data);
+        if (walletRes.code === 200 && walletRes.data) {
+          const claimedFromServer = walletRes.data.dailyFreeAvailable === false;
+          const isClaimedNow = claimedFromServer || isDailyRewardClaimedToday(user?.id);
+          if (claimedFromServer) {
+            markDailyRewardClaimedToday(user?.id);
+          }
+          setClaimedDaily(isClaimedNow);
+          setWallet({
+            ...walletRes.data,
+            dailyFreeAvailable: !isClaimedNow,
+          });
+          setWalletLoaded(true);
+        }
         if (dailyRes.data && dailyRes.data.drawnCards && dailyRes.data.drawnCards.length > 0) {
           setDailySession(dailyRes.data);
           if (typeof window !== "undefined" && cacheKey) {
@@ -191,7 +215,10 @@ function MobileDailyHomeContent() {
       } catch (err) {
         console.error("Failed to load initial home data:", err);
       } finally {
-        if (active) setIsLoading(false);
+        if (active) {
+          setIsLoading(false);
+          setWalletLoaded(true);
+        }
       }
     }
     loadData();
@@ -202,6 +229,8 @@ function MobileDailyHomeContent() {
       if (newKey !== currentKey) {
         currentKey = newKey;
         setDailySession(null);
+        setClaimedDaily(false);
+        clearDailyRewardCache(user.id);
         if (typeof window !== "undefined" && cacheKey) {
           localStorage.removeItem(cacheKey);
         }
@@ -214,19 +243,27 @@ function MobileDailyHomeContent() {
     };
   }, [authStatus, user, cacheKey, locale, searchParams, router, handleFlipCard]);
 
-  const isDailyClaimed = authStatus === "authenticated" && wallet?.dailyFreeAvailable === false;
+  const isDailyClaimed =
+    authStatus === "authenticated" && (claimedDaily || wallet?.dailyFreeAvailable === false);
+  const isDailyCheckPending = authStatus === "authenticated" && !walletLoaded && !claimedDaily;
 
   const handleClaimReward = async () => {
     if (authStatus !== "authenticated") {
       router.push(`/app/auth?next=${encodeURIComponent("/app/home")}`);
       return;
     }
-    if (isClaiming || isDailyClaimed) return;
+    if (isClaiming || isDailyClaimed || isDailyCheckPending) return;
     setIsClaiming(true);
     try {
       const res = await apiClient.wallet.claimDailyReward();
       if (res.code === 200 && res.data) {
-        setWallet(res.data);
+        markDailyRewardClaimedToday(user?.id);
+        setClaimedDaily(true);
+        setWallet({
+          ...res.data,
+          dailyFreeAvailable: false,
+        });
+        setWalletLoaded(true);
         setClaimToast(
           res.data.alreadyClaimed
             ? isVi
@@ -557,9 +594,9 @@ function MobileDailyHomeContent() {
             <button
               type="button"
               onClick={handleClaimReward}
-              disabled={isClaiming || isDailyClaimed}
+              disabled={isClaiming || isDailyClaimed || isDailyCheckPending}
               className={`text-[10px] font-mono px-2 py-0.5 rounded font-semibold border transition-colors ${
-                isDailyClaimed
+                isDailyClaimed || isDailyCheckPending
                   ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
                   : "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100"
               }`}
@@ -572,6 +609,10 @@ function MobileDailyHomeContent() {
                 ? isVi
                   ? "Đã nhận +10 CR ✓"
                   : "Claimed ✓"
+                : isDailyCheckPending
+                ? isVi
+                  ? "Đang kiểm tra..."
+                  : "Checking..."
                 : isVi
                 ? "+10 CR Phước lành"
                 : "+10 CR Blessing"}

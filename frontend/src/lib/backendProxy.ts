@@ -199,11 +199,17 @@ export async function forwardAuthenticatedRequest(
   }
 
   const nextRes = parsed !== null
-    ? NextResponse.json(parsed, { status: res.status })
+    ? NextResponse.json(parsed, {
+        status: res.status,
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        },
+      })
     : new NextResponse(text, {
         status: res.status,
         headers: {
           "Content-Type": res.headers.get("content-type") || "text/plain; charset=utf-8",
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
         },
       });
 

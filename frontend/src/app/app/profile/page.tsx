@@ -10,6 +10,10 @@ import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { apiClient } from "@/services/apiClient";
 import { MysticProfileDto, WalletBalanceDto } from "@/types/api";
 import { calculateNatalPreview } from "@/utils/authValidation";
+import {
+  isDailyRewardClaimedToday,
+  markDailyRewardClaimedToday,
+} from "@/utils/dailyRewardCache";
 
 function MobileSeekerProfileContent() {
   const { locale, setLocale } = useLanguage();
@@ -35,6 +39,7 @@ function MobileSeekerProfileContent() {
 
   useEffect(() => {
     if (!isAuthenticated) return;
+    setClaimedDaily(isDailyRewardClaimedToday(user?.id));
     async function fetchProfileAndWallet() {
       try {
         setLoading(true);
@@ -58,9 +63,13 @@ function MobileSeekerProfileContent() {
           isDirtyRef.current = false;
         }
         if (walRes.data) {
+          const claimedFromServer = walRes.data.dailyFreeAvailable === false;
+          if (claimedFromServer) {
+            markDailyRewardClaimedToday(user?.id);
+          }
           setWallet(walRes.data);
           setCredits(walRes.data.balance);
-          setClaimedDaily(walRes.data.dailyFreeAvailable === false);
+          setClaimedDaily(claimedFromServer || isDailyRewardClaimedToday(user?.id));
         } else if (user) {
           setCredits(user.crystalBalance);
         }
@@ -79,6 +88,7 @@ function MobileSeekerProfileContent() {
     try {
       const res = await apiClient.wallet.claimDailyReward();
       if (res.code === 200 && res.data) {
+        markDailyRewardClaimedToday(user?.id);
         setCredits(res.data.balance);
         setClaimedDaily(true);
         setToastMessage(
