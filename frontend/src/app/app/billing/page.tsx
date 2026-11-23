@@ -15,6 +15,7 @@ function MobileBillingContent() {
   const [wallet, setWallet] = useState<WalletBalanceDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [claimedDaily, setClaimedDaily] = useState(false);
+  const [claimingDaily, setClaimingDaily] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -24,6 +25,7 @@ function MobileBillingContent() {
         const res = await apiClient.wallet.getBalance();
         if (res.data) {
           setWallet(res.data);
+          setClaimedDaily(res.data.dailyFreeAvailable === false);
         }
       } catch (err) {
         console.error("Failed to load mobile wallet balance:", err);
@@ -35,17 +37,28 @@ function MobileBillingContent() {
   }, []);
 
   const handleClaimDaily = async () => {
-    if (claimedDaily) return;
+    if (claimedDaily || claimingDaily) return;
+    setClaimingDaily(true);
     try {
       const res = await apiClient.wallet.claimDailyReward();
       if (res.code === 200 && res.data) {
         setWallet(res.data);
         setClaimedDaily(true);
-        setToastMessage(isVi ? "+10 CR Phước lành hàng ngày đã cộng vào Supabase!" : "+10 CR Daily reward deposited!");
+        setToastMessage(
+          res.data.alreadyClaimed
+            ? isVi
+              ? "Hôm nay bạn đã điểm danh nhận +10 CR rồi."
+              : "You have already claimed today's +10 CR reward."
+            : isVi
+            ? "+10 CR Phước lành hàng ngày đã cộng vào Supabase!"
+            : "+10 CR Daily reward deposited!"
+        );
         setTimeout(() => setToastMessage(null), 3000);
       }
     } catch (err) {
       console.error("Error claiming daily reward:", err);
+    } finally {
+      setClaimingDaily(false);
     }
   };
 
@@ -121,15 +134,17 @@ function MobileBillingContent() {
           </div>
           <button
             type="button"
-            disabled={claimedDaily}
+            disabled={claimedDaily || claimingDaily}
             onClick={handleClaimDaily}
             className={`px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
-              claimedDaily
+              claimedDaily || claimingDaily
                 ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
                 : "bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100"
             }`}
           >
-            {claimedDaily
+            {claimingDaily
+              ? (isVi ? "Đang nhận..." : "Claiming...")
+              : claimedDaily
               ? (isVi ? "Đã nhận ✓" : "Claimed ✓")
               : (isVi ? "+10 CR Điểm Danh" : "+10 CR Daily Free")}
           </button>

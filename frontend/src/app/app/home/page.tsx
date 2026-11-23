@@ -28,7 +28,12 @@ function MobileDailyHomeContent() {
   const [claimToast, setClaimToast] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const [todayDateStr, setTodayDateStr] = useState("");
+  const [avatarError, setAvatarError] = useState(false);
   const autoFlipTriggeredRef = useRef(false);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [user?.avatarUrl]);
 
   const cacheKey = user?.id ? `ai_tarot_daily_draw_${user.id}` : null;
 
@@ -209,18 +214,28 @@ function MobileDailyHomeContent() {
     };
   }, [authStatus, user, cacheKey, locale, searchParams, router, handleFlipCard]);
 
+  const isDailyClaimed = authStatus === "authenticated" && wallet?.dailyFreeAvailable === false;
+
   const handleClaimReward = async () => {
     if (authStatus !== "authenticated") {
       router.push(`/app/auth?next=${encodeURIComponent("/app/home")}`);
       return;
     }
-    if (isClaiming) return;
+    if (isClaiming || isDailyClaimed) return;
     setIsClaiming(true);
     try {
       const res = await apiClient.wallet.claimDailyReward();
       if (res.code === 200 && res.data) {
         setWallet(res.data);
-        setClaimToast(isVi ? "Đã nhận +10 Crystal phước lành ngày mới!" : "Claimed +10 Daily Crystal Blessing!");
+        setClaimToast(
+          res.data.alreadyClaimed
+            ? isVi
+              ? "Hôm nay bạn đã nhận +10 Crystal phước lành rồi."
+              : "You have already claimed today's +10 Crystal Blessing."
+            : isVi
+            ? "Đã nhận +10 Crystal phước lành ngày mới!"
+            : "Claimed +10 Daily Crystal Blessing!"
+        );
         setTimeout(() => setClaimToast(null), 3500);
       }
     } catch {
@@ -273,27 +288,49 @@ function MobileDailyHomeContent() {
     <div className="max-w-[430px] mx-auto min-h-screen bg-surface flex flex-col border-x border-outline-variant pb-20">
       {/* Top Hairline App Bar */}
       <header className="px-4 py-3 bg-white border-b border-outline-variant flex items-center justify-between sticky top-0 z-40">
-        <Link
-          href={authStatus === "authenticated" ? "/app/profile" : "/app/auth"}
-          className="flex items-center gap-2 group hover:opacity-90 transition-opacity min-w-0"
-          title={authStatus === "authenticated" ? (isVi ? "Mở Hồ Sơ Cá Nhân" : "Open Seeker Profile") : (isVi ? "Đăng nhập" : "Sign In")}
-        >
-          <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 group-hover:border-primary flex items-center justify-center text-xs font-serif font-bold text-slate-800 transition-colors shrink-0">
-            {authStatus === "authenticated" && user ? displayName.charAt(0).toUpperCase() : "✦"}
-          </div>
-          <div className="min-w-0">
-            <div className="text-xs font-bold text-on-surface group-hover:text-primary leading-tight transition-colors truncate max-w-[140px]">
-              {displayName} • {sunSignDisplay}
+        {authStatus === "authenticated" && user ? (
+          <div className="flex items-center gap-2 min-w-0">
+            {user.avatarUrl && !avatarError ? (
+              <img
+                src={user.avatarUrl}
+                alt={displayName}
+                referrerPolicy="no-referrer"
+                onError={() => setAvatarError(true)}
+                className="w-7 h-7 rounded-full border border-slate-200 object-cover shrink-0"
+              />
+            ) : (
+              <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-serif font-bold text-slate-800 shrink-0">
+                {displayName.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div className="min-w-0">
+              <div className="text-xs font-bold text-on-surface leading-tight truncate max-w-[140px]">
+                {displayName} • {sunSignDisplay}
+              </div>
+              <div className="text-[10px] font-mono text-slate-400">
+                {`${isVi ? "Số Đường Đời " : "Life Path "}${profile?.lifePathNumber ?? "—"}`}
+              </div>
             </div>
-            <div className="text-[10px] font-mono text-slate-400">
-              {authStatus === "authenticated"
-                ? `${isVi ? "Số Đường Đời " : "Life Path "}${profile?.lifePathNumber ?? "—"}`
-                : isVi
-                ? "Chạm để đăng nhập"
-                : "Tap to sign in"}
-            </div>
           </div>
-        </Link>
+        ) : (
+          <Link
+            href="/app/auth"
+            className="flex items-center gap-2 group hover:opacity-90 transition-opacity min-w-0"
+            title={isVi ? "Đăng nhập" : "Sign In"}
+          >
+            <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 group-hover:border-primary flex items-center justify-center text-xs font-serif font-bold text-slate-800 transition-colors shrink-0">
+              ✦
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs font-bold text-on-surface group-hover:text-primary leading-tight transition-colors truncate max-w-[140px]">
+                {displayName} • {sunSignDisplay}
+              </div>
+              <div className="text-[10px] font-mono text-slate-400">
+                {isVi ? "Chạm để đăng nhập" : "Tap to sign in"}
+              </div>
+            </div>
+          </Link>
+        )}
 
         <div className="flex items-center gap-1.5">
           {/* Mobile Language Switcher */}
@@ -319,23 +356,13 @@ function MobileDailyHomeContent() {
           </div>
 
           {authStatus === "authenticated" && user ? (
-            <>
-              <Link
-                href="/app/billing"
-                className="flex items-center gap-1 px-2 py-0.5 bg-[#FEF3C7] text-[#B45309] border border-amber-200 rounded text-xs font-mono font-semibold"
-              >
-                <span className="material-symbols-outlined text-[13px]">toll</span>
-                <span>{wallet ? wallet.balance : user.crystalBalance} CR</span>
-              </Link>
-
-              <Link
-                href="/app/profile"
-                className="w-7 h-7 rounded border border-outline-variant bg-slate-50 hover:bg-emerald-50 hover:border-primary text-slate-700 hover:text-primary flex items-center justify-center transition-colors"
-                title={isVi ? "Hồ sơ cá nhân" : "Profile"}
-              >
-                <span className="material-symbols-outlined text-base">person</span>
-              </Link>
-            </>
+            <Link
+              href="/app/billing"
+              className="flex items-center gap-1 px-2 py-0.5 bg-[#FEF3C7] text-[#B45309] border border-amber-200 rounded text-xs font-mono font-semibold"
+            >
+              <span className="material-symbols-outlined text-[13px]">toll</span>
+              <span>{wallet ? wallet.balance : user.crystalBalance} CR</span>
+            </Link>
           ) : (
             <Link
               href="/app/auth"
@@ -528,11 +555,26 @@ function MobileDailyHomeContent() {
               {isVi ? "THÔNG ĐIỆP GEMINI AI" : "GEMINI AI GUIDANCE"}
             </span>
             <button
+              type="button"
               onClick={handleClaimReward}
-              disabled={isClaiming}
-              className="text-[10px] font-mono bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded font-semibold hover:bg-amber-100 transition-colors"
+              disabled={isClaiming || isDailyClaimed}
+              className={`text-[10px] font-mono px-2 py-0.5 rounded font-semibold border transition-colors ${
+                isDailyClaimed
+                  ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
+                  : "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100"
+              }`}
             >
-              {isClaiming ? (isVi ? "Đang nhận..." : "Claiming...") : (isVi ? "+10 CR Phước lành" : "+10 CR Blessing")}
+              {isClaiming
+                ? isVi
+                  ? "Đang nhận..."
+                  : "Claiming..."
+                : isDailyClaimed
+                ? isVi
+                  ? "Đã nhận +10 CR ✓"
+                  : "Claimed ✓"
+                : isVi
+                ? "+10 CR Phước lành"
+                : "+10 CR Blessing"}
             </button>
           </div>
           <div className="font-headline text-sm text-on-surface leading-relaxed">

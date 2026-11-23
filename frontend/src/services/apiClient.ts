@@ -550,6 +550,7 @@ export const apiClient = {
         const normalized: WalletBalanceDto = {
           balance,
           tier: (res.data.tier as "FREE" | "PRO" | "SEEKER") || "FREE",
+          dailyFreeAvailable: res.data.dailyFreeAvailable !== false,
           transactions: []
         };
         return { ...res, data: normalized };
@@ -561,18 +562,23 @@ export const apiClient = {
       const res = await requestApi<any>("/api/v1/wallet/daily-reward", { method: "POST" });
       if (res.data) {
         const balance = res.data.balance !== undefined ? res.data.balance : res.data.crystalBalance ?? 30;
+        const alreadyClaimed = Boolean(res.data.alreadyClaimed);
         const normalized: WalletBalanceDto = {
           balance,
           tier: (res.data.tier as "FREE" | "PRO" | "SEEKER") || "FREE",
-          transactions: [
-            {
-              id: `TX-${Date.now()}`,
-              amount: +10,
-              type: "DAILY_REWARD",
-              description: "Daily Dawn Login Blessing",
-              createdAt: new Date().toISOString()
-            }
-          ]
+          dailyFreeAvailable: false,
+          alreadyClaimed,
+          transactions: alreadyClaimed
+            ? []
+            : [
+                {
+                  id: `TX-${Date.now()}`,
+                  amount: +10,
+                  type: "DAILY_REWARD",
+                  description: "Daily Dawn Login Blessing",
+                  createdAt: new Date().toISOString()
+                }
+              ]
         };
         return { ...res, code: 200, data: normalized };
       }

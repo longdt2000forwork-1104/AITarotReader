@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import RequireAuthGate from "@/components/auth/RequireAuthGate";
 import { useLanguage } from "@/context/LanguageContext";
@@ -24,7 +23,6 @@ function toLocalDateKey(input: Date | string): string {
 function MobileCalendarJournalContent() {
   const { locale, setLocale } = useLanguage();
   const isVi = locale === "vi";
-  const router = useRouter();
 
   const [sessions, setSessions] = useState<ReadingSessionDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -139,11 +137,8 @@ function MobileCalendarJournalContent() {
 
   const selectedDaySessions = sessionsByDate[selectedDateKey] || [];
 
-  const handleDateCellClick = (dateKey: string, daySessions: ReadingSessionDto[]) => {
+  const handleDateCellClick = (dateKey: string) => {
     setSelectedDateKey(dateKey);
-    if (daySessions.length === 1) {
-      router.push(`/app/readings/${daySessions[0].id}`);
-    }
   };
 
   const weekdayHeaders = isVi
@@ -225,7 +220,7 @@ function MobileCalendarJournalContent() {
           <div className="flex items-center justify-between gap-2">
             <div>
               <span className="font-mono text-[9px] uppercase tracking-widest text-primary font-bold block">
-                {isVi ? "CHỌN NGÀY ĐỂ MỞ LẠI" : "TAP A DATE TO OPEN"}
+                {isVi ? "CHỌN NGÀY ĐỂ XEM TRƯỚC" : "TAP A DATE TO PREVIEW"}
               </span>
               <h1 className="font-headline font-bold text-base text-on-surface capitalize">
                 {monthTitle}
@@ -304,7 +299,7 @@ function MobileCalendarJournalContent() {
                     <button
                       type="button"
                       key={cell.dateKey}
-                      onClick={() => handleDateCellClick(cell.dateKey, daySessions)}
+                      onClick={() => handleDateCellClick(cell.dateKey)}
                       className={`h-14 p-1 border-b border-r border-outline-variant flex flex-col items-center justify-between transition-all ${
                         hasSessions
                           ? "bg-emerald-50/40 hover:bg-emerald-100/60"

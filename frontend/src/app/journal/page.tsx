@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import EditorialHeader from "@/components/EditorialHeader";
 import RequireAuthGate from "@/components/auth/RequireAuthGate";
 import { useLanguage } from "@/context/LanguageContext";
@@ -24,7 +23,6 @@ function toLocalDateKey(input: Date | string): string {
 function JournalPatternLedgerContent() {
   const { locale } = useLanguage();
   const isVi = locale === "vi";
-  const router = useRouter();
 
   const [sessions, setSessions] = useState<ReadingSessionDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -159,12 +157,8 @@ function JournalPatternLedgerContent() {
     setSelectedDateKey(toLocalDateKey(now));
   };
 
-  const handleDateCellClick = (dateKey: string, daySessions: ReadingSessionDto[]) => {
+  const handleDateCellClick = (dateKey: string) => {
     setSelectedDateKey(dateKey);
-    // Navigate directly to the reading workbench of that day if there is a session
-    if (daySessions.length === 1) {
-      router.push(`/workbench/${daySessions[0].id}`);
-    }
   };
 
   const weekdayHeaders = isVi
@@ -198,8 +192,8 @@ function JournalPatternLedgerContent() {
             </div>
             <div className="text-xs text-slate-500">
               {isVi
-                ? "Mỗi phiên trải bài được tự động lưu theo ngày. Nhấn vào ngày bất kỳ để mở lại bàn trải bài của ngày đó."
-                : "Reading sessions are auto-archived by date. Click any active calendar date to open its workbench."}
+                ? "Mỗi phiên trải bài được tự động lưu theo ngày. Chọn ngày trên lịch để xem trước phiên, sau đó nhấn mở để xem chi tiết."
+                : "Reading sessions are auto-archived by date. Select a calendar date to preview its session, then open it for full details."}
             </div>
           </div>
 
@@ -315,7 +309,7 @@ function JournalPatternLedgerContent() {
                     return (
                       <div
                         key={cell.dateKey}
-                        onClick={() => handleDateCellClick(cell.dateKey, daySessions)}
+                        onClick={() => handleDateCellClick(cell.dateKey)}
                         className={`min-h-[104px] p-2 border-b border-r border-outline-variant flex flex-col justify-between transition-all ${
                           hasSessions
                             ? "cursor-pointer hover:bg-emerald-50/50"
@@ -358,13 +352,13 @@ function JournalPatternLedgerContent() {
                             </div>
                             <div className="flex items-center justify-between text-[9px] font-mono text-primary font-semibold">
                               <span>
-                                {isToday
+                                {isSelected
                                   ? isVi
-                                    ? "Mở · Rút tiếp →"
-                                    : "Open · Active →"
+                                    ? "Đang xem trước"
+                                    : "Previewing"
                                   : isVi
-                                  ? "Xem luận giải →"
-                                  : "Review →"}
+                                  ? "Xem trước"
+                                  : "Preview"}
                               </span>
                             </div>
                           </div>
@@ -393,8 +387,8 @@ function JournalPatternLedgerContent() {
               </div>
               <span>
                 {isVi
-                  ? "Nhấn vào ngày có phiên để chuyển thẳng tới Bàn Trải Bài"
-                  : "Click any active date to open its Reading Workbench"}
+                  ? "Chọn ngày trên lịch để xem trước phiên trải bài ở khung bên phải"
+                  : "Select any date to preview its session in the side panel"}
               </span>
             </div>
           </div>

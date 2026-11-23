@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import EditorialHeader from "@/components/EditorialHeader";
@@ -20,16 +20,18 @@ function SeekerProfileContent() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [saveToast, setSaveToast] = useState<string | null>(null);
 
   const [profile, setProfile] = useState<MysticProfileDto | null>(null);
   const [wallet, setWallet] = useState<WalletBalanceDto | null>(null);
 
-  const [allowAiContext, setAllowAiContext] = useState(true);
   const [birthZodiac, setBirthZodiac] = useState("ARIES");
   const [birthDate, setBirthDate] = useState("1998-04-12");
   const [credits, setCredits] = useState(0);
   const [claimedDaily, setClaimedDaily] = useState(false);
+  const [claimingDaily, setClaimingDaily] = useState(false);
+  const isDirtyRef = useRef(false);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -43,17 +45,24 @@ function SeekerProfileContent() {
 
         if (profRes.data) {
           setProfile(profRes.data);
+          const normalizedDate = profRes.data.birthDate
+            ? String(profRes.data.birthDate).slice(0, 10)
+            : "";
+          if (normalizedDate) setBirthDate(normalizedDate);
           const z = profRes.data.zodiacSign || profRes.data.birthZodiac;
-          if (z) setBirthZodiac(z.toUpperCase());
-          if (profRes.data.birthDate) setBirthDate(profRes.data.birthDate);
-          if (typeof profRes.data.allowAiContext === "boolean") {
-            setAllowAiContext(profRes.data.allowAiContext);
+          if (z) {
+            setBirthZodiac(z.toUpperCase());
+          } else if (normalizedDate) {
+            const n = calculateNatalPreview(normalizedDate);
+            if (n) setBirthZodiac(n.zodiacCode);
           }
+          isDirtyRef.current = false;
         }
 
         if (walRes.data) {
           setWallet(walRes.data);
           setCredits(walRes.data.balance);
+          setClaimedDaily(walRes.data.dailyFreeAvailable === false);
         } else if (user) {
           setCredits(user.crystalBalance);
         }
@@ -67,41 +76,83 @@ function SeekerProfileContent() {
   }, [isAuthenticated, user]);
 
   const handleClaimDaily = async () => {
-    if (claimedDaily) return;
+    if (claimedDaily || claimingDaily) return;
+    setClaimingDaily(true);
     try {
       const res = await apiClient.wallet.claimDailyReward();
       if (res.code === 200 && res.data) {
         setCredits(res.data.balance);
         setClaimedDaily(true);
-        setSaveToast(isVi ? "+10 CR Phước lành buổi sớm đã được cộng!" : "+10 CR Daily Blessing claimed!");
+        setSaveToast(
+          res.data.alreadyClaimed
+            ? isVi
+              ? "Hôm nay bạn đã điểm danh nhận +10 CR rồi."
+              : "You have already claimed today's +10 CR blessing."
+            : isVi
+            ? "+10 CR Phước lành buổi sớm đã được cộng!"
+            : "+10 CR Daily Blessing claimed!"
+        );
         setTimeout(() => setSaveToast(null), 3000);
       }
     } catch (err) {
       console.error("Error claiming daily reward:", err);
+    } finally {
+      setClaimingDaily(false);
     }
   };
 
-  const handleSaveChanges = async () => {
-    setSaving(true);
-    try {
-      const natal = calculateNatalPreview(birthDate);
-      const res = await apiClient.profile.updateMysticProfile({
-        zodiacSign: birthZodiac,
-        birthDate: birthDate || undefined,
-        lifePathNumber: natal?.lifePathNumber,
-        allowAiContext,
-        locale,
-      });
+  const persistProfile = useCallback(
+    async (showToast: boolean) => {
+      setSaving(true);
+      setAutoSaveStatus("saving");
+      try {
+        const natal = calculateNatalPreview(birthDate);
+        const res = await apiClient.profile.updateMysticProfile({
+          zodiacSign: birthZodiac,
+          birthDate: birthDate || undefined,
+          lifePathNumber: natal?.lifePathNumber,
+          locale,
+        });
 
-      if (res.code === 200 && res.data) {
-        setProfile(res.data);
-        setSaveToast(isVi ? "Hồ sơ & Thiết lập đã được lưu vào Supabase!" : "Settings saved to Supabase!");
-        setTimeout(() => setSaveToast(null), 3500);
+        if (res.code === 200 && res.data) {
+          setProfile(res.data);
+          isDirtyRef.current = false;
+          setAutoSaveStatus("saved");
+          if (showToast) {
+            setSaveToast(isVi ? "Hồ sơ & Ngày sinh đã được lưu vào Supabase!" : "Settings saved to Supabase!");
+            setTimeout(() => setSaveToast(null), 3500);
+          }
+        }
+      } catch (err) {
+        console.error("Error updating profile:", err);
+        setAutoSaveStatus("idle");
+      } finally {
+        setSaving(false);
       }
-    } catch (err) {
-      console.error("Error updating profile:", err);
-    } finally {
-      setSaving(false);
+    },
+    [birthDate, birthZodiac, isVi, locale]
+  );
+
+  const handleSaveChanges = async () => {
+    if (saving) return;
+    await persistProfile(true);
+  };
+
+  useEffect(() => {
+    if (loading || !isAuthenticated || !isDirtyRef.current) return;
+    const timer = setTimeout(() => {
+      persistProfile(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [birthDate, birthZodiac, loading, isAuthenticated, persistProfile]);
+
+  const handleBirthDateChange = (val: string) => {
+    isDirtyRef.current = true;
+    setAutoSaveStatus("idle");
+    setBirthDate(val);
+    const n = calculateNatalPreview(val);
+    if (n) {
+      setBirthZodiac(n.zodiacCode);
     }
   };
 
@@ -127,7 +178,7 @@ function SeekerProfileContent() {
 
   const currentZodiac = zodiacOptions.find((z) => z.code === birthZodiac) || zodiacOptions[0];
   const natalPreview = calculateNatalPreview(birthDate);
-  const lifePath = profile?.lifePathNumber ?? natalPreview?.lifePathNumber ?? 7;
+  const lifePath = natalPreview?.lifePathNumber ?? profile?.lifePathNumber ?? 7;
   const displayName = user?.fullName || user?.email?.split("@")[0] || (isVi ? "Người Tìm Kiếm" : "Seeker");
 
   const loginMethodLabel = (() => {
@@ -170,8 +221,8 @@ function SeekerProfileContent() {
                 </h1>
                 <p className="text-xs font-mono uppercase text-slate-500 tracking-wider mt-0.5">
                   {isVi
-                    ? "Bản Đồ Ngày Sinh & Ký Ức Ngữ Cảnh AI (FR-1.2 & FR-1.3)"
-                    : "Natal Blueprint & AI Contextual Memory Studio (FR-1.2 & FR-1.3)"}
+                    ? "Bản Đồ Ngày Sinh & Hiệu Chuẩn Chiêm Tinh (FR-1.2)"
+                    : "Natal Blueprint & Astrological Calibration (FR-1.2)"}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -297,16 +348,29 @@ function SeekerProfileContent() {
 
                 {/* CARD 02: Mystic Blueprint & Natal Calibration */}
                 <section className="bg-white border border-[#E2E8F0] rounded-xl p-5 mb-6 shadow-xs">
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
                     <div className="flex items-center space-x-2">
                       <span className="text-xs font-mono uppercase text-primary font-bold tracking-widest">02.</span>
                       <h2 className="font-headline font-bold text-base text-slate-900">
                         {isVi ? "Bản Đồ Ngày Sinh & Hiệu Chuẩn Chiêm Tinh (FR-1.2)" : "Mystic Blueprint & Natal Calibration (FR-1.2)"}
                       </h2>
                     </div>
-                    <span className="text-[10px] font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">
-                      {isVi ? "ĐỐI CHIẾU THỰC TẾ" : "NATAL CORRELATION"}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {autoSaveStatus === "saving" && (
+                        <span className="text-[10px] font-mono text-amber-600 font-medium">
+                          {isVi ? "Đang lưu..." : "Saving..."}
+                        </span>
+                      )}
+                      {autoSaveStatus === "saved" && (
+                        <span className="text-[10px] font-mono text-emerald-600 font-medium inline-flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[12px]">check_circle</span>
+                          {isVi ? "Đã tự động lưu" : "Auto-saved"}
+                        </span>
+                      )}
+                      <span className="text-[10px] font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">
+                        {isVi ? "ĐỐI CHIẾU THỰC TẾ" : "NATAL CORRELATION"}
+                      </span>
+                    </div>
                   </div>
                   <p className="text-xs text-slate-600 mb-4">
                     {isVi
@@ -326,12 +390,7 @@ function SeekerProfileContent() {
                         <input
                           type="date"
                           value={birthDate}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setBirthDate(val);
-                            const n = calculateNatalPreview(val);
-                            if (n) setBirthZodiac(n.zodiacCode);
-                          }}
+                          onChange={(e) => handleBirthDateChange(e.target.value)}
                           className="font-mono text-xs font-bold text-slate-900 bg-white border border-slate-200 px-2 py-0.5 rounded"
                         />
                       </div>
@@ -342,7 +401,11 @@ function SeekerProfileContent() {
                       </div>
                       <select
                         value={birthZodiac}
-                        onChange={(e) => setBirthZodiac(e.target.value)}
+                        onChange={(e) => {
+                          isDirtyRef.current = true;
+                          setAutoSaveStatus("idle");
+                          setBirthZodiac(e.target.value);
+                        }}
                         className="text-xs font-mono font-semibold bg-white border border-slate-300 rounded px-2 py-1 text-slate-900"
                       >
                         {zodiacOptions.map((z) => (
@@ -383,43 +446,24 @@ function SeekerProfileContent() {
                       </div>
                     </div>
                   </div>
-                </section>
 
-                {/* CARD 03: AI Context Guardrail */}
-                <section className="bg-white border border-[#E2E8F0] rounded-xl p-5 mb-6 shadow-xs">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs font-mono uppercase text-primary font-bold tracking-widest">03.</span>
-                      <h2 className="font-headline font-bold text-base text-slate-900">
-                        {isVi ? "Kiểm Soát Ngữ Cảnh & Ký Ức AI (FR-1.3)" : "AI Context Guardrail & Memory (FR-1.3)"}
-                      </h2>
-                    </div>
-                    <span className="material-symbols-outlined text-primary">psychology</span>
-                  </div>
-
-                  <div className="p-3 bg-[#FAF9F6] border border-[#E2E8F0] rounded-lg flex items-center justify-between mt-3">
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-900">
-                        {isVi ? "Cho Phép Nạp Dữ Liệu Ngày Sinh Bản Mệnh" : "Allow Natal Decan Context Injection"}
-                      </h4>
-                      <p className="text-[11px] text-slate-600 mt-0.5">
-                        {isVi
-                          ? `Kết hợp ${currentZodiac.vi} và Số Đường Đời ${lifePath} vào các bài luận giải AI.`
-                          : `Weaves ${currentZodiac.code} & Life Path ${lifePath} into reading synthesis.`}
-                      </p>
-                    </div>
+                  <div className="mt-4 pt-3 border-t border-[#E2E8F0] flex justify-end">
                     <button
                       type="button"
-                      onClick={() => setAllowAiContext(!allowAiContext)}
-                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
-                        allowAiContext ? "bg-primary" : "bg-slate-300"
-                      }`}
+                      disabled={saving || loading}
+                      onClick={handleSaveChanges}
+                      className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 shadow-2xs transition-colors disabled:opacity-50"
                     >
-                      <span
-                        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out ${
-                          allowAiContext ? "translate-x-5" : "translate-x-0"
-                        }`}
-                      />
+                      <span className="material-symbols-outlined text-sm">save</span>
+                      <span>
+                        {saving
+                          ? isVi
+                            ? "Đang lưu ngày sinh..."
+                            : "Saving birth date..."
+                          : isVi
+                          ? "Lưu ngày sinh & bản mệnh"
+                          : "Save Birth Date & Blueprint"}
+                      </span>
                     </button>
                   </div>
                 </section>
@@ -480,15 +524,25 @@ function SeekerProfileContent() {
                 </div>
                 <button
                   type="button"
-                  disabled={claimedDaily}
+                  disabled={claimedDaily || claimingDaily}
                   onClick={handleClaimDaily}
                   className={`px-3 py-1 rounded text-xs font-mono font-bold uppercase transition-colors ${
-                    claimedDaily
+                    claimedDaily || claimingDaily
                       ? "bg-slate-200 text-slate-500 cursor-not-allowed"
                       : "bg-primary text-white hover:bg-emerald-700"
                   }`}
                 >
-                  {claimedDaily ? (isVi ? "Đã nhận ✓" : "Claimed ✓") : isVi ? "Nhận" : "Claim"}
+                  {claimingDaily
+                    ? isVi
+                      ? "Đang nhận..."
+                      : "Claiming..."
+                    : claimedDaily
+                    ? isVi
+                      ? "Đã nhận ✓"
+                      : "Claimed ✓"
+                    : isVi
+                    ? "Nhận"
+                    : "Claim"}
                 </button>
               </div>
             </div>
