@@ -28,7 +28,11 @@ function clearLocalDailyCaches() {
     localStorage.removeItem("ai_tarot_daily_draw");
     for (let i = localStorage.length - 1; i >= 0; i--) {
       const key = localStorage.key(i);
-      if (key && key.startsWith("ai_tarot_daily_draw_")) {
+      if (
+        key &&
+        (key.startsWith("ai_tarot_daily_draw_") ||
+          key.startsWith("ai_tarot_daily_reward_claimed_"))
+      ) {
         localStorage.removeItem(key);
       }
     }
