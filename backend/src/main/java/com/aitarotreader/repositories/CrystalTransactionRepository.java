@@ -12,4 +12,5 @@ import java.util.UUID;
 @Repository
 public interface CrystalTransactionRepository extends JpaRepository<CrystalTransaction, UUID> {
     Page<CrystalTransaction> findByUserIdOrderByCreatedAtDesc(UUID userId, Pageable pageable);
+    boolean existsByUserIdAndReasonCodeAndReferenceId(UUID userId, String reasonCode, String referenceId);
 }

@@ -182,6 +182,8 @@ export interface CrystalTransactionDto {
 export interface WalletBalanceDto {
   balance: number;
   tier: "FREE" | "PRO" | "SEEKER";
+  dailyFreeAvailable?: boolean;
+  alreadyClaimed?: boolean;
   transactions: CrystalTransactionDto[];
 }
 

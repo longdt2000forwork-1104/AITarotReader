@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
 
@@ -34,12 +33,13 @@ public class WalletController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getBalance(@AuthenticationPrincipal UUID userId) {
         User user = requireAuthenticatedUser(userId);
         Integer balance = walletService.getBalance(user.getId());
+        boolean dailyFreeAvailable = !walletService.hasClaimedDailyRewardToday(user.getId());
         return ResponseEntity.ok(ApiResponse.ok(Map.of(
                 "userId", user.getId(),
                 "balance", balance,
                 "crystalBalance", balance,
                 "tier", user.getTier().name(),
-                "dailyFreeAvailable", true
+                "dailyFreeAvailable", dailyFreeAvailable
         )));
     }
 
@@ -47,14 +47,18 @@ public class WalletController {
     @PostMapping("/daily-reward")
     public ResponseEntity<ApiResponse<Map<String, Object>>> claimDailyReward(@AuthenticationPrincipal UUID userId) {
         User user = requireAuthenticatedUser(userId);
-        walletService.creditCrystals(user.getId(), 10, "DAILY_REWARD", "daily-" + LocalDate.now(), "Daily Dawn Login Blessing");
+        boolean claimedNow = walletService.claimDailyReward(user.getId());
         Integer balance = walletService.getBalance(user.getId());
-        return ResponseEntity.ok(ApiResponse.ok("Daily reward claimed (+10 Crystals)", Map.of(
+        String msg = claimedNow
+                ? "Daily reward claimed (+10 Crystals)"
+                : "Daily reward already claimed today";
+        return ResponseEntity.ok(ApiResponse.ok(msg, Map.of(
                 "userId", user.getId(),
                 "balance", balance,
                 "crystalBalance", balance,
                 "tier", user.getTier().name(),
-                "dailyFreeAvailable", false
+                "dailyFreeAvailable", false,
+                "alreadyClaimed", !claimedNow
         )));
     }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -20,16 +20,18 @@ function MobileSeekerProfileContent() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [profile, setProfile] = useState<MysticProfileDto | null>(null);
   const [wallet, setWallet] = useState<WalletBalanceDto | null>(null);
 
-  const [allowAiContext, setAllowAiContext] = useState(true);
   const [birthZodiac, setBirthZodiac] = useState("ARIES");
   const [birthDate, setBirthDate] = useState("1998-04-12");
 
   const [credits, setCredits] = useState(0);
   const [claimedDaily, setClaimedDaily] = useState(false);
+  const [claimingDaily, setClaimingDaily] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const isDirtyRef = useRef(false);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -42,16 +44,23 @@ function MobileSeekerProfileContent() {
         ]);
         if (profRes.data) {
           setProfile(profRes.data);
+          const normalizedDate = profRes.data.birthDate
+            ? String(profRes.data.birthDate).slice(0, 10)
+            : "";
+          if (normalizedDate) setBirthDate(normalizedDate);
           const z = profRes.data.zodiacSign || profRes.data.birthZodiac;
-          if (z) setBirthZodiac(z.toUpperCase());
-          if (profRes.data.birthDate) setBirthDate(profRes.data.birthDate);
-          if (typeof profRes.data.allowAiContext === "boolean") {
-            setAllowAiContext(profRes.data.allowAiContext);
+          if (z) {
+            setBirthZodiac(z.toUpperCase());
+          } else if (normalizedDate) {
+            const n = calculateNatalPreview(normalizedDate);
+            if (n) setBirthZodiac(n.zodiacCode);
           }
+          isDirtyRef.current = false;
         }
         if (walRes.data) {
           setWallet(walRes.data);
           setCredits(walRes.data.balance);
+          setClaimedDaily(walRes.data.dailyFreeAvailable === false);
         } else if (user) {
           setCredits(user.crystalBalance);
         }
@@ -65,41 +74,83 @@ function MobileSeekerProfileContent() {
   }, [isAuthenticated, user]);
 
   const handleClaimDaily = async () => {
-    if (claimedDaily) return;
+    if (claimedDaily || claimingDaily) return;
+    setClaimingDaily(true);
     try {
       const res = await apiClient.wallet.claimDailyReward();
       if (res.code === 200 && res.data) {
         setCredits(res.data.balance);
         setClaimedDaily(true);
-        setToastMessage(isVi ? "+10 CR Phước lành buổi sớm đã nhận!" : "+10 CR Daily Blessing claimed!");
+        setToastMessage(
+          res.data.alreadyClaimed
+            ? isVi
+              ? "Hôm nay bạn đã điểm danh nhận +10 CR rồi."
+              : "You have already claimed today's +10 CR blessing."
+            : isVi
+            ? "+10 CR Phước lành buổi sớm đã nhận!"
+            : "+10 CR Daily Blessing claimed!"
+        );
         setTimeout(() => setToastMessage(null), 3000);
       }
     } catch (err) {
       console.error("Error claiming daily reward:", err);
+    } finally {
+      setClaimingDaily(false);
     }
   };
 
+  const persistProfile = useCallback(
+    async (showToast: boolean) => {
+      setSaving(true);
+      setAutoSaveStatus("saving");
+      try {
+        const natal = calculateNatalPreview(birthDate);
+        const res = await apiClient.profile.updateMysticProfile({
+          zodiacSign: birthZodiac,
+          birthDate: birthDate || undefined,
+          lifePathNumber: natal?.lifePathNumber,
+          locale,
+        });
+        if (res.code === 200 && res.data) {
+          setProfile(res.data);
+          isDirtyRef.current = false;
+          setAutoSaveStatus("saved");
+          if (showToast) {
+            setToastMessage(isVi ? "Đã lưu hồ sơ & ngày sinh vào Supabase!" : "Profile & birth date saved!");
+            setTimeout(() => setToastMessage(null), 3000);
+          }
+        }
+      } catch (err) {
+        console.error("Error saving mobile profile:", err);
+        setAutoSaveStatus("idle");
+      } finally {
+        setSaving(false);
+      }
+    },
+    [birthDate, birthZodiac, isVi, locale]
+  );
+
   const handleSaveChanges = async () => {
     if (saving) return;
-    setSaving(true);
-    try {
-      const natal = calculateNatalPreview(birthDate);
-      const res = await apiClient.profile.updateMysticProfile({
-        zodiacSign: birthZodiac,
-        birthDate: birthDate || undefined,
-        lifePathNumber: natal?.lifePathNumber,
-        allowAiContext,
-        locale,
-      });
-      if (res.code === 200 && res.data) {
-        setProfile(res.data);
-        setToastMessage(isVi ? "Đã lưu hồ sơ & thiết lập vào Supabase!" : "Settings saved to Supabase!");
-        setTimeout(() => setToastMessage(null), 3000);
-      }
-    } catch (err) {
-      console.error("Error saving mobile profile:", err);
-    } finally {
-      setSaving(false);
+    await persistProfile(true);
+  };
+
+  // Auto-save when user edits birthDate or birthZodiac
+  useEffect(() => {
+    if (loading || !isAuthenticated || !isDirtyRef.current) return;
+    const timer = setTimeout(() => {
+      persistProfile(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [birthDate, birthZodiac, loading, isAuthenticated, persistProfile]);
+
+  const handleBirthDateChange = (val: string) => {
+    isDirtyRef.current = true;
+    setAutoSaveStatus("idle");
+    setBirthDate(val);
+    const n = calculateNatalPreview(val);
+    if (n) {
+      setBirthZodiac(n.zodiacCode);
     }
   };
 
@@ -125,7 +176,7 @@ function MobileSeekerProfileContent() {
 
   const currentZodiac = zodiacOptions.find((z) => z.code === birthZodiac) || zodiacOptions[0];
   const natalPreview = calculateNatalPreview(birthDate);
-  const lifePath = profile?.lifePathNumber ?? natalPreview?.lifePathNumber ?? 7;
+  const lifePath = natalPreview?.lifePathNumber ?? profile?.lifePathNumber ?? 7;
   const displayName = user?.fullName || user?.email?.split("@")[0] || (isVi ? "Người Tìm Kiếm" : "Seeker");
 
   if (authLoading || !isAuthenticated) {
@@ -226,10 +277,21 @@ function MobileSeekerProfileContent() {
             <>
               {/* Section 01: Mystic Blueprint */}
               <section className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-2xs space-y-3">
-                <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2">
+                <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2 gap-2">
                   <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold">
                     {isVi ? "01. BẢN ĐỒ NGÀY SINH & CHIÊM TINH" : "01. MYSTIC BLUEPRINT"}
                   </span>
+                  {autoSaveStatus === "saving" && (
+                    <span className="text-[10px] font-mono text-amber-600 font-medium">
+                      {isVi ? "Đang lưu..." : "Saving..."}
+                    </span>
+                  )}
+                  {autoSaveStatus === "saved" && (
+                    <span className="text-[10px] font-mono text-emerald-600 font-medium inline-flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[12px]">check_circle</span>
+                      {isVi ? "Đã tự động lưu" : "Auto-saved"}
+                    </span>
+                  )}
                 </div>
 
                 <div className="space-y-2.5">
@@ -240,12 +302,7 @@ function MobileSeekerProfileContent() {
                     <input
                       type="date"
                       value={birthDate}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setBirthDate(val);
-                        const n = calculateNatalPreview(val);
-                        if (n) setBirthZodiac(n.zodiacCode);
-                      }}
+                      onChange={(e) => handleBirthDateChange(e.target.value)}
                       className="font-mono text-xs font-bold text-slate-900 bg-white border border-slate-200 px-2 py-1 rounded"
                     />
                   </div>
@@ -256,7 +313,11 @@ function MobileSeekerProfileContent() {
                     </span>
                     <select
                       value={birthZodiac}
-                      onChange={(e) => setBirthZodiac(e.target.value)}
+                      onChange={(e) => {
+                        isDirtyRef.current = true;
+                        setAutoSaveStatus("idle");
+                        setBirthZodiac(e.target.value);
+                      }}
                       className="text-xs font-mono font-semibold bg-white border border-slate-300 rounded px-2 py-1 text-slate-900"
                     >
                       {zodiacOptions.map((z) => (
@@ -289,29 +350,23 @@ function MobileSeekerProfileContent() {
                   </div>
                 </div>
 
-                <div className="p-2.5 bg-emerald-50/60 border border-emerald-200/60 rounded-lg flex items-center justify-between">
-                  <div className="pr-2">
-                    <span className="text-xs font-bold text-slate-900 block">
-                      {isVi ? "Bộ Nhớ Ngữ Cảnh AI" : "AI Contextual Memory"}
-                    </span>
-                    <span className="text-[10px] text-slate-500 leading-tight block">
-                      {isVi
-                        ? "Hòa hợp năng lượng bản mệnh vào các trải bài AI"
-                        : "Infuse natal energy into AI readings"}
-                    </span>
-                  </div>
+                <div className="pt-1 flex justify-end">
                   <button
                     type="button"
-                    onClick={() => setAllowAiContext(!allowAiContext)}
-                    className={`w-9 h-5 shrink-0 rounded-full transition-colors relative cursor-pointer ${
-                      allowAiContext ? "bg-primary" : "bg-slate-300"
-                    }`}
+                    disabled={saving || loading}
+                    onClick={handleSaveChanges}
+                    className="w-full py-2 px-3 bg-primary hover:bg-primary-hover text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-colors disabled:opacity-50"
                   >
-                    <span
-                      className={`w-4 h-4 rounded-full bg-white transition-transform block mt-0.5 ${
-                        allowAiContext ? "translate-x-4" : "translate-x-0.5"
-                      }`}
-                    />
+                    <span className="material-symbols-outlined text-sm">save</span>
+                    <span>
+                      {saving
+                        ? isVi
+                          ? "Đang lưu ngày sinh & bản mệnh..."
+                          : "Saving birth date & blueprint..."
+                        : isVi
+                        ? "Lưu ngày sinh & bản mệnh"
+                        : "Save Birth Date & Blueprint"}
+                    </span>
                   </button>
                 </div>
               </section>
@@ -340,14 +395,18 @@ function MobileSeekerProfileContent() {
                   <button
                     type="button"
                     onClick={handleClaimDaily}
-                    disabled={claimedDaily}
+                    disabled={claimedDaily || claimingDaily}
                     className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition-colors ${
-                      claimedDaily
+                      claimedDaily || claimingDaily
                         ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
                         : "bg-primary text-white hover:bg-emerald-700 shadow-xs"
                     }`}
                   >
-                    {claimedDaily
+                    {claimingDaily
+                      ? isVi
+                        ? "Đang nhận..."
+                        : "Claiming..."
+                      : claimedDaily
                       ? isVi
                         ? "Đã Điểm Danh ✓"
                         : "Claimed ✓"
