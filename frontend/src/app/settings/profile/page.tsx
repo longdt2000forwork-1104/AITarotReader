@@ -30,7 +30,6 @@ function SeekerProfileContent() {
   const [profile, setProfile] = useState<MysticProfileDto | null>(null);
   const [wallet, setWallet] = useState<WalletBalanceDto | null>(null);
 
-  const [birthZodiac, setBirthZodiac] = useState("ARIES");
   const [birthDate, setBirthDate] = useState("1998-04-12");
   const [credits, setCredits] = useState(0);
   const [claimedDaily, setClaimedDaily] = useState(false);
@@ -54,13 +53,6 @@ function SeekerProfileContent() {
             ? String(profRes.data.birthDate).slice(0, 10)
             : "";
           if (normalizedDate) setBirthDate(normalizedDate);
-          const z = profRes.data.zodiacSign || profRes.data.birthZodiac;
-          if (z) {
-            setBirthZodiac(z.toUpperCase());
-          } else if (normalizedDate) {
-            const n = calculateNatalPreview(normalizedDate);
-            if (n) setBirthZodiac(n.zodiacCode);
-          }
           isDirtyRef.current = false;
         }
 
@@ -118,7 +110,7 @@ function SeekerProfileContent() {
       try {
         const natal = calculateNatalPreview(birthDate);
         const res = await apiClient.profile.updateMysticProfile({
-          zodiacSign: birthZodiac,
+          zodiacSign: natal?.zodiacCode,
           birthDate: birthDate || undefined,
           lifePathNumber: natal?.lifePathNumber,
           locale,
@@ -140,7 +132,7 @@ function SeekerProfileContent() {
         setSaving(false);
       }
     },
-    [birthDate, birthZodiac, isVi, locale]
+    [birthDate, isVi, locale]
   );
 
   const handleSaveChanges = async () => {
@@ -154,16 +146,12 @@ function SeekerProfileContent() {
       persistProfile(false);
     }, 600);
     return () => clearTimeout(timer);
-  }, [birthDate, birthZodiac, loading, isAuthenticated, persistProfile]);
+  }, [birthDate, loading, isAuthenticated, persistProfile]);
 
   const handleBirthDateChange = (val: string) => {
     isDirtyRef.current = true;
     setAutoSaveStatus("idle");
     setBirthDate(val);
-    const n = calculateNatalPreview(val);
-    if (n) {
-      setBirthZodiac(n.zodiacCode);
-    }
   };
 
   const handleLogout = async () => {
@@ -172,22 +160,25 @@ function SeekerProfileContent() {
   };
 
   const zodiacOptions = [
-    { code: "ARIES", vi: "Bạch Dương", symbol: "♈", cardVi: "IV Hoàng Đế", cardEn: "IV The Emperor" },
-    { code: "TAURUS", vi: "Kim Ngưu", symbol: "♉", cardVi: "V Giáo Hoàng", cardEn: "V The Hierophant" },
-    { code: "GEMINI", vi: "Song Tử", symbol: "♊", cardVi: "VI Người Tình", cardEn: "VI The Lovers" },
-    { code: "CANCER", vi: "Cự Giải", symbol: "♋", cardVi: "VII Cỗ Xe", cardEn: "VII The Chariot" },
-    { code: "LEO", vi: "Sư Tử", symbol: "♌", cardVi: "VIII Sức Mạnh", cardEn: "VIII Strength" },
-    { code: "VIRGO", vi: "Xử Nữ", symbol: "♍", cardVi: "IX Ẩn Sĩ", cardEn: "IX The Hermit" },
-    { code: "LIBRA", vi: "Thiên Bình", symbol: "♎", cardVi: "XI Công Lý", cardEn: "XI Justice" },
-    { code: "SCORPIO", vi: "Bọ Cạp", symbol: "♏", cardVi: "XIII Tử Thần", cardEn: "XIII Death" },
-    { code: "SAGITTARIUS", vi: "Nhân Mã", symbol: "♐", cardVi: "XIV Tiết Chế", cardEn: "XIV Temperance" },
-    { code: "CAPRICORN", vi: "Ma Kết", symbol: "♑", cardVi: "XV Ác Quỷ", cardEn: "XV The Devil" },
-    { code: "AQUARIUS", vi: "Bảo Bình", symbol: "♒", cardVi: "XVII Ngôi Sao", cardEn: "XVII The Star" },
-    { code: "PISCES", vi: "Song Ngư", symbol: "♓", cardVi: "XVIII Mặt Trăng", cardEn: "XVIII The Moon" },
+    { code: "ARIES", vi: "Bạch Dương", en: "Aries", symbol: "♈", cardVi: "IV Hoàng Đế", cardEn: "IV The Emperor" },
+    { code: "TAURUS", vi: "Kim Ngưu", en: "Taurus", symbol: "♉", cardVi: "V Giáo Hoàng", cardEn: "V The Hierophant" },
+    { code: "GEMINI", vi: "Song Tử", en: "Gemini", symbol: "♊", cardVi: "VI Người Tình", cardEn: "VI The Lovers" },
+    { code: "CANCER", vi: "Cự Giải", en: "Cancer", symbol: "♋", cardVi: "VII Cỗ Xe", cardEn: "VII The Chariot" },
+    { code: "LEO", vi: "Sư Tử", en: "Leo", symbol: "♌", cardVi: "VIII Sức Mạnh", cardEn: "VIII Strength" },
+    { code: "VIRGO", vi: "Xử Nữ", en: "Virgo", symbol: "♍", cardVi: "IX Ẩn Sĩ", cardEn: "IX The Hermit" },
+    { code: "LIBRA", vi: "Thiên Bình", en: "Libra", symbol: "♎", cardVi: "XI Công Lý", cardEn: "XI Justice" },
+    { code: "SCORPIO", vi: "Bọ Cạp", en: "Scorpio", symbol: "♏", cardVi: "XIII Tử Thần", cardEn: "XIII Death" },
+    { code: "SAGITTARIUS", vi: "Nhân Mã", en: "Sagittarius", symbol: "♐", cardVi: "XIV Tiết Chế", cardEn: "XIV Temperance" },
+    { code: "CAPRICORN", vi: "Ma Kết", en: "Capricorn", symbol: "♑", cardVi: "XV Ác Quỷ", cardEn: "XV The Devil" },
+    { code: "AQUARIUS", vi: "Bảo Bình", en: "Aquarius", symbol: "♒", cardVi: "XVII Ngôi Sao", cardEn: "XVII The Star" },
+    { code: "PISCES", vi: "Song Ngư", en: "Pisces", symbol: "♓", cardVi: "XVIII Mặt Trăng", cardEn: "XVIII The Moon" },
   ];
 
-  const currentZodiac = zodiacOptions.find((z) => z.code === birthZodiac) || zodiacOptions[0];
   const natalPreview = calculateNatalPreview(birthDate);
+  const derivedZodiacCode =
+    natalPreview?.zodiacCode || profile?.zodiacSign?.toUpperCase() || "ARIES";
+  const currentZodiac =
+    zodiacOptions.find((z) => z.code === derivedZodiacCode) || zodiacOptions[0];
   const lifePath = natalPreview?.lifePathNumber ?? profile?.lifePathNumber ?? 7;
   const displayName = user?.fullName || user?.email?.split("@")[0] || (isVi ? "Người Tìm Kiếm" : "Seeker");
 
@@ -236,15 +227,6 @@ function SeekerProfileContent() {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  disabled={saving}
-                  onClick={handleSaveChanges}
-                  className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1.5 transition-colors"
-                >
-                  <span className="material-symbols-outlined text-sm">save</span>
-                  <span>{saving ? (isVi ? "Đang lưu..." : "Saving...") : (isVi ? "Lưu Thay Đổi" : "Save")}</span>
-                </button>
                 <button
                   type="button"
                   onClick={handleLogout}
@@ -405,25 +387,10 @@ function SeekerProfileContent() {
                         />
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-[10px] font-mono uppercase text-slate-500 mb-1">
-                        {isVi ? "Cung Hoàng Đạo" : "Sun Zodiac Sign"}
-                      </div>
-                      <select
-                        value={birthZodiac}
-                        onChange={(e) => {
-                          isDirtyRef.current = true;
-                          setAutoSaveStatus("idle");
-                          setBirthZodiac(e.target.value);
-                        }}
-                        className="text-xs font-mono font-semibold bg-white border border-slate-300 rounded px-2 py-1 text-slate-900"
-                      >
-                        {zodiacOptions.map((z) => (
-                          <option key={z.code} value={z.code}>
-                            {z.symbol} {isVi ? z.vi : z.code}
-                          </option>
-                        ))}
-                      </select>
+                    <div className="text-[11px] font-mono text-slate-500">
+                      {isVi
+                        ? "Tự động tính Cung & Số đường đời theo ngày sinh"
+                        : "Sun sign & Life Path auto-derived from birth date"}
                     </div>
                   </div>
 
@@ -434,7 +401,9 @@ function SeekerProfileContent() {
                       </div>
                       <div>
                         <span className="text-[10px] font-mono uppercase text-slate-500">
-                          {isVi ? `Cung Mặt Trời · ${currentZodiac.symbol} ${currentZodiac.vi}` : `Sun Sign · ${currentZodiac.symbol} ${currentZodiac.code}`}
+                          {isVi
+                            ? `Cung Mặt Trời · ${currentZodiac.symbol} ${currentZodiac.vi}`
+                            : `Sun Sign · ${currentZodiac.symbol} ${currentZodiac.en}`}
                         </span>
                         <div className="font-headline font-bold text-sm text-slate-900">
                           {isVi ? currentZodiac.cardVi : currentZodiac.cardEn}

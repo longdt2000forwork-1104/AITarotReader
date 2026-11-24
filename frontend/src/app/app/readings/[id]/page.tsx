@@ -10,20 +10,11 @@ import { TAROT_CARDS } from "@/data/tarotCards";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import RequireAuthGate from "@/components/auth/RequireAuthGate";
 import { splitAiParagraphs } from "@/utils/formatAiText";
+import { isSessionActiveToday, toLocalDateKey } from "@/utils/sessionDate";
+import { useCurrentDayKey } from "@/hooks/useCurrentDayKey";
+import { detectSessionTopic, getTopicActionSteps, getTopicConfig } from "@/data/readingTopics";
 
 const MAX_TOTAL_CARDS = 10;
-
-function isSameLocalDay(dateString?: string): boolean {
-  if (!dateString) return false;
-  const d = new Date(dateString);
-  if (Number.isNaN(d.getTime())) return false;
-  const now = new Date();
-  return (
-    d.getFullYear() === now.getFullYear() &&
-    d.getMonth() === now.getMonth() &&
-    d.getDate() === now.getDate()
-  );
-}
 
 function MobileReadingReportContent() {
   const params = useParams();
@@ -31,11 +22,13 @@ function MobileReadingReportContent() {
   const readingId = (params?.id as string) || "";
   const { locale, setLocale } = useLanguage();
   const isVi = locale === "vi";
+  const currentDayKey = useCurrentDayKey();
 
   const [session, setSession] = useState<ReadingSessionDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedCardDetail, setSelectedCardDetail] = useState<DrawnCardDto | null>(null);
   const [isSendingChat, setIsSendingChat] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
   const [isClarifying, setIsClarifying] = useState(false);
   const [clarifierError, setClarifierError] = useState<string | null>(null);
   const [clarifierSuccess, setClarifierSuccess] = useState(false);
@@ -63,6 +56,7 @@ function MobileReadingReportContent() {
       try {
         setLoading(true);
         setClarifierError(null);
+        setChatError(null);
         if (readingId && readingId !== "demo-session") {
           const res = await apiClient.readings.getById(readingId);
           if (res.code === 200 && res.data && res.data.drawnCards && res.data.drawnCards.length > 0) {
@@ -99,9 +93,9 @@ function MobileReadingReportContent() {
   }, [readingId, locale, router]);
 
   const isTodaySession = useMemo(() => {
-    if (!session?.createdAt) return true;
-    return isSameLocalDay(session.createdAt);
-  }, [session?.createdAt]);
+    if (!session) return true;
+    return isSessionActiveToday(session, currentDayKey);
+  }, [session, currentDayKey]);
 
   const sessionDateLabel = useMemo(() => {
     if (!session?.createdAt) return "";
@@ -118,37 +112,49 @@ function MobileReadingReportContent() {
     e.preventDefault();
     if (!questionInput.trim() || isSendingChat || !session) return;
 
+    if (!isSessionActiveToday(session, toLocalDateKey(new Date()))) {
+      setChatError(
+        isVi
+          ? "Phiên trải bài của ngày cũ chỉ có thể xem lại luận giải, không thể tiếp tục hỏi đáp với AI."
+          : "Past-day reading sessions are read-only; AI Q&A is only available for today's session."
+      );
+      return;
+    }
+
     const userText = questionInput.trim();
     setQuestionInput("");
+    setChatError(null);
     setChatMessages((prev) => [...prev, { sender: "user", text: userText }]);
     setIsSendingChat(true);
 
     try {
       const res = await apiClient.readings.sendChat(session.id, userText);
-      if (res.data) {
-        setChatMessages((prev) => [...prev, { sender: "ai", text: res.data.content }]);
-      } else {
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            sender: "ai",
-            text: isVi
-              ? "Vũ trụ gửi tín hiệu: Hãy tiếp tục nuôi dưỡng niềm tin nội tâm và kiên định với con đường đã chọn."
-              : "The universe signals: Continue nurturing your inner conviction along this path."
-          }
-        ]);
+      if (res.code >= 400 || !res.data?.content) {
+        setChatMessages((prev) => prev.slice(0, -1));
+        if (isSessionActiveToday(session, toLocalDateKey(new Date()))) {
+          setQuestionInput(userText);
+        }
+        setChatError(
+          res.message ||
+            (isVi
+              ? "Không thể gửi câu hỏi tới Gemini AI cho phiên này."
+              : "Unable to send your question to Gemini AI for this session.")
+        );
+        return;
       }
+
+      setChatMessages((prev) => [...prev, { sender: "ai", text: res.data.content }]);
     } catch (err) {
       console.error("Failed to send chat message:", err);
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          sender: "ai",
-          text: isVi
-            ? "Đã ghi nhận câu hỏi. Hãy giữ vững tâm thức tĩnh lặng để đón nhận thông điệp."
-            : "Question noted. Maintain a tranquil mind to receive intuitive guidance."
-        }
-      ]);
+      setChatMessages((prev) => prev.slice(0, -1));
+      if (isSessionActiveToday(session, toLocalDateKey(new Date()))) {
+        setQuestionInput(userText);
+      }
+      setChatError(
+        isVi
+          ? "Có lỗi kết nối khi gửi câu hỏi tới Gemini AI. Vui lòng thử lại."
+          : "Connection error while contacting Gemini AI. Please try again."
+      );
     } finally {
       setIsSendingChat(false);
     }
@@ -279,6 +285,16 @@ function MobileReadingReportContent() {
   const spreadName = isVi
     ? session.spreadNameVi || session.spreadTemplate?.nameVi || "Trải Bài 3 Lá"
     : session.spreadNameEn || session.spreadTemplate?.nameEn || "3-Card Spread";
+  const sessionTopic = detectSessionTopic(session.question || session.userQuestion);
+  const topicMeta = sessionTopic ? getTopicConfig(sessionTopic) : null;
+  const synthesisTitle = topicMeta
+    ? isVi
+      ? `Luận Giải · Chủ Đề ${topicMeta.labelVi}`
+      : `Deep Reading · ${topicMeta.labelEn}`
+    : isVi
+    ? "Thông Điệp Cốt Lõi Từ Vũ Trụ"
+    : "Core Oracle Synthesis";
+  const actionSteps = getTopicActionSteps(sessionTopic, isVi);
 
   return (
     <div className="bg-[#FAF9F6] text-[#0F172A] font-body min-h-screen flex justify-center selection:bg-emerald-100 selection:text-emerald-900">
@@ -471,8 +487,8 @@ function MobileReadingReportContent() {
               <p className="text-[11px] text-slate-500 leading-snug">
                 {!isTodaySession
                   ? isVi
-                    ? `Phiên này thuộc ngày ${sessionDateLabel || "trước đây"}. Khi đã sang ngày mới, bạn chỉ có thể xem lại luận giải và không thể rút thêm lá bổ sung.`
-                    : `This session belongs to ${sessionDateLabel || "a past day"}. Past-day readings are view-only.`
+                    ? `Phiên này thuộc ngày ${sessionDateLabel || "trước đây"}. Khi đã sang ngày mới, bạn chỉ có thể xem lại luận giải và không thể rút thêm lá bổ sung hoặc hỏi đáp với AI.`
+                    : `This session belongs to ${sessionDateLabel || "a past day"}. Past-day readings are view-only and cannot draw more cards or continue AI Q&A.`
                   : clarifierError
                   ? clarifierError
                   : clarifierSuccess
@@ -522,12 +538,12 @@ function MobileReadingReportContent() {
           {/* Section 02: Core Synthesis Thesis */}
           <section className="bg-white border-2 border-primary/80 rounded-xl p-5 shadow-xs space-y-2">
             <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold">
-              {isVi ? "02. LUẬN ĐIỂM TỔNG HỢP CỐT LÕI (GEMINI AI)" : "02. SYNTHESIS THESIS (GEMINI AI)"}
+              {isVi ? "02. LUẬN GIẢI CHI TIẾT · TAROT READER KINH NGHIỆM" : "02. EXPERIENCED READER SYNTHESIS"}
             </span>
             <h3 className="font-headline font-bold text-lg text-slate-900">
-              {isVi ? "Thông Điệp Cốt Lõi Từ Vũ Trụ" : "Core Oracle Synthesis"}
+              {synthesisTitle}
             </h3>
-            <div className="text-xs text-slate-700 leading-relaxed space-y-2.5">
+            <div className="text-[13px] text-slate-700 leading-relaxed space-y-3">
               {splitAiParagraphs(
                 session.aiInterpretation ||
                   session.aiSynthesisResult ||
@@ -546,22 +562,12 @@ function MobileReadingReportContent() {
               {isVi ? "03. KHUYẾN NGHỊ HÀNH ĐỘNG THỰC TẾ" : "03. Actionable Steps"}
             </h3>
             <ul className="space-y-2 text-xs text-slate-700">
-              <li className="flex items-start gap-2">
-                <span className="font-mono text-primary font-bold">1.</span>
-                <span>
-                  {isVi
-                    ? "Dành thời gian tĩnh tại đầu ngày để lắng nghe trực giác trước khi tiếp nhận thông tin từ bên ngoài."
-                    : "Dedicate early morning tranquility to consult inner intuition before external noise."}
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="font-mono text-primary font-bold">2.</span>
-                <span>
-                  {isVi
-                    ? "Mọi diễn biến của phiên trải bài hôm nay tự động được lưu trong Nhật Ký Lịch Ngày."
-                    : "Today's reading session is automatically preserved in your Calendar Journal."}
-                </span>
-              </li>
+              {actionSteps.map((step, idx) => (
+                <li key={idx} className="flex items-start gap-2">
+                  <span className="font-mono text-primary font-bold">{idx + 1}.</span>
+                  <span>{step}</span>
+                </li>
+              ))}
             </ul>
             <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] font-mono text-slate-500">
               <Link href="/app/journal" className="text-primary hover:underline font-semibold">
@@ -640,38 +646,92 @@ function MobileReadingReportContent() {
         {/* 5. Floating AI Chat Bubble & Popup Window */}
         {!isChatOpen ? (
           <div className="fixed bottom-20 left-0 right-0 max-w-[420px] mx-auto px-4 pointer-events-none z-40 flex justify-end">
-            <button
-              type="button"
-              onClick={() => setIsChatOpen(true)}
-              className="pointer-events-auto relative flex items-center gap-2 bg-primary hover:bg-[#047857] text-white px-4 py-3 rounded-full shadow-xl transition-all hover:scale-105 active:scale-95"
-              title={isVi ? "Mở khung chat Hỏi đáp với AI" : "Open AI Oracle Chat"}
-            >
-              <span className="material-symbols-outlined text-xl">chat_bubble</span>
-              <span className="text-xs font-mono font-bold uppercase tracking-wider">
-                {isVi ? "Hỏi Đáp AI" : "AI Chat"}
-              </span>
-              {chatMessages.length > 0 && (
-                <span className="ml-0.5 min-w-[20px] h-5 px-1.5 rounded-full bg-amber-400 text-slate-900 font-mono text-[10px] font-extrabold flex items-center justify-center shadow-xs">
+            {isTodaySession ? (
+              <button
+                type="button"
+                onClick={() => setIsChatOpen(true)}
+                className="pointer-events-auto relative flex items-center gap-2 bg-primary hover:bg-[#047857] text-white px-4 py-3 rounded-full shadow-xl transition-all hover:scale-105 active:scale-95"
+                title={isVi ? "Mở khung chat Hỏi đáp với AI" : "Open AI Oracle Chat"}
+              >
+                <span className="material-symbols-outlined text-xl">chat_bubble</span>
+                <span className="text-xs font-mono font-bold uppercase tracking-wider">
+                  {isVi ? "Hỏi Đáp AI" : "AI Chat"}
+                </span>
+                {chatMessages.length > 0 && (
+                  <span className="ml-0.5 min-w-[20px] h-5 px-1.5 rounded-full bg-amber-400 text-slate-900 font-mono text-[10px] font-extrabold flex items-center justify-center shadow-xs">
+                    {chatMessages.length}
+                  </span>
+                )}
+              </button>
+            ) : chatMessages.length > 0 ? (
+              <button
+                type="button"
+                onClick={() => setIsChatOpen(true)}
+                className="pointer-events-auto relative flex items-center gap-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 px-4 py-3 rounded-full shadow-lg transition-all"
+                title={
+                  isVi
+                    ? "Xem lại lịch sử hỏi đáp AI (phiên ngày cũ chỉ đọc)"
+                    : "Review archived AI Q&A history (past-day read-only)"
+                }
+              >
+                <span className="material-symbols-outlined text-xl">history</span>
+                <span className="text-xs font-mono font-bold uppercase tracking-wider">
+                  {isVi ? "Lịch Sử Hỏi Đáp" : "Chat Archive"}
+                </span>
+                <span className="ml-0.5 min-w-[20px] h-5 px-1.5 rounded-full bg-amber-200 text-amber-900 font-mono text-[10px] font-extrabold flex items-center justify-center">
                   {chatMessages.length}
                 </span>
-              )}
-            </button>
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="pointer-events-auto relative flex items-center gap-2 bg-slate-200 text-slate-500 border border-slate-300 px-4 py-3 rounded-full shadow-md cursor-not-allowed"
+                title={
+                  isVi
+                    ? "Hỏi đáp với AI chỉ hoạt động cho phiên của ngày hôm nay"
+                    : "AI Q&A is only available for today's session"
+                }
+              >
+                <span className="material-symbols-outlined text-lg">lock</span>
+                <span className="text-xs font-mono font-bold uppercase tracking-wider">
+                  {isVi ? "Hỏi Đáp AI · Đã Khóa" : "AI Chat · Locked"}
+                </span>
+              </button>
+            )}
           </div>
         ) : (
           <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-[2px] p-3 sm:p-4">
             <div className="w-full max-w-[410px] h-[82dvh] max-h-[640px] bg-white border border-[#E2E8F0] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
               {/* Popup Header */}
               <div className="px-4 py-3 bg-[#FAF9F6] border-b border-[#E2E8F0] flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-emerald-100 text-primary flex items-center justify-center">
-                    <span className="material-symbols-outlined text-lg">auto_awesome</span>
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                      !isTodaySession ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-primary"
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-lg">
+                      {!isTodaySession ? "lock" : "auto_awesome"}
+                    </span>
                   </div>
-                  <div>
-                    <h4 className="font-headline font-bold text-sm text-slate-900 leading-tight">
-                      {isVi ? "Hỏi Đáp Đào Sâu · Gemini AI" : "Oracle Dialectic · Gemini AI"}
-                    </h4>
-                    <span className="text-[10px] font-mono text-slate-500 block">
-                      {isVi
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="font-headline font-bold text-sm text-slate-900 leading-tight truncate">
+                        {isVi ? "Hỏi Đáp Đào Sâu · Gemini AI" : "Oracle Dialectic · Gemini AI"}
+                      </h4>
+                      {!isTodaySession && (
+                        <span className="shrink-0 text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold">
+                          {isVi ? "ĐÃ KHÓA" : "LOCKED"}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[10px] font-mono text-slate-500 block truncate">
+                      {!isTodaySession
+                        ? isVi
+                          ? `${drawnCards.length} lá bài · Ngày cũ (Chỉ xem)`
+                          : `${drawnCards.length} cards · Past day (Read-only)`
+                        : isVi
                         ? `${drawnCards.length} lá bài trong phiên · Trực tuyến`
                         : `${drawnCards.length} cards in session · Live`}
                     </span>
@@ -680,7 +740,7 @@ function MobileReadingReportContent() {
                 <button
                   type="button"
                   onClick={() => setIsChatOpen(false)}
-                  className="w-8 h-8 rounded-full hover:bg-slate-200/70 text-slate-500 hover:text-slate-900 flex items-center justify-center transition-colors"
+                  className="w-8 h-8 rounded-full hover:bg-slate-200/70 text-slate-500 hover:text-slate-900 flex items-center justify-center transition-colors shrink-0"
                   title={isVi ? "Thu nhỏ" : "Minimize"}
                 >
                   <span className="material-symbols-outlined text-lg">close</span>
@@ -691,11 +751,19 @@ function MobileReadingReportContent() {
               <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FAF9F6]/60">
                 {chatMessages.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-center px-4 space-y-3 text-slate-500">
-                    <span className="material-symbols-outlined text-3xl text-primary/60">
-                      forum
+                    <span
+                      className={`material-symbols-outlined text-3xl ${
+                        !isTodaySession ? "text-amber-600/70" : "text-primary/60"
+                      }`}
+                    >
+                      {!isTodaySession ? "lock" : "forum"}
                     </span>
                     <p className="text-xs leading-relaxed">
-                      {isVi
+                      {!isTodaySession
+                        ? isVi
+                          ? "Không có lịch sử hỏi đáp AI trong phiên ngày cũ này. Tính năng hỏi đáp chỉ hoạt động cho phiên hôm nay."
+                          : "No AI Q&A history was recorded for this past-day session. AI Q&A is only available for today's session."
+                        : isVi
                         ? "Bạn có thể đặt bất kỳ câu hỏi nào để Gemini AI phân tích sâu hơn về mối liên hệ giữa các lá bài trong phiên này."
                         : "Ask any follow-up question for Gemini AI to analyze the deeper connections between your drawn cards."}
                     </p>
@@ -740,30 +808,75 @@ function MobileReadingReportContent() {
               </div>
 
               {/* Popup Input Footer */}
-              <form
-                onSubmit={handleSendChat}
-                className="p-3 bg-white border-t border-[#E2E8F0] flex items-center gap-2 shrink-0"
-              >
-                <input
-                  type="text"
-                  value={questionInput}
-                  onChange={(e) => setQuestionInput(e.target.value)}
-                  placeholder={
-                    isVi
-                      ? "Nhập câu hỏi đào sâu với Gemini AI..."
-                      : "Ask follow-up question to Gemini AI..."
-                  }
-                  disabled={isSendingChat}
-                  className="flex-1 bg-[#FAF9F6] border border-[#E2E8F0] rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-                <button
-                  type="submit"
-                  disabled={isSendingChat || !questionInput.trim()}
-                  className="px-4 py-2.5 bg-primary hover:bg-[#047857] text-white rounded-xl text-xs font-mono font-bold uppercase disabled:bg-slate-200 disabled:text-slate-500 transition-colors shrink-0"
-                >
-                  {isSendingChat ? "..." : isVi ? "Gửi" : "Send"}
-                </button>
-              </form>
+              {!isTodaySession ? (
+                <div className="shrink-0">
+                  <div className="bg-amber-50 border-t border-amber-200 px-3.5 py-2.5 flex items-start gap-2 text-[11px] text-amber-900 leading-snug">
+                    <span className="material-symbols-outlined text-sm text-amber-700 shrink-0 mt-0.5">lock</span>
+                    <span>
+                      {isVi
+                        ? `Phiên ngày ${sessionDateLabel || "cũ"} đã lưu trữ. Tính năng hỏi đáp với AI chỉ hoạt động cho phiên của ngày hôm nay.`
+                        : `This session from ${sessionDateLabel || "a past day"} is archived. AI Q&A is only available for today's session.`}
+                    </span>
+                  </div>
+                  <div className="p-3 bg-white border-t border-[#E2E8F0] flex items-center gap-2">
+                    <input
+                      type="text"
+                      value=""
+                      readOnly
+                      disabled
+                      placeholder={
+                        isVi
+                          ? "Hỏi đáp AI đã khóa cho phiên ngày cũ..."
+                          : "AI Q&A is locked for past-day sessions..."
+                      }
+                      className="flex-1 bg-slate-100 text-slate-400 border border-[#E2E8F0] rounded-xl px-3.5 py-2.5 text-xs sm:text-sm cursor-not-allowed"
+                    />
+                    <button
+                      type="submit"
+                      disabled
+                      className="px-3.5 py-2.5 bg-slate-200 text-slate-500 rounded-xl text-xs font-mono font-bold uppercase cursor-not-allowed shrink-0 flex items-center gap-1"
+                    >
+                      <span className="material-symbols-outlined text-xs">lock</span>
+                      <span>{isVi ? "Đã khóa" : "Locked"}</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="shrink-0">
+                  {chatError && (
+                    <div className="bg-rose-50 border-t border-rose-200 px-3.5 py-2 text-[11px] text-rose-700">
+                      {chatError}
+                    </div>
+                  )}
+                  <form
+                    onSubmit={handleSendChat}
+                    className="p-3 bg-white border-t border-[#E2E8F0] flex items-center gap-2"
+                  >
+                    <input
+                      type="text"
+                      value={questionInput}
+                      onChange={(e) => {
+                        setQuestionInput(e.target.value);
+                        if (chatError) setChatError(null);
+                      }}
+                      placeholder={
+                        isVi
+                          ? "Nhập câu hỏi đào sâu với Gemini AI..."
+                          : "Ask follow-up question to Gemini AI..."
+                      }
+                      disabled={isSendingChat}
+                      className="flex-1 bg-[#FAF9F6] border border-[#E2E8F0] rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isSendingChat || !questionInput.trim()}
+                      className="px-4 py-2.5 bg-primary hover:bg-[#047857] text-white rounded-xl text-xs font-mono font-bold uppercase disabled:bg-slate-200 disabled:text-slate-500 transition-colors shrink-0"
+                    >
+                      {isSendingChat ? "..." : isVi ? "Gửi" : "Send"}
+                    </button>
+                  </form>
+                </div>
+              )}
             </div>
           </div>
         )}

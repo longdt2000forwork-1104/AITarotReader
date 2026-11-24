@@ -1,7 +1,7 @@
 package com.aitarotreader.dtos;
 
 import com.aitarotreader.entities.*;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,6 +31,8 @@ public class ReadingSessionDto {
     private Integer maxFollowUps;
     private String status;
     private Instant createdAt;
+    @JsonProperty("isTodaySession")
+    private Boolean isTodaySession;
     private List<DrawnCardView> drawnCards;
     private List<SessionMessageView> messages;
     private JournalEntryView journal;

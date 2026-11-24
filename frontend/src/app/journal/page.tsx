@@ -8,17 +8,9 @@ import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
 import { ReadingSessionDto } from "@/types/api";
 import { cleanAiText } from "@/utils/formatAiText";
+import { toLocalDateKey } from "@/utils/sessionDate";
 
 const MAX_TOTAL_CARDS = 10;
-
-function toLocalDateKey(input: Date | string): string {
-  const d = typeof input === "string" ? new Date(input) : input;
-  if (Number.isNaN(d.getTime())) return "";
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
 
 function JournalPatternLedgerContent() {
   const { locale } = useLanguage();
@@ -213,8 +205,8 @@ function JournalPatternLedgerContent() {
             </div>
             <div className="text-xs text-slate-500">
               {isVi
-                ? "Phiên ngày hôm nay có thể rút tối đa 10 lá bổ sung; phiên ngày cũ chỉ xem lại luận giải."
-                : "Today's reading allows up to 10 cards total; past-day sessions are preserved for review only."}
+                ? "Phiên ngày hôm nay có thể rút tối đa 10 lá bổ sung và hỏi đáp với AI; phiên ngày cũ chỉ xem lại luận giải."
+                : "Today's reading allows up to 10 cards and AI Q&A; past-day sessions are preserved for review only."}
             </div>
           </div>
         </section>
@@ -490,8 +482,8 @@ function JournalPatternLedgerContent() {
                             <span>
                               {isSessionToday
                                 ? isVi
-                                  ? "Mở Workbench để rút thêm lá →"
-                                  : "Open Workbench to continue →"
+                                  ? "Mở Workbench để rút thêm lá & hỏi đáp AI →"
+                                  : "Open Workbench to continue & ask AI →"
                                 : isVi
                                 ? "Mở lại luận giải trên Workbench →"
                                 : "View past interpretation →"}
