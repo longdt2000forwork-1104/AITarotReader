@@ -10,27 +10,19 @@ import { apiClient } from "@/services/apiClient";
 import { ReadingSessionDto, DrawnCardDto } from "@/types/api";
 import { TAROT_CARDS } from "@/data/tarotCards";
 import { splitAiParagraphs } from "@/utils/formatAiText";
+import { isSessionActiveToday, toLocalDateKey } from "@/utils/sessionDate";
+import { useCurrentDayKey } from "@/hooks/useCurrentDayKey";
+import { detectSessionTopic, getTopicActionSteps, getTopicConfig } from "@/data/readingTopics";
 
 interface WorkbenchPageProps {
   params: { id: string };
-}
-
-function isSameLocalDay(dateString?: string): boolean {
-  if (!dateString) return false;
-  const d = new Date(dateString);
-  if (Number.isNaN(d.getTime())) return false;
-  const now = new Date();
-  return (
-    d.getFullYear() === now.getFullYear() &&
-    d.getMonth() === now.getMonth() &&
-    d.getDate() === now.getDate()
-  );
 }
 
 function ReadingWorkbenchContent({ params }: WorkbenchPageProps) {
   const { locale, t } = useLanguage();
   const isVi = locale === "vi";
   const router = useRouter();
+  const currentDayKey = useCurrentDayKey();
 
   const [session, setSession] = useState<ReadingSessionDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,15 +34,16 @@ function ReadingWorkbenchContent({ params }: WorkbenchPageProps) {
   // Follow-up chat state
   const [chatInput, setChatInput] = useState("");
   const [isSendingChat, setIsSendingChat] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
   const [chatMessages, setChatMessages] = useState<Array<{ sender: "user" | "ai"; text: string; time: string }>>([]);
 
   const MAX_TOTAL_CARDS = 10;
 
   // Determine whether the active reading session belongs to today's calendar day
   const isTodaySession = useMemo(() => {
-    if (!session?.createdAt) return true;
-    return isSameLocalDay(session.createdAt);
-  }, [session?.createdAt]);
+    if (!session) return true;
+    return isSessionActiveToday(session, currentDayKey);
+  }, [session, currentDayKey]);
 
   const sessionDateLabel = useMemo(() => {
     if (!session?.createdAt) return "";
@@ -74,22 +67,7 @@ function ReadingWorkbenchContent({ params }: WorkbenchPageProps) {
         }))
       );
     } else {
-      setChatMessages([
-        {
-          sender: "user",
-          text: isVi
-            ? "Tôi nên phân bổ thời gian và năng lực sáng tạo thế nào trong chu kỳ này?"
-            : "How should I structure my creative time and focus during this cycle?",
-          time: "09:41",
-        },
-        {
-          sender: "ai",
-          text: isVi
-            ? "Hãy dành một khối thời gian làm việc sâu 90 phút vào mỗi buổi sáng hoàn toàn cho việc phác thảo độc lập. Tránh tìm kiếm phản hồi từ bên ngoài cho đến khi sản phẩm mẫu đã thành hình rõ ràng trên thực tế."
-            : "Isolate a 90-minute morning deep-work block strictly for solitary drafting. Do not seek external validation until the core prototype is physically tangible.",
-          time: "09:42",
-        },
-      ]);
+      setChatMessages([]);
     }
   };
 
@@ -100,6 +78,7 @@ function ReadingWorkbenchContent({ params }: WorkbenchPageProps) {
     async function loadWorkbenchSession() {
       setIsLoading(true);
       setClarifierError(null);
+      setChatError(null);
       try {
         const id = params.id;
 
@@ -155,13 +134,23 @@ function ReadingWorkbenchContent({ params }: WorkbenchPageProps) {
     };
   }, [params.id, locale, router]);
 
-  // Handle follow-up chat with AI Reader
+  // Handle follow-up chat with AI Reader (today's session only)
   const handleSendChat = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim() || !session?.id || isSendingChat) return;
 
+    if (!isSessionActiveToday(session, toLocalDateKey(new Date()))) {
+      setChatError(
+        isVi
+          ? "Phiên trải bài của ngày cũ chỉ có thể xem lại luận giải, không thể tiếp tục hỏi đáp với AI."
+          : "Past-day reading sessions are read-only; AI Q&A is only available for today's session."
+      );
+      return;
+    }
+
     const userText = chatInput.trim();
     setChatInput("");
+    setChatError(null);
     const nowTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
     setChatMessages((prev) => [...prev, { sender: "user", text: userText, time: nowTime }]);
@@ -169,31 +158,38 @@ function ReadingWorkbenchContent({ params }: WorkbenchPageProps) {
 
     try {
       const res = await apiClient.readings.sendChat(session.id, userText);
-      const aiReply =
-        res.data?.content ||
-        (isVi
-          ? "Hãy neo giữ sự tĩnh lặng và quan sát dòng chảy năng lượng. Mỗi quyết định sáng tạo được khởi sinh từ sự hiện diện chân thật sẽ dẫn lối đến kết quả vững bền."
-          : "Anchor yourself in mindful stillness. Creative actions initiated from authentic presence will naturally cultivate lasting fruition.");
+      if (res.code >= 400 || !res.data?.content) {
+        setChatMessages((prev) => prev.slice(0, -1));
+        if (isSessionActiveToday(session, toLocalDateKey(new Date()))) {
+          setChatInput(userText);
+        }
+        setChatError(
+          res.message ||
+            (isVi
+              ? "Không thể gửi câu hỏi tới Gemini AI cho phiên này."
+              : "Unable to send your question to Gemini AI for this session.")
+        );
+        return;
+      }
 
       setChatMessages((prev) => [
         ...prev,
         {
           sender: "ai",
-          text: aiReply,
-          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          text: res.data.content,
+          time: new Date(res.data.createdAt || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         },
       ]);
     } catch {
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          sender: "ai",
-          text: isVi
-            ? "Vũ trụ đang lắng nghe thông điệp của bạn. Hãy tiếp tục vững bước trên hành trình sáng tạo."
-            : "The universe acknowledges your inquiry. Continue walking steadily upon your creative path.",
-          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        },
-      ]);
+      setChatMessages((prev) => prev.slice(0, -1));
+      if (isSessionActiveToday(session, toLocalDateKey(new Date()))) {
+        setChatInput(userText);
+      }
+      setChatError(
+        isVi
+          ? "Có lỗi kết nối khi gửi câu hỏi tới Gemini AI. Vui lòng thử lại."
+          : "Connection error while contacting Gemini AI. Please try again."
+      );
     } finally {
       setIsSendingChat(false);
     }
@@ -334,6 +330,16 @@ function ReadingWorkbenchContent({ params }: WorkbenchPageProps) {
     : session?.spreadNameEn || session?.spreadTemplate?.nameEn || "Situation · Action · Outcome";
 
   const aiSynthesis = session?.aiInterpretation || session?.aiSynthesisResult || "";
+  const sessionTopic = detectSessionTopic(session?.question || session?.userQuestion);
+  const topicMeta = sessionTopic ? getTopicConfig(sessionTopic) : null;
+  const synthesisTitle = topicMeta
+    ? isVi
+      ? `Luận Giải Chuyên Sâu · Chủ Đề ${topicMeta.labelVi}`
+      : `Deep Reading · ${topicMeta.labelEn}`
+    : isVi
+    ? "Luận Giải Trải Bài Tarot"
+    : "Tarot Reading Synthesis";
+  const actionSteps = getTopicActionSteps(sessionTopic, isVi);
 
   return (
     <>
@@ -546,8 +552,8 @@ function ReadingWorkbenchContent({ params }: WorkbenchPageProps) {
                   <div className="text-[11px] text-slate-500 leading-snug mt-0.5">
                     {!isTodaySession
                       ? isVi
-                        ? `Phiên này thuộc ngày ${sessionDateLabel || "trước đây"}. Khi đã sang ngày mới, bạn chỉ có thể xem lại luận giải và không thể rút thêm lá bổ sung.`
-                        : `This reading belongs to ${sessionDateLabel || "a past day"}. Past-day sessions are archived for review only and cannot draw more cards.`
+                        ? `Phiên này thuộc ngày ${sessionDateLabel || "trước đây"}. Khi đã sang ngày mới, bạn chỉ có thể xem lại luận giải và không thể rút thêm lá bổ sung hoặc hỏi đáp với AI.`
+                        : `This reading belongs to ${sessionDateLabel || "a past day"}. Past-day sessions are archived for review only and cannot draw more cards or continue AI Q&A.`
                       : clarifierError
                       ? clarifierError
                       : drawnCards.length >= MAX_TOTAL_CARDS
@@ -604,10 +610,10 @@ function ReadingWorkbenchContent({ params }: WorkbenchPageProps) {
             <div className="space-y-6 overflow-y-auto max-h-[calc(100vh-220px)] pr-2">
               <div>
                 <span className="font-mono text-[10px] uppercase tracking-widest text-slate-400 block mb-1">
-                  {isVi ? "BÁO CÁO LUẬN GIẢI · GEMINI AI" : "STREAMING SYNTHESIS · REPORT"}
+                  {isVi ? "LUẬN GIẢI BỞI TAROT READER KINH NGHIỆM · GEMINI AI" : "EXPERIENCED TAROT READER · SYNTHESIS REPORT"}
                 </span>
                 <h3 className="font-headline font-bold text-xl text-on-surface">
-                  {isVi ? "Luận Giải: Tái Định Hướng Sáng Tạo" : "Synthesis: Creative Re-alignment"}
+                  {synthesisTitle}
                 </h3>
               </div>
 
@@ -615,9 +621,9 @@ function ReadingWorkbenchContent({ params }: WorkbenchPageProps) {
               <div className="space-y-2 border-b border-outline-variant pb-4">
                 <div className="font-mono text-xs font-semibold uppercase text-primary tracking-wider flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-sm">auto_awesome</span>
-                  <span>{isVi ? "01. Biện Chứng Cốt Lõi" : "01. Core Dialectic"}</span>
+                  <span>{isVi ? "01. Phân Tích & Luận Giải Chi Tiết" : "01. Detailed Reading & Synthesis"}</span>
                 </div>
-                <div className="font-body text-xs text-[#475569] leading-relaxed space-y-2.5">
+                <div className="font-body text-[13px] text-[#475569] leading-relaxed space-y-3">
                   {splitAiParagraphs(
                     aiSynthesis ||
                       (isVi
@@ -636,30 +642,12 @@ function ReadingWorkbenchContent({ params }: WorkbenchPageProps) {
                   <span>{isVi ? "02. Các Bước Hành Động Cụ Thể" : "02. Tactical Next Steps"}</span>
                 </div>
                 <ul className="text-xs text-[#475569] space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="material-symbols-outlined text-sm text-primary shrink-0 mt-0.5">check_circle</span>
-                    <span>
-                      {isVi
-                        ? "Rà soát lại toàn bộ công việc đang dang dở, tạm gác lại những đầu việc không cốt lõi."
-                        : "Audit current work-in-progress and archive non-essential tasks."}
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="material-symbols-outlined text-sm text-primary shrink-0 mt-0.5">check_circle</span>
-                    <span>
-                      {isVi
-                        ? "Dành trọn vẹn 90 phút buổi sáng cho công việc sáng tạo độc lập, không xao nhãng mạng xã hội."
-                        : "Dedicate a focused 90-minute morning block to solitary creative execution."}
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="material-symbols-outlined text-sm text-primary shrink-0 mt-0.5">check_circle</span>
-                    <span>
-                      {isVi
-                        ? "Mọi diễn biến của phiên trải bài hôm nay tự động được lưu trong Nhật Ký Lịch Ngày."
-                        : "Today's reading session is automatically preserved in your Calendar Journal."}
-                    </span>
-                  </li>
+                  {actionSteps.map((step, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <span className="material-symbols-outlined text-sm text-primary shrink-0 mt-0.5">check_circle</span>
+                      <span>{step}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
 
@@ -678,26 +666,44 @@ function ReadingWorkbenchContent({ params }: WorkbenchPageProps) {
                   {isVi ? "ĐỐI THOẠI LÀM RÕ (FOLLOW-UP DIALOGUE)" : "FOLLOW-UP DIALOGUE"}
                 </div>
                 <div className="space-y-2.5">
-                  {chatMessages.map((msg, mIdx) => (
+                  {chatMessages.length === 0 ? (
                     <div
-                      key={mIdx}
-                      className={`p-3 rounded-lg text-xs leading-relaxed ${
-                        msg.sender === "user"
-                          ? "bg-slate-100 text-slate-800 ml-4 border border-slate-200"
-                          : "bg-emerald-50/80 text-emerald-950 mr-2 border border-emerald-200/80"
+                      className={`p-3.5 rounded-lg border text-xs leading-relaxed ${
+                        !isTodaySession
+                          ? "bg-amber-50/50 border-amber-200/80 text-amber-900"
+                          : "bg-slate-50 border-outline-variant text-slate-500"
                       }`}
                     >
-                      <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-1">
-                        <span>{msg.sender === "user" ? (isVi ? "BẠN" : "YOU") : isVi ? "GEMINI AI" : "AI READER"}</span>
-                        <span>{msg.time}</span>
-                      </div>
-                      <div className="space-y-1.5">
-                        {(msg.sender === "ai" ? splitAiParagraphs(msg.text) : [msg.text]).map((para, pIdx) => (
-                          <p key={pIdx}>{para}</p>
-                        ))}
-                      </div>
+                      {!isTodaySession
+                        ? isVi
+                          ? "Không có lịch sử hỏi đáp AI trong phiên ngày này."
+                          : "No AI Q&A history was recorded for this archived session."
+                        : isVi
+                        ? "Chưa có câu hỏi nào. Đặt câu hỏi bên dưới để Gemini AI phân tích sâu hơn về trải bài hôm nay."
+                        : "No questions yet. Ask below for Gemini AI to explore today's spread in greater depth."}
                     </div>
-                  ))}
+                  ) : (
+                    chatMessages.map((msg, mIdx) => (
+                      <div
+                        key={mIdx}
+                        className={`p-3 rounded-lg text-xs leading-relaxed ${
+                          msg.sender === "user"
+                            ? "bg-slate-100 text-slate-800 ml-4 border border-slate-200"
+                            : "bg-emerald-50/80 text-emerald-950 mr-2 border border-emerald-200/80"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-1">
+                          <span>{msg.sender === "user" ? (isVi ? "BẠN" : "YOU") : isVi ? "GEMINI AI" : "AI READER"}</span>
+                          <span>{msg.time}</span>
+                        </div>
+                        <div className="space-y-1.5">
+                          {(msg.sender === "ai" ? splitAiParagraphs(msg.text) : [msg.text]).map((para, pIdx) => (
+                            <p key={pIdx}>{para}</p>
+                          ))}
+                        </div>
+                      </div>
+                    ))
+                  )}
                   {isSendingChat && (
                     <div className="p-3 bg-emerald-50 text-xs text-primary flex items-center gap-2 rounded-lg">
                       <span className="material-symbols-outlined text-sm animate-spin">sync</span>
@@ -712,23 +718,76 @@ function ReadingWorkbenchContent({ params }: WorkbenchPageProps) {
             <form onSubmit={handleSendChat} className="pt-4 border-t border-outline-variant">
               <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 mb-2">
                 <span>{isVi ? "Hỏi thêm quẻ bài" : "Ask Follow-up Question"}</span>
-                <span className="text-primary font-semibold">{isVi ? "KẾT NỐI TRỰC TIẾP" : "LIVE CONNECTED"}</span>
+                {!isTodaySession ? (
+                  <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-semibold">
+                    {isVi ? "ĐÃ KHÓA · PHIÊN NGÀY CŨ" : "LOCKED · PAST SESSION"}
+                  </span>
+                ) : (
+                  <span className="text-primary font-semibold">{isVi ? "KẾT NỐI TRỰC TIẾP" : "LIVE CONNECTED"}</span>
+                )}
               </div>
+
+              {!isTodaySession && (
+                <div className="mb-2.5 p-2.5 bg-amber-50/70 border border-amber-200 rounded-lg flex items-start gap-2 text-[11px] text-amber-900 leading-snug">
+                  <span className="material-symbols-outlined text-sm text-amber-700 shrink-0 mt-0.5">lock</span>
+                  <span>
+                    {isVi
+                      ? `Phiên trải bài ngày ${sessionDateLabel || "cũ"} đã lưu trữ. Tính năng hỏi đáp với AI chỉ hoạt động cho phiên của ngày hôm nay.`
+                      : `This session from ${sessionDateLabel || "a past day"} is archived. AI Q&A is only available for today's session.`}
+                  </span>
+                </div>
+              )}
+
+              {isTodaySession && chatError && (
+                <div className="mb-2 bg-rose-50 border border-rose-200 text-rose-700 text-[11px] rounded-lg px-2.5 py-2">
+                  {chatError}
+                </div>
+              )}
+
               <div className="flex items-center gap-2">
                 <input
                   type="text"
                   value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  placeholder={isVi ? "Đặt câu hỏi cụ thể để làm rõ thêm..." : "Ask a tactical follow-up question..."}
-                  className="flex-1 px-3 py-2 text-xs border border-outline-variant rounded-lg bg-surface-subtle focus:bg-white focus:outline-none focus:border-primary transition-colors"
+                  onChange={(e) => {
+                    setChatInput(e.target.value);
+                    if (chatError) setChatError(null);
+                  }}
+                  disabled={isLoading || !session?.id || !isTodaySession || isSendingChat}
+                  placeholder={
+                    !isTodaySession
+                      ? isVi
+                        ? "Hỏi đáp AI đã khóa cho phiên ngày cũ..."
+                        : "AI Q&A is locked for past-day sessions..."
+                      : isVi
+                      ? "Đặt câu hỏi cụ thể để làm rõ thêm..."
+                      : "Ask a tactical follow-up question..."
+                  }
+                  className={`flex-1 px-3 py-2 text-xs border border-outline-variant rounded-lg focus:outline-none transition-colors ${
+                    !isTodaySession
+                      ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                      : "bg-surface-subtle focus:bg-white focus:border-primary"
+                  }`}
                 />
                 <button
                   type="submit"
-                  disabled={!chatInput.trim() || isSendingChat}
-                  className="px-3.5 py-2 bg-primary text-white rounded-lg text-xs font-medium hover:bg-primary-hover transition-colors disabled:opacity-50 flex items-center gap-1"
+                  disabled={isLoading || !session?.id || !isTodaySession || !chatInput.trim() || isSendingChat}
+                  className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 disabled:cursor-not-allowed ${
+                    !isTodaySession
+                      ? "bg-slate-200 text-slate-500"
+                      : "bg-primary text-white hover:bg-primary-hover disabled:opacity-50"
+                  }`}
                 >
-                  <span>{isVi ? "Gửi" : "Send"}</span>
-                  <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                  {!isTodaySession ? (
+                    <>
+                      <span className="material-symbols-outlined text-xs">lock</span>
+                      <span>{isVi ? "Đã khóa" : "Locked"}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{isVi ? "Gửi" : "Send"}</span>
+                      <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>

@@ -5,6 +5,7 @@ import {
   SpreadTemplate,
   ReadingSessionDto,
   CreateReadingSessionRequest,
+  CreateTopicReadingRequest,
   JournalEntryDto,
   MysticProfileDto,
   UpdateMysticProfileRequest,
@@ -288,6 +289,7 @@ function normalizeReadingSession(session: any, fallbackSpreadId = "S-02", fallba
     aiInterpretation,
     aiSynthesisResult: aiInterpretation,
     dateKey: session.dateKey,
+    isTodaySession: typeof session.isTodaySession === "boolean" ? session.isTodaySession : undefined,
     messages: normalizedMessages,
     createdAt
   };
@@ -414,6 +416,10 @@ export const apiClient = {
         body: JSON.stringify({ question: userMessage })
       });
 
+      if (res.code >= 400) {
+        return res as unknown as ApiResponse<SessionMessageDto>;
+      }
+
       if (res.data) {
         const msgs = res.data.messages || [];
         const lastAiMsg = [...msgs].reverse().find((m: any) => m.role === "AI_READER" || m.sender === "AI_READER");
@@ -524,6 +530,20 @@ export const apiClient = {
         return { ...res, data: normalizeReadingSession(res.data, "S-01", "ED-01") };
       }
       return { ...res, data: null as unknown as ReadingSessionDto };
+    },
+
+    async createTopicReading(req: CreateTopicReadingRequest): Promise<ApiResponse<ReadingSessionDto>> {
+      const res = await requestApi<any>("/api/v1/readings/topic", {
+        method: "POST",
+        body: JSON.stringify(req)
+      });
+      if (res.code >= 400) {
+        return res;
+      }
+      if (res.data) {
+        return { ...res, code: res.code || 201, data: normalizeReadingSession(res.data, "S-02", "ED-01") };
+      }
+      return res;
     }
   },
 

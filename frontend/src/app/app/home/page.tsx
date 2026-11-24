@@ -11,6 +11,12 @@ import { MysticProfileDto, WalletBalanceDto, ReadingSessionDto } from "@/types/a
 import { TAROT_CARDS } from "@/data/tarotCards";
 import { getAiGuidancePreview } from "@/utils/formatAiText";
 import {
+  READING_TOPICS,
+  ReadingTopicId,
+  TOPIC_DRAFT_STORAGE_KEY,
+  getTopicConfig,
+} from "@/data/readingTopics";
+import {
   clearDailyRewardCache,
   isDailyRewardClaimedToday,
   markDailyRewardClaimedToday,
@@ -37,6 +43,89 @@ function MobileDailyHomeContent() {
   const [todayDateStr, setTodayDateStr] = useState("");
   const [avatarError, setAvatarError] = useState(false);
   const autoFlipTriggeredRef = useRef(false);
+
+  // Specific 3-card topic reading state
+  const [selectedTopic, setSelectedTopic] = useState<ReadingTopicId>("LOVE");
+  const [topicQuestion, setTopicQuestion] = useState("");
+  const [isSubmittingTopic, setIsSubmittingTopic] = useState(false);
+  const [topicError, setTopicError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const savedDraft = sessionStorage.getItem(TOPIC_DRAFT_STORAGE_KEY);
+      if (savedDraft) {
+        const parsed = JSON.parse(savedDraft);
+        if (parsed?.topic === "LOVE" || parsed?.topic === "FAMILY" || parsed?.topic === "CAREER") {
+          setSelectedTopic(parsed.topic);
+        }
+        if (typeof parsed?.question === "string" && parsed.question.trim()) {
+          setTopicQuestion(parsed.question);
+        }
+      }
+    } catch {
+      // ignore draft parse errors
+    }
+  }, []);
+
+  const handleTopicReadingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSubmittingTopic) return;
+
+    const trimmedQuestion = topicQuestion.trim();
+    if (!trimmedQuestion) {
+      setTopicError(
+        isVi
+          ? "Vui lòng nhập câu hỏi cụ thể để Tarot Reader rút 3 lá và luận giải chi tiết."
+          : "Please enter a specific question to draw 3 cards and read in depth."
+      );
+      return;
+    }
+
+    if (authStatus !== "authenticated") {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(
+          TOPIC_DRAFT_STORAGE_KEY,
+          JSON.stringify({ topic: selectedTopic, question: trimmedQuestion })
+        );
+      }
+      router.push(`/app/auth?next=${encodeURIComponent("/app/home")}`);
+      return;
+    }
+
+    setIsSubmittingTopic(true);
+    setTopicError(null);
+    try {
+      const res = await apiClient.readings.createTopicReading({
+        topic: selectedTopic,
+        question: trimmedQuestion,
+        locale,
+      });
+      if (res.code >= 400 || !res.data?.id) {
+        setTopicError(
+          res.message ||
+            (isVi
+              ? "Không thể khởi tạo phiên trải bài 3 lá. Vui lòng thử lại."
+              : "Unable to create your 3-card reading. Please try again.")
+        );
+        return;
+      }
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem(TOPIC_DRAFT_STORAGE_KEY);
+      }
+      router.push(`/app/readings/${res.data.id}`);
+    } catch {
+      setTopicError(
+        isVi
+          ? "Có lỗi kết nối khi rút bài theo câu hỏi. Vui lòng thử lại."
+          : "Connection error while drawing your 3-card reading. Please try again."
+      );
+    } finally {
+      setIsSubmittingTopic(false);
+    }
+  };
+
+  const activeTopicConfig = getTopicConfig(selectedTopic);
 
   useEffect(() => {
     setAvatarError(false);
@@ -698,6 +787,123 @@ function MobileDailyHomeContent() {
               </span>
             </button>
           )}
+          {/* Specific 3-Card Topic Reading Card */}
+          <section id="topic-reading" className="bg-white border border-outline-variant rounded-xl p-4 shadow-2xs space-y-3">
+            <div>
+              <span className="font-mono text-[10px] uppercase tracking-wider text-primary font-bold block">
+                {isVi
+                  ? "TAROT READER KINH NGHIỆM · 3 LÁ + LÀM RÕ TỐI ĐA 10 LÁ"
+                  : "SEASONED READER · 3 CARDS + CLARIFIERS UP TO 10"}
+              </span>
+              <h2 className="font-headline font-bold text-base text-on-surface mt-0.5">
+                {isVi ? "Rút 3 Lá Cho Câu Hỏi Cụ Thể" : "3-Card Spread for Specific Question"}
+              </h2>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                {isVi
+                  ? "Chọn chủ đề Tình cảm, Gia đình hoặc Công việc và nhập câu hỏi để nhận luận giải chi tiết; có thể rút thêm lá làm rõ tới tổng 10 lá."
+                  : "Choose Love, Family, or Career and ask your question for an in-depth reading; draw additional clarifiers up to 10 cards total."}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-1.5">
+              {READING_TOPICS.map((topicItem) => {
+                const isActive = selectedTopic === topicItem.id;
+                return (
+                  <button
+                    key={topicItem.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedTopic(topicItem.id);
+                      if (topicError) setTopicError(null);
+                    }}
+                    className={`p-2 rounded-lg border text-center flex flex-col items-center gap-1 transition-all ${
+                      isActive
+                        ? "border-primary bg-emerald-50 text-primary font-bold shadow-2xs"
+                        : "border-outline-variant bg-[#FAF9F6] text-slate-600 hover:bg-white"
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-lg">{topicItem.icon}</span>
+                    <span className="text-[11px] font-medium leading-tight">
+                      {isVi ? topicItem.labelVi : topicItem.labelEn}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="grid grid-cols-3 gap-1.5 text-[10px] font-mono text-slate-600">
+              {(isVi ? activeTopicConfig.positionsVi : activeTopicConfig.positionsEn).map((posTitle, idx) => (
+                <div
+                  key={idx}
+                  className="p-2 rounded bg-[#FAF9F6] border border-outline-variant text-center leading-tight"
+                >
+                  <span className="text-primary font-bold block mb-0.5">0{idx + 1}</span>
+                  <span className="line-clamp-2">{posTitle}</span>
+                </div>
+              ))}
+            </div>
+
+            <form onSubmit={handleTopicReadingSubmit} className="space-y-2.5">
+              <textarea
+                rows={3}
+                maxLength={500}
+                value={topicQuestion}
+                onChange={(e) => {
+                  setTopicQuestion(e.target.value);
+                  if (topicError) setTopicError(null);
+                }}
+                placeholder={isVi ? activeTopicConfig.placeholderVi : activeTopicConfig.placeholderEn}
+                className="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg bg-[#FAF9F6] focus:bg-white focus:outline-none focus:border-primary resize-none"
+              />
+
+              <div className="space-y-1">
+                <span className="text-[10px] font-mono text-slate-400 block">
+                  {isVi ? "Gợi ý câu hỏi:" : "Suggested prompts:"}
+                </span>
+                <div className="flex flex-col gap-1">
+                  {(isVi ? activeTopicConfig.sampleQuestionsVi : activeTopicConfig.sampleQuestionsEn).map((sample, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setTopicQuestion(sample);
+                        if (topicError) setTopicError(null);
+                      }}
+                      className="text-left text-[11px] px-2.5 py-1.5 rounded-lg bg-[#FAF9F6] hover:bg-emerald-50 border border-outline-variant text-slate-700 transition-colors"
+                    >
+                      {sample}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {topicError && (
+                <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-lg text-[11px] text-rose-700">
+                  {topicError}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isSubmittingTopic}
+                className="w-full py-2.5 bg-slate-900 hover:bg-primary text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 shadow-xs transition-colors disabled:opacity-60"
+              >
+                <span className={`material-symbols-outlined text-sm ${isSubmittingTopic ? "animate-spin" : ""}`}>
+                  {isSubmittingTopic ? "progress_activity" : "style"}
+                </span>
+                <span>
+                  {isSubmittingTopic
+                    ? isVi
+                      ? "Đang rút 3 lá & luận giải chi tiết..."
+                      : "Drawing 3 cards & reading..."
+                    : isVi
+                    ? "Rút 3 Lá & Xem Luận Giải Chi Tiết"
+                    : "Draw 3 Cards & Get Deep Reading"}
+                </span>
+              </button>
+            </form>
+          </section>
+
           <Link
             href="/app/journal"
             className="w-full py-2.5 bg-white border border-outline-variant text-on-surface text-xs font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-slate-50"

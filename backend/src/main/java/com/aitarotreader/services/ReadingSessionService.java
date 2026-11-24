@@ -36,6 +36,15 @@ public class ReadingSessionService {
         return LocalDate.now(VIETNAM_ZONE).atStartOfDay(VIETNAM_ZONE).toInstant();
     }
 
+    public boolean isSessionFromToday(ReadingSession session) {
+        if (session == null || session.getCreatedAt() == null) {
+            return true;
+        }
+        LocalDate today = LocalDate.now(VIETNAM_ZONE);
+        LocalDate sessionDate = session.getCreatedAt().atZone(VIETNAM_ZONE).toLocalDate();
+        return today.equals(sessionDate);
+    }
+
     private final ReadingSessionRepository sessionRepository;
     private final DrawnCardRepository drawnCardRepository;
     private final SessionMessageRepository messageRepository;
@@ -292,8 +301,123 @@ public class ReadingSessionService {
     }
 
     @Transactional
+    public ReadingSessionDto performTopicReading(UUID userId, TopicReadingRequest request) {
+        User user = requireUser(userId);
+
+        String topic = request != null && request.getTopic() != null
+                ? request.getTopic().trim().toUpperCase()
+                : "";
+        if (!"LOVE".equals(topic) && !"FAMILY".equals(topic) && !"CAREER".equals(topic)) {
+            throw new CustomException(
+                    ErrorCode.BAD_REQUEST,
+                    "Chủ đề không hợp lệ. Vui lòng chọn Tình cảm, Gia đình hoặc Công việc."
+            );
+        }
+
+        String rawQuestion = request.getQuestion() != null ? request.getQuestion().trim() : "";
+        if (rawQuestion.isBlank()) {
+            throw new CustomException(ErrorCode.BAD_REQUEST, "Vui lòng nhập câu hỏi cụ thể của bạn.");
+        }
+
+        String effectiveLocale = (request.getLocale() != null && !request.getLocale().isBlank())
+                ? request.getLocale().trim().toLowerCase()
+                : (user.getLocale() != null && !user.getLocale().isBlank() ? user.getLocale() : "vi");
+        boolean isVi = !"en".equalsIgnoreCase(effectiveLocale);
+
+        String topicPrefix = switch (topic) {
+            case "LOVE" -> isVi ? "[Tình cảm] " : "[Love] ";
+            case "FAMILY" -> isVi ? "[Gia đình] " : "[Family] ";
+            default -> isVi ? "[Công việc] " : "[Career] ";
+        };
+        String formattedQuestion = rawQuestion.startsWith("[") ? rawQuestion : topicPrefix + rawQuestion;
+
+        List<TarotCard> allCards = cardRepository.findAll();
+        if (allCards.size() < 3) {
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, "Not enough tarot cards available in catalog");
+        }
+        List<TarotCard> shuffledCards = new ArrayList<>(allCards);
+        Collections.shuffle(shuffledCards);
+        List<TarotCard> selectedCards = shuffledCards.subList(0, 3);
+
+        SpreadTemplate spread = spreadRepository.findById("S-02")
+                .orElseGet(() -> spreadRepository.findAll().stream().findFirst().orElse(null));
+        TarotDeck deck = deckRepository.findById("ED-01").orElse(null);
+
+        ReadingSession session = ReadingSession.builder()
+                .user(user)
+                .spread(spread)
+                .deck(deck)
+                .inputMode(InputMode.VIRTUAL)
+                .personaCode("EXPERIENCED_READER")
+                .userQuestion(formattedQuestion)
+                .followUpCount(0)
+                .maxFollowUps(10)
+                .status("COMPLETED")
+                .build();
+        ReadingSession savedSession = sessionRepository.save(session);
+
+        String[][] topicPositions = resolveTopicPositions(topic);
+        List<DrawnCard> drawnCards = new ArrayList<>();
+        Random random = new Random();
+        for (int i = 0; i < 3; i++) {
+            TarotCard card = selectedCards.get(i);
+            boolean isReversed = random.nextInt(100) < 28;
+            DrawnCard drawn = DrawnCard.builder()
+                    .session(savedSession)
+                    .card(card)
+                    .positionIndex(i)
+                    .positionNameEn(topicPositions[0][i])
+                    .positionNameVi(topicPositions[1][i])
+                    .isReversed(isReversed)
+                    .isClarifier(false)
+                    .build();
+            drawnCards.add(drawn);
+        }
+        drawnCardRepository.saveAll(drawnCards);
+        if (savedSession.getDrawnCards() == null) {
+            savedSession.setDrawnCards(new ArrayList<>());
+        }
+        savedSession.getDrawnCards().clear();
+        savedSession.getDrawnCards().addAll(drawnCards);
+
+        String synthesis = generateInitialSynthesis(savedSession, drawnCards, effectiveLocale);
+        savedSession.setAiSynthesisResult(synthesis);
+        savedSession = sessionRepository.save(savedSession);
+        autoEnsureJournalEntry(savedSession, drawnCards);
+
+        return toSessionDto(savedSession);
+    }
+
+    private String[][] resolveTopicPositions(String topic) {
+        return switch (topic) {
+            case "LOVE" -> new String[][]{
+                    {"Current Connection", "Hidden Feelings & Blocks", "Relationship Path & Advice"},
+                    {"Hiện Trạng Kết Nối", "Cảm Xúc & Rào Cản Ẩn", "Hướng Mở & Lời Khuyên Tình Cảm"}
+            };
+            case "FAMILY" -> new String[][]{
+                    {"Family Roots & Atmosphere", "Unspoken Tension to Heal", "Path to Family Harmony"},
+                    {"Căn Nguyên & Không Khí Gia Đình", "Nút Thắt Cần Thấu Hiểu", "Hướng Gắn Kết & Bình An"}
+            };
+            default -> new String[][]{
+                    {"Current Career Landscape", "Key Challenge & Leverage", "Career Trajectory & Next Step"},
+                    {"Cục Diện Công Việc Hiện Tại", "Thách Thức & Đòn Bẩy", "Triển Vọng & Bước Đi Chiến Lược"}
+            };
+        };
+    }
+
+    @Transactional
     public ReadingSessionDto askFollowUpQuestion(UUID sessionId, UUID userId, FollowUpChatRequest request) {
         ReadingSession session = requireOwnedSession(sessionId, userId);
+
+        if (!isSessionFromToday(session)) {
+            boolean isEn = session.getUser() != null && "en".equalsIgnoreCase(session.getUser().getLocale());
+            throw new CustomException(
+                    ErrorCode.PAST_SESSION_READ_ONLY,
+                    isEn
+                            ? "Past-day reading sessions are read-only; AI Q&A is only available for today's session."
+                            : "Phiên trải bài của ngày cũ chỉ có thể xem lại luận giải, không thể tiếp tục hỏi đáp với AI."
+            );
+        }
 
         if (session.getMaxFollowUps() == null || session.getMaxFollowUps() < 10) {
             session.setMaxFollowUps(10);
@@ -344,9 +468,14 @@ public class ReadingSessionService {
     public ReadingSessionDto drawClarifierCard(UUID sessionId, UUID userId) {
         ReadingSession session = requireOwnedSession(sessionId, userId);
 
-        Instant startOfToday = getStartOfToday();
-        if (session.getCreatedAt() != null && session.getCreatedAt().isBefore(startOfToday)) {
-            throw new CustomException(ErrorCode.BAD_REQUEST, "Phiên trải bài của ngày cũ chỉ có thể xem lại luận giải, không thể rút thêm lá bài bổ sung.");
+        if (!isSessionFromToday(session)) {
+            boolean isEn = session.getUser() != null && "en".equalsIgnoreCase(session.getUser().getLocale());
+            throw new CustomException(
+                    ErrorCode.PAST_SESSION_READ_ONLY,
+                    isEn
+                            ? "Past-day reading sessions are read-only; you cannot draw additional clarifier cards."
+                            : "Phiên trải bài của ngày cũ chỉ có thể xem lại luận giải, không thể rút thêm lá bài bổ sung."
+            );
         }
 
         ensureChronologicalClarifiers(session);
@@ -704,33 +833,88 @@ public class ReadingSessionService {
 
         boolean isVi = locale == null || "vi".equalsIgnoreCase(locale);
         StringBuilder sb = new StringBuilder();
+        boolean isMultiCard = cards != null && cards.size() > 1;
 
         if (isVi) {
-            sb.append("Phân tích Tổng quan Trải bài (")
-              .append(session.getSpread() != null ? session.getSpread().getNameVi() : "Trải bài")
-              .append(")\n\n");
-            for (DrawnCard dc : cards) {
-                String cardName = dc.getCard().getNameVi();
-                String orientation = dc.getIsReversed() ? "(Ngược)" : "(Xuôi)";
-                String position = dc.getPositionNameVi() != null ? dc.getPositionNameVi() : "Vị trí " + (dc.getPositionIndex() + 1);
-                sb.append(String.format("%s — %s %s: %s\n\n",
-                        position, cardName, orientation,
-                        dc.getIsReversed() ? dc.getCard().getKeywordsReversedVi() : dc.getCard().getKeywordsUprightVi()));
+            if (isMultiCard) {
+                String questionContext = session.getUserQuestion() != null && !session.getUserQuestion().isBlank()
+                        ? session.getUserQuestion()
+                        : "câu hỏi hiện tại";
+                sb.append("Nhìn vào tổng thể ba lá bài vừa mở cho vấn đề ")
+                  .append(questionContext)
+                  .append(", dòng chảy năng lượng cho thấy câu chuyện này đang đi qua một giai đoạn cần sự lắng nghe chín chắn trước khi đưa ra quyết định dứt khoát. Mỗi lá bài đóng một vai trò nối tiếp nhau từ nền tảng thực tế đến những chuyển biến bên trong.\n\n");
+                for (DrawnCard dc : cards) {
+                    String cardName = dc.getCard().getNameVi();
+                    String orientation = dc.getIsReversed() ? "ở chiều Ngược" : "ở chiều Xuôi";
+                    String position = dc.getPositionNameVi() != null ? dc.getPositionNameVi() : "Vị trí " + (dc.getPositionIndex() + 1);
+                    String keywords = dc.getIsReversed() ? dc.getCard().getKeywordsReversedVi() : dc.getCard().getKeywordsUprightVi();
+                    String summary = dc.getCard().getSummaryVi();
+                    sb.append(String.format("%s mở ra lá %s %s. ", position, cardName, orientation));
+                    if (summary != null && !summary.isBlank()) {
+                        sb.append(summary).append(" ");
+                    }
+                    if (keywords != null && !keywords.isBlank()) {
+                        sb.append(dc.getIsReversed()
+                                ? "Với chiều ngược, lá bài nhắc bạn chú ý tới những vướng mắc hoặc sự chần chừ xoay quanh: " + keywords + "."
+                                : "Điểm tựa chính của vị trí này nằm ở các tín hiệu: " + keywords + ".");
+                    }
+                    sb.append("\n\n");
+                }
+                sb.append("Đúc kết từ góc nhìn của người đọc bài lâu năm, điều quan trọng nhất lúc này là bạn tách bạch được cảm xúc nhất thời khỏi giá trị cốt lõi mình muốn giữ gìn. Hãy bước từng nhịp chắc chắn theo thông điệp của vị trí thứ ba, và nếu còn điểm nào chưa rõ, bạn có thể rút thêm lá bài làm rõ để bóc tách sâu hơn.");
+            } else {
+                sb.append("Phân tích Tổng quan Trải bài (")
+                  .append(session.getSpread() != null ? session.getSpread().getNameVi() : "Trải bài")
+                  .append(")\n\n");
+                for (DrawnCard dc : cards) {
+                    String cardName = dc.getCard().getNameVi();
+                    String orientation = dc.getIsReversed() ? "(Ngược)" : "(Xuôi)";
+                    String position = dc.getPositionNameVi() != null ? dc.getPositionNameVi() : "Vị trí " + (dc.getPositionIndex() + 1);
+                    sb.append(String.format("%s — %s %s: %s\n\n",
+                            position, cardName, orientation,
+                            dc.getIsReversed() ? dc.getCard().getKeywordsReversedVi() : dc.getCard().getKeywordsUprightVi()));
+                }
+                sb.append("Lời khuyên đúc kết: Năng lượng các lá bài nhắc nhở bạn giữ vững sự kiên định, mở rộng tầm nhìn và tự tin lắng nghe trực giác trong mọi quyết định.");
             }
-            sb.append("Lời khuyên đúc kết: Năng lượng các lá bài nhắc nhở bạn giữ vững sự kiên định, mở rộng tầm nhìn và tự tin lắng nghe trực giác trong mọi quyết định.");
         } else {
-            sb.append("Reading Synthesis (")
-              .append(session.getSpread() != null ? session.getSpread().getNameEn() : "Spread")
-              .append(")\n\n");
-            for (DrawnCard dc : cards) {
-                String cardName = dc.getCard().getNameEn();
-                String orientation = dc.getIsReversed() ? "(Reversed)" : "(Upright)";
-                String position = dc.getPositionNameEn() != null ? dc.getPositionNameEn() : "Position " + (dc.getPositionIndex() + 1);
-                sb.append(String.format("%s — %s %s: %s\n\n",
-                        position, cardName, orientation,
-                        dc.getIsReversed() ? dc.getCard().getKeywordsReversedEn() : dc.getCard().getKeywordsUprightEn()));
+            if (isMultiCard) {
+                String questionContext = session.getUserQuestion() != null && !session.getUserQuestion().isBlank()
+                        ? session.getUserQuestion()
+                        : "your current inquiry";
+                sb.append("Looking at the three cards drawn for ")
+                  .append(questionContext)
+                  .append(", the reading reveals a clear progression from what currently anchors the situation to what needs honest attention beneath the surface. Taken together, these archetypes invite steady discernment rather than impulsive reaction.\n\n");
+                for (DrawnCard dc : cards) {
+                    String cardName = dc.getCard().getNameEn();
+                    String orientation = dc.getIsReversed() ? "in the Reversed position" : "Upright";
+                    String position = dc.getPositionNameEn() != null ? dc.getPositionNameEn() : "Position " + (dc.getPositionIndex() + 1);
+                    String keywords = dc.getIsReversed() ? dc.getCard().getKeywordsReversedEn() : dc.getCard().getKeywordsUprightEn();
+                    String summary = dc.getCard().getSummaryEn();
+                    sb.append(String.format("%s brings forth %s (%s). ", position, cardName, orientation));
+                    if (summary != null && !summary.isBlank()) {
+                        sb.append(summary).append(" ");
+                    }
+                    if (keywords != null && !keywords.isBlank()) {
+                        sb.append(dc.getIsReversed()
+                                ? "Reversed, this placement highlights subtle friction or hesitation around: " + keywords + "."
+                                : "Key themes emerging here center on: " + keywords + ".");
+                    }
+                    sb.append("\n\n");
+                }
+                sb.append("As a seasoned reader would advise, ground yourself in what is factually within your control before forcing a rapid outcome. Let the third card guide your next measured step, and draw clarifier cards if you want to examine a specific detail further.");
+            } else {
+                sb.append("Reading Synthesis (")
+                  .append(session.getSpread() != null ? session.getSpread().getNameEn() : "Spread")
+                  .append(")\n\n");
+                for (DrawnCard dc : cards) {
+                    String cardName = dc.getCard().getNameEn();
+                    String orientation = dc.getIsReversed() ? "(Reversed)" : "(Upright)";
+                    String position = dc.getPositionNameEn() != null ? dc.getPositionNameEn() : "Position " + (dc.getPositionIndex() + 1);
+                    sb.append(String.format("%s — %s %s: %s\n\n",
+                            position, cardName, orientation,
+                            dc.getIsReversed() ? dc.getCard().getKeywordsReversedEn() : dc.getCard().getKeywordsUprightEn()));
+                }
+                sb.append("Sage Counsel: Take quiet moments of reflection to turn inner obstacles into transformative growth.");
             }
-            sb.append("Sage Counsel: Take quiet moments of reflection to turn inner obstacles into transformative growth.");
         }
 
         return sb.toString();
@@ -796,6 +980,7 @@ public class ReadingSessionService {
                 .maxFollowUps(session.getMaxFollowUps())
                 .status(session.getStatus())
                 .createdAt(session.getCreatedAt())
+                .isTodaySession(isSessionFromToday(session))
                 .drawnCards(cardViews)
                 .messages(messageViews)
                 .journal(journalView)

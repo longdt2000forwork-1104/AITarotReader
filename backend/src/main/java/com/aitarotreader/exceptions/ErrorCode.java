@@ -18,7 +18,8 @@ public enum ErrorCode {
     REFRESH_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "ERR_REFRESH_TOKEN_INVALID", "Refresh token is invalid, expired, or revoked"),
     TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "ERR_TOO_MANY_REQUESTS", "Too many requests. Please wait a moment and try again"),
     INSUFFICIENT_CRYSTALS(HttpStatus.PAYMENT_REQUIRED, "ERR_INSUFFICIENT_CRYSTALS", "Not enough crystals for this reading spread"),
-    FOLLOW_UP_LIMIT_REACHED(HttpStatus.BAD_REQUEST, "ERR_FOLLOW_UP_LIMIT", "Maximum follow-up question limit reached for this session");
+    FOLLOW_UP_LIMIT_REACHED(HttpStatus.BAD_REQUEST, "ERR_FOLLOW_UP_LIMIT", "Maximum follow-up question limit reached for this session"),
+    PAST_SESSION_READ_ONLY(HttpStatus.BAD_REQUEST, "ERR_PAST_SESSION_READ_ONLY", "Past-day reading sessions are read-only");
 
     private final HttpStatus httpStatus;
     private final String code;

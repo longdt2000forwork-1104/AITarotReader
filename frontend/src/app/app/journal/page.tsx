@@ -8,17 +8,9 @@ import { useLanguage } from "@/context/LanguageContext";
 import { apiClient } from "@/services/apiClient";
 import { ReadingSessionDto } from "@/types/api";
 import { cleanAiText } from "@/utils/formatAiText";
+import { toLocalDateKey } from "@/utils/sessionDate";
 
 const MAX_TOTAL_CARDS = 10;
-
-function toLocalDateKey(input: Date | string): string {
-  const d = typeof input === "string" ? new Date(input) : input;
-  if (Number.isNaN(d.getTime())) return "";
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
 
 function MobileCalendarJournalContent() {
   const { locale, setLocale } = useLanguage();
@@ -341,7 +333,7 @@ function MobileCalendarJournalContent() {
           <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 pt-1">
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-primary inline-block" />
-              {isVi ? "Hôm nay (rút tối đa 10 lá)" : "Today (up to 10 cards)"}
+              {isVi ? "Hôm nay (rút bài & hỏi AI)" : "Today (active)"}
             </span>
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-emerald-200 border border-emerald-400 inline-block" />
@@ -433,8 +425,8 @@ function MobileCalendarJournalContent() {
                     <div className="pt-1.5 border-t border-slate-100 text-[11px] font-mono font-semibold text-primary">
                       {isSessionToday
                         ? isVi
-                          ? "Mở phiên hôm nay để rút thêm lá →"
-                          : "Open today's reading →"
+                          ? "Mở phiên hôm nay để rút thêm lá & hỏi AI →"
+                          : "Open today's reading & AI chat →"
                         : isVi
                         ? "Xem lại luận giải ngày cũ →"
                         : "Review past interpretation →"}

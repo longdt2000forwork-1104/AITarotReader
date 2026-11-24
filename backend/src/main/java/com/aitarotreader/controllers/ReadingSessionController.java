@@ -77,6 +77,15 @@ public class ReadingSessionController {
         return ResponseEntity.ok(ApiResponse.ok("Daily draw completed", session));
     }
 
+    @Operation(summary = "Draw 3 cards for a specific question in Love, Family, or Career (allows up to 10 total cards with clarifiers)")
+    @PostMapping("/topic")
+    public ResponseEntity<ApiResponse<ReadingSessionDto>> performTopicReading(
+            @AuthenticationPrincipal UUID userId,
+            @Valid @RequestBody TopicReadingRequest request) {
+        ReadingSessionDto session = readingSessionService.performTopicReading(userId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Topic reading completed", session));
+    }
+
     @Operation(summary = "Get user reading session history (Journal archive)")
     @GetMapping({"/sessions", "/history"})
     public ResponseEntity<ApiResponse<List<ReadingSessionDto>>> getUserSessions(
@@ -104,7 +113,7 @@ public class ReadingSessionController {
         return ResponseEntity.ok(ApiResponse.ok(session));
     }
 
-    @Operation(summary = "Ask a follow-up question to the AI Reader persona (up to 10 per session)")
+    @Operation(summary = "Ask a follow-up question to the AI Reader persona (active for today's session only, up to 10 per session)")
     @PostMapping({"/sessions/{id}/chat", "/{id}/chat"})
     public ResponseEntity<ApiResponse<ReadingSessionDto>> askFollowUpQuestion(
             @PathVariable UUID id,

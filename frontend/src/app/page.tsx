@@ -10,6 +10,12 @@ import { apiClient } from "@/services/apiClient";
 import { TAROT_CARDS } from "@/data/tarotCards";
 import { ReadingSessionDto } from "@/types/api";
 import { getAiGuidancePreview } from "@/utils/formatAiText";
+import {
+  READING_TOPICS,
+  ReadingTopicId,
+  TOPIC_DRAFT_STORAGE_KEY,
+  getTopicConfig,
+} from "@/data/readingTopics";
 
 function EditorialPortalContent() {
   const { t, locale } = useLanguage();
@@ -23,6 +29,89 @@ function EditorialPortalContent() {
   const [isFlipping, setIsFlipping] = useState(false);
   const [isGuidanceExpanded, setIsGuidanceExpanded] = useState(false);
   const autoFlipTriggeredRef = useRef(false);
+
+  // Specific 3-card topic reading state
+  const [selectedTopic, setSelectedTopic] = useState<ReadingTopicId>("LOVE");
+  const [topicQuestion, setTopicQuestion] = useState("");
+  const [isSubmittingTopic, setIsSubmittingTopic] = useState(false);
+  const [topicError, setTopicError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const savedDraft = sessionStorage.getItem(TOPIC_DRAFT_STORAGE_KEY);
+      if (savedDraft) {
+        const parsed = JSON.parse(savedDraft);
+        if (parsed?.topic === "LOVE" || parsed?.topic === "FAMILY" || parsed?.topic === "CAREER") {
+          setSelectedTopic(parsed.topic);
+        }
+        if (typeof parsed?.question === "string" && parsed.question.trim()) {
+          setTopicQuestion(parsed.question);
+        }
+      }
+    } catch {
+      // ignore draft parse errors
+    }
+  }, []);
+
+  const handleTopicReadingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSubmittingTopic) return;
+
+    const trimmedQuestion = topicQuestion.trim();
+    if (!trimmedQuestion) {
+      setTopicError(
+        isVi
+          ? "Vui lòng nhập câu hỏi cụ thể để Tarot Reader rút 3 lá và luận giải chi tiết."
+          : "Please enter a specific question so the Tarot Reader can draw 3 cards and interpret in depth."
+      );
+      return;
+    }
+
+    if (authStatus !== "authenticated") {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(
+          TOPIC_DRAFT_STORAGE_KEY,
+          JSON.stringify({ topic: selectedTopic, question: trimmedQuestion })
+        );
+      }
+      router.push(`/auth?next=${encodeURIComponent("/#topic-reading")}`);
+      return;
+    }
+
+    setIsSubmittingTopic(true);
+    setTopicError(null);
+    try {
+      const res = await apiClient.readings.createTopicReading({
+        topic: selectedTopic,
+        question: trimmedQuestion,
+        locale,
+      });
+      if (res.code >= 400 || !res.data?.id) {
+        setTopicError(
+          res.message ||
+            (isVi
+              ? "Không thể khởi tạo phiên trải bài 3 lá. Vui lòng thử lại."
+              : "Unable to create your 3-card topic reading. Please try again.")
+        );
+        return;
+      }
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem(TOPIC_DRAFT_STORAGE_KEY);
+      }
+      router.push(`/workbench/${res.data.id}`);
+    } catch {
+      setTopicError(
+        isVi
+          ? "Có lỗi kết nối khi rút bài theo câu hỏi. Vui lòng thử lại."
+          : "Connection error while drawing your 3-card reading. Please try again."
+      );
+    } finally {
+      setIsSubmittingTopic(false);
+    }
+  };
+
+  const activeTopicConfig = getTopicConfig(selectedTopic);
 
   const cacheKey = user?.id ? `ai_tarot_daily_draw_${user.id}` : null;
 
@@ -280,6 +369,13 @@ function EditorialPortalContent() {
                     <span className="material-symbols-outlined text-base">touch_app</span>
                   </button>
                 )}
+                <a
+                  href="#topic-reading"
+                  className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-on-surface border border-outline-variant text-sm font-medium px-5 py-3.5 rounded-lg transition-all"
+                >
+                  <span className="material-symbols-outlined text-base text-primary">style</span>
+                  <span>{isVi ? "Rút 3 Lá Theo Câu Hỏi" : "3-Card Topic Reading"}</span>
+                </a>
               </div>
             </div>
 
@@ -678,6 +774,197 @@ function EditorialPortalContent() {
                 </Link>
               </div>
             )}
+          </div>
+        </section>
+
+        {/* SPECIFIC 3-CARD TOPIC READING SECTION (LOVE · FAMILY · CAREER) */}
+        <section id="topic-reading" className="border-b border-outline-variant bg-white grid grid-cols-1 lg:grid-cols-12">
+          <div className="lg:col-span-7 p-8 md:p-10 lg:p-12 border-b lg:border-b-0 lg:border-r border-outline-variant">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="inline-block w-2 h-2 rounded-full bg-primary" />
+              <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+                {isVi
+                  ? "TAROT READER KINH NGHIỆM · 3 LÁ KHỞI ĐẦU + LÀM RÕ TỐI ĐA 10 LÁ"
+                  : "SEASONED TAROT READER · 3 CARDS + CLARIFIERS UP TO 10 CARDS"}
+              </span>
+            </div>
+            <h2 className="font-headline font-bold text-2xl sm:text-3xl text-on-surface">
+              {isVi ? "Rút 3 Lá Bài Cho Câu Hỏi Cụ Thể" : "3-Card Spread for Your Specific Question"}
+            </h2>
+            <p className="text-sm text-[#475569] mt-2 leading-relaxed max-w-2xl">
+              {isVi
+                ? "Chọn một trong ba chủ đề Tình cảm, Gia đình hoặc Công việc và đặt câu hỏi của bạn. Hệ thống sẽ rút 3 lá bài kết nối mạch năng lượng, luận giải chi tiết từ góc nhìn của một Tarot Reader nhiều kinh nghiệm và cho phép rút thêm lá làm rõ (tổng tối đa 10 lá)."
+                : "Choose Love, Family, or Career and share your specific question. We draw 3 cards, deliver an in-depth reading from an experienced Tarot Reader perspective, and let you draw additional clarifiers up to 10 cards total."}
+            </p>
+
+            {/* Topic Selector */}
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {READING_TOPICS.map((topicItem) => {
+                const isActive = selectedTopic === topicItem.id;
+                return (
+                  <button
+                    key={topicItem.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedTopic(topicItem.id);
+                      if (topicError) setTopicError(null);
+                    }}
+                    className={`text-left p-4 rounded-xl border transition-all ${
+                      isActive
+                        ? "border-primary bg-emerald-50/70 shadow-xs ring-1 ring-primary/30"
+                        : "border-outline-variant bg-[#FAF9F6] hover:border-slate-300 hover:bg-white"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span
+                        className={`material-symbols-outlined text-xl ${
+                          isActive ? "text-primary" : "text-slate-500"
+                        }`}
+                      >
+                        {topicItem.icon}
+                      </span>
+                      <span
+                        className={`font-mono text-[10px] font-semibold px-2 py-0.5 rounded ${
+                          isActive ? "bg-primary text-white" : "bg-white text-slate-500 border border-slate-200"
+                        }`}
+                      >
+                        {isVi ? "3 LÁ" : "3 CARDS"}
+                      </span>
+                    </div>
+                    <div className="font-headline font-bold text-base text-on-surface">
+                      {isVi ? topicItem.labelVi : topicItem.labelEn}
+                    </div>
+                    <p className="text-xs text-slate-600 mt-1 leading-snug">
+                      {isVi ? topicItem.descVi : topicItem.descEn}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Question Form */}
+            <form onSubmit={handleTopicReadingSubmit} className="mt-6 space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label htmlFor="web-topic-question" className="text-xs font-mono uppercase tracking-wider text-slate-600 font-semibold">
+                    {isVi
+                      ? `Câu hỏi cụ thể về ${activeTopicConfig.labelVi}`
+                      : `Your ${activeTopicConfig.labelEn} Question`}
+                  </label>
+                  <span className="text-[11px] font-mono text-slate-400">
+                    {topicQuestion.length}/500
+                  </span>
+                </div>
+                <textarea
+                  id="web-topic-question"
+                  rows={3}
+                  maxLength={500}
+                  value={topicQuestion}
+                  onChange={(e) => {
+                    setTopicQuestion(e.target.value);
+                    if (topicError) setTopicError(null);
+                  }}
+                  placeholder={isVi ? activeTopicConfig.placeholderVi : activeTopicConfig.placeholderEn}
+                  className="w-full px-3.5 py-2.5 text-sm border border-outline-variant rounded-xl bg-[#FAF9F6] focus:bg-white focus:outline-none focus:border-primary transition-colors resize-none"
+                />
+              </div>
+
+              {/* Sample Question Chips */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-mono text-slate-400">
+                  {isVi ? "Gợi ý nhanh:" : "Quick prompts:"}
+                </span>
+                {(isVi ? activeTopicConfig.sampleQuestionsVi : activeTopicConfig.sampleQuestionsEn).map((sample, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setTopicQuestion(sample);
+                      if (topicError) setTopicError(null);
+                    }}
+                    className="text-left text-xs px-2.5 py-1 rounded-lg bg-[#FAF9F6] hover:bg-emerald-50 border border-outline-variant hover:border-primary/40 text-slate-700 transition-colors"
+                  >
+                    {sample}
+                  </button>
+                ))}
+              </div>
+
+              {topicError && (
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700">
+                  {topicError}
+                </div>
+              )}
+
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                <span className="text-xs text-slate-500 font-mono">
+                  {isVi
+                    ? "Mỗi lượt rút 3 lá · Vào Workbench để rút thêm lá làm rõ (tối đa 10 lá)"
+                    : "Draws 3 cards · Continue in Workbench for clarifiers (max 10 cards)"}
+                </span>
+                <button
+                  type="submit"
+                  disabled={isSubmittingTopic}
+                  className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-6 py-3 rounded-lg shadow-xs transition-all active:scale-[0.98] disabled:opacity-60"
+                >
+                  <span className={`material-symbols-outlined text-base ${isSubmittingTopic ? "animate-spin" : ""}`}>
+                    {isSubmittingTopic ? "progress_activity" : "auto_awesome"}
+                  </span>
+                  <span>
+                    {isSubmittingTopic
+                      ? isVi
+                        ? "Tarot Reader đang rút 3 lá & luận giải..."
+                        : "Drawing 3 cards & reading..."
+                      : isVi
+                      ? "Rút 3 Lá & Luận Giải Chi Tiết"
+                      : "Draw 3 Cards & Get Deep Reading"}
+                  </span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Right Preview Column: 3-Card Spread Blueprint */}
+          <div className="lg:col-span-5 p-8 md:p-10 bg-[#FAF9F6] flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between pb-3 border-b border-outline-variant">
+                <span className="font-mono text-[11px] uppercase tracking-widest text-slate-500">
+                  {isVi ? "CẤU TRÚC 3 LÁ · BÀN TRẢI CHỦ ĐỀ" : "3-CARD SPREAD ARCHITECTURE"}
+                </span>
+                <span className="font-mono text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  {isVi ? activeTopicConfig.labelVi : activeTopicConfig.labelEn}
+                </span>
+              </div>
+
+              <div className="mt-6 grid grid-cols-3 gap-3">
+                {(isVi ? activeTopicConfig.positionsVi : activeTopicConfig.positionsEn).map((posTitle, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-white border border-outline-variant rounded-xl p-3 text-center flex flex-col items-center justify-between min-h-[210px] shadow-2xs"
+                  >
+                    <span className="font-mono text-[10px] text-primary font-bold">0{idx + 1}</span>
+                    <div className="my-2 w-14 h-24 rounded-md border border-amber-500/60 bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] flex items-center justify-center shadow-sm">
+                      <span className="material-symbols-outlined text-amber-300 text-base">
+                        {isSubmittingTopic ? "progress_activity" : "auto_awesome"}
+                      </span>
+                    </div>
+                    <div className="text-[11px] font-medium text-slate-800 leading-tight line-clamp-2">
+                      {posTitle}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-6 p-4 bg-white border border-outline-variant rounded-xl space-y-2 text-xs text-slate-600 leading-relaxed">
+              <div className="font-mono text-[10px] uppercase tracking-wider text-primary font-bold">
+                {isVi ? "PHƯƠNG PHÁP LUẬN GIẢI CHUYÊN SÂU" : "EXPERIENCED READER METHODOLOGY"}
+              </div>
+              <p>
+                {isVi
+                  ? "Mỗi trải bài phân tích sự tương tác giữa 3 vị trí theo nguyên tố, chiều Xuôi/Ngược và tâm lý thực tế sau câu hỏi của bạn. Sau khi mở bài, bạn vẫn có thể rút thêm tối đa 7 lá làm rõ (tổng 10 lá) và hỏi đáp trực tiếp trong ngày."
+                  : "Each spread reads elemental interactions, upright/reversed polarity, and real-world nuance around your question. Once opened, you can draw up to 7 clarifier cards (10 total) and ask follow-up questions today."}
+              </p>
+            </div>
           </div>
         </section>
 

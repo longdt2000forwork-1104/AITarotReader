@@ -7,7 +7,8 @@ export interface ApiResponse<T> {
 
 export type Arcana = "MAJOR" | "MINOR";
 export type Suit = "WANDS" | "CUPS" | "SWORDS" | "PENTACLES";
-export type Persona = "MYSTIC_SAGE" | "PRACTICAL_COACH" | "SHADOW_EXPLORER" | "IDEA_SPARK" | "GENTLE_FRIEND" | "ANALYTICAL_PSYCHOLOGIST" | "POETIC_EMPATH";
+export type Persona = "MYSTIC_SAGE" | "PRACTICAL_COACH" | "SHADOW_EXPLORER" | "IDEA_SPARK" | "GENTLE_FRIEND" | "ANALYTICAL_PSYCHOLOGIST" | "POETIC_EMPATH" | "EXPERIENCED_READER";
+export type ReadingTopic = "LOVE" | "FAMILY" | "CAREER";
 export type InputMode = "CARD_DRAW" | "QUESTION_FIRST" | "INTENT_PROMPT" | "VIRTUAL" | "MANUAL" | "PHYSICAL_INPUT";
 export type SessionStatus = "CREATED" | "DRAWING" | "INTERPRETING" | "COMPLETED";
 
@@ -104,6 +105,7 @@ export interface ReadingSessionDto {
   aiInterpretation?: string;
   aiSynthesisResult?: string;
   dateKey?: string;
+  isTodaySession?: boolean;
   messages: SessionMessageDto[];
   createdAt: string;
 }
@@ -115,6 +117,12 @@ export interface CreateReadingSessionRequest {
   inputMode?: InputMode;
   persona?: Persona;
   cards?: any[];
+}
+
+export interface CreateTopicReadingRequest {
+  topic: ReadingTopic;
+  question: string;
+  locale?: string;
 }
 
 export interface JournalEntryDto {
