@@ -67,15 +67,12 @@ public class ProfileController {
 
         if (request.getBirthDate() != null) {
             profile.setBirthDate(request.getBirthDate());
-            if (request.getZodiacSign() == null) {
-                profile.setZodiacSign(NatalCalculationUtil.computeZodiacSign(request.getBirthDate()));
-            }
-            if (request.getLifePathNumber() == null) {
-                profile.setLifePathNumber(NatalCalculationUtil.computeLifePathNumber(request.getBirthDate()));
-            }
+            profile.setZodiacSign(NatalCalculationUtil.computeZodiacSign(request.getBirthDate()));
+            profile.setLifePathNumber(NatalCalculationUtil.computeLifePathNumber(request.getBirthDate()));
+        } else {
+            if (request.getZodiacSign() != null) profile.setZodiacSign(request.getZodiacSign());
+            if (request.getLifePathNumber() != null) profile.setLifePathNumber(request.getLifePathNumber());
         }
-        if (request.getZodiacSign() != null) profile.setZodiacSign(request.getZodiacSign());
-        if (request.getLifePathNumber() != null) profile.setLifePathNumber(request.getLifePathNumber());
         if (request.getPreferredDeckId() != null) profile.setPreferredDeckId(request.getPreferredDeckId());
         if (request.getPreferredBackId() != null) profile.setPreferredBackId(request.getPreferredBackId());
         if (request.getAllowAiContext() != null) profile.setAllowAiContext(request.getAllowAiContext());
@@ -103,11 +100,18 @@ public class ProfileController {
                         .toList()
                 : Collections.emptyList();
 
+        String zodiacSign = profile.getBirthDate() != null
+                ? NatalCalculationUtil.computeZodiacSign(profile.getBirthDate())
+                : profile.getZodiacSign();
+        Integer lifePathNumber = profile.getBirthDate() != null
+                ? NatalCalculationUtil.computeLifePathNumber(profile.getBirthDate())
+                : profile.getLifePathNumber();
+
         return MysticProfileDto.builder()
                 .userId(profile.getUserId())
                 .birthDate(profile.getBirthDate())
-                .zodiacSign(profile.getZodiacSign())
-                .lifePathNumber(profile.getLifePathNumber())
+                .zodiacSign(zodiacSign)
+                .lifePathNumber(lifePathNumber)
                 .preferredDeckId(profile.getPreferredDeckId())
                 .preferredBackId(profile.getPreferredBackId())
                 .allowAiContext(profile.getAllowAiContext())
